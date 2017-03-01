@@ -4,14 +4,9 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def max_weight(A):
-    """Return the maximum weight edge of the adjacency matrix."""
-    return A.max()
-
-
-def normalize(A, max_value):
-    """Normalize adjacency matrix to interval [0, max_value]."""
-    return (1 / max_value) * A
+def normalize(A):
+    """Normalize adjacency matrix to interval [0, 1]."""
+    return (1 / A.max()) * A
 
 
 def gaussian(A, sigma=1):
