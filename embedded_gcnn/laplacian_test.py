@@ -8,7 +8,7 @@ from numpy.testing import *
 import scipy.sparse as sp
 
 
-from .laplacian import (laplacian, _lmax, _rescale, chebyshev)
+from .laplacian import laplacian, _lmax, _rescale, chebyshev
 
 
 class LaplacianTest(TestCase):
@@ -57,7 +57,7 @@ class LaplacianTest(TestCase):
                     [-1/sqrt(3),            0, -2/sqrt(3*2)],
                     [0,          -2/sqrt(3*2),            0]]
 
-        assert_almost_equal(_rescale(L, 2).toarray(), expected)
+        assert_almost_equal(_rescale(L, lmax=2).toarray(), expected)
 
     def test_chebyshev(self):
         A = [[0, 1, 0],
