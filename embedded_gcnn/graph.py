@@ -1,7 +1,10 @@
 from __future__ import division
 
+from six.moves import xrange
+
 import numpy as np
 import scipy.sparse as sp
+import scipy.spatial.distance as sd
 
 
 def normalize(A):
@@ -10,24 +13,40 @@ def normalize(A):
 
 
 def gaussian(A, sigma=1):
-    """Return gaussian kernel representation of distance adjacency matrix."""
-    A = A.copy()
-    A.data = np.exp(- A.data ** 2 / (2 * sigma ** 2))
+    """Return (inverted) gaussian kernel representation of adjacency matrix.
+    Note that this methods only accepts squared distance adjacency matrices."""
+
+    if sp.issparse(A):
+        A = A.copy()
+        A.data = np.exp(- A.data / (2 * sigma * sigma))
+        return A
+    else:
+        return np.exp(- A / (2 * sigma * sigma))
+
+
+def grid(shape, connectivity=4, dtype=np.float32):
+    assert connectivity == 4 or connectivity == 8
+
+    height, width = shape
+    num_nodes = height * width
+    A = sp.lil_matrix((num_nodes, num_nodes), dtype=dtype)
+
+    for i in xrange(0, num_nodes):
+        if i % width > 0:  # left node
+            A[i, i-1] = 1
+        if i % width < width - 1:  # right node
+            A[i, i+1] = 1
+        if i >= width:  # top node
+            A[i, i-width] = 1
+            if connectivity > 4 and i % width > 0:
+                A[i, i-width-1] = 2
+            if connectivity > 4 and i % width < width - 1:
+                A[i, i-width+1] = 2
+        if i < height * width - width:  # bottom node
+            A[i, i+width] = 1
+            if connectivity > 4 and i % width > 0:
+                A[i, i+width-1] = 2
+            if connectivity > 4 and i % width < width - 1:
+                A[i, i+width+1] = 2
+
     return A
-
-
-def grid(width, height, connectivity=4, dtype=np.float32):
-    pass
-    # x = np.linspace(0, 1, width, dtype=dtype)
-    # y = np.linspace(0, 1, height, dtype=dtype)
-
-    # xx, yy = np.meshgrid(x, y)
-    # z = np.empty((width * height, 2), dtype)
-    # z[:, 0] = xx.reshape(width * height)
-    # z[:, 1] = yy.reshape(width * height)
-
-    # idx = np.argsort(d)[:, 1:connectivity+1]
-
-    # d.sort()
-    # d = d[:, 1:connectivity+1]
-    # return d, idx
