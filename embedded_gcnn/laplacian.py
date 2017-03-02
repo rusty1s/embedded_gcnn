@@ -30,11 +30,9 @@ def chebyshev(L, X, k, normalized=True):
     """Return T_k * X where T_k are the Chebyshev polynomials of order k."""
 
     L = _rescale(L, _lmax(L, normalized))
-
     Xt = np.empty((k+1,) + X.shape, L.dtype)
 
     Xt[0] = X
-
     if k > 0:
         Xt[1] = L.dot(X)
 
