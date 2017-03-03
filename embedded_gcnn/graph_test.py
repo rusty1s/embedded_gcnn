@@ -1,3 +1,5 @@
+from __future__ import division
+
 from unittest import TestCase
 
 import numpy as np
@@ -32,13 +34,13 @@ class GraphTest(TestCase):
                     [np.exp(-1/2),            0, np.exp(-2/2)],
                     [0,            np.exp(-2/2),            0]]
 
-        assert_equal(gaussian(A, sigma=1).toarray(), expected)
+        assert_almost_equal(gaussian(A, sigma=1).toarray(), expected)
 
         expected = [[0,            np.exp(-1/8),            0],
                     [np.exp(-1/8),            0, np.exp(-2/8)],
                     [0,            np.exp(-2/8),            0]]
 
-        assert_equal(gaussian(A, sigma=2).toarray(), expected)
+        assert_almost_equal(gaussian(A, sigma=2).toarray(), expected)
 
         # Test dense representation.
         assert_equal(gaussian(2, sigma=1), np.exp(-1))

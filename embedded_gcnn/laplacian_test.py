@@ -40,7 +40,7 @@ class LaplacianTest(TestCase):
         A = sp.coo_matrix(np.array(A, dtype=np.float32))
 
         L = laplacian(A, normalized=False)
-        assert_almost_equal(_lmax(L, normalized=False), 4.7320509)
+        assert_almost_equal(_lmax(L, normalized=False), 4.7320508)
 
         L = laplacian(A, normalized=True)
         assert_equal(_lmax(L, normalized=True), 2)
