@@ -27,7 +27,8 @@ def gaussian(A, sigma=1):
 def grid(shape, connectivity=4, dtype=np.float32):
     """Return adjacency matrix of a regular grid."""
 
-    assert connectivity == 4 or connectivity == 8
+    assert connectivity == 4 or connectivity == 8,\
+        'Invalid connectivity {}'.format(connectivity)
 
     height, width = shape
     num_nodes = height * width
