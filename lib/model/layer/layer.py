@@ -19,7 +19,7 @@ class Layer(object):
             name = '{}_{}'.format(layer, _layer_uid(layer))
 
         self.name = name
-        self.logging - kwargs.get('logging', False)
+        self.logging = kwargs.get('logging', False)
         self.vars = {}
 
     def __call__(self, inputs, **kwargs):
@@ -34,7 +34,7 @@ class Layer(object):
 
             return outputs
 
-    def _call(self, inputs):
+    def _call(self, inputs, **kwargs):
         raise NotImplementedError
 
     def _log_vars(self):

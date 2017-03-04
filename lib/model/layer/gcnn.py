@@ -4,7 +4,7 @@ from .layer import Layer
 from .inits import weight_variable, bias_variable
 
 
-class GraphConvolution(Layer):
+class GCNN(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -36,9 +36,9 @@ class GraphConvolution(Layer):
         if self.logging:
             self._log_vars()
 
-    def _call(self, inputs, A):
-        X = tf.sparse_tensor_dense_matmul(A, inputs)
-        outputs = tf.sparse_tensor_dense_matmul(X, self.vars['weights'])
+    def _call(self, inputs, **kwargs):
+        X = tf.sparse_tensor_dense_matmul(kwargs.get('A'), inputs)
+        outputs = tf.matmul(X, self.vars['weights'])
 
         if self.bias:
             outputs += self.vars['bias']
