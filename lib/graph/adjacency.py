@@ -25,26 +25,26 @@ def invert_adj(m, sigma=1):
 def _grid_adj_4(adj, height, width):
     for i in xrange(height * width):
         if i % width > 0:
-            adj[i, i-1] = 1
-        if i % width < width-1:
-            adj[i, i+1] = 1
+            adj[i, i - 1] = 1
+        if i % width < width - 1:
+            adj[i, i + 1] = 1
         if i >= width:
-            adj[i, i-width] = 1
-        if i < (height-1) * width:
-            adj[i, i+width] = 1
+            adj[i, i - width] = 1
+        if i < (height - 1) * width:
+            adj[i, i + width] = 1
     return adj
 
 
 def _grid_adj_8(adj, height, width):
     for i in xrange(height * width):
         if i >= width and i % width > 0:
-            adj[i, i-width-1] = 2
-        if i >= width and i % width < width-1:
-            adj[i, i-width+1] = 2
-        if i < (height-1) * width and i % width > 0:
-            adj[i, i+width-1] = 2
-        if i < (height-1) * width and i % width < width-1:
-            adj[i, i+width+1] = 2
+            adj[i, i - width - 1] = 2
+        if i >= width and i % width < width - 1:
+            adj[i, i - width + 1] = 2
+        if i < (height - 1) * width and i % width > 0:
+            adj[i, i + width - 1] = 2
+        if i < (height - 1) * width and i % width < width - 1:
+            adj[i, i + width + 1] = 2
     return adj
 
 
@@ -64,7 +64,6 @@ def grid_adj(shape, connectivity=4, dtype=np.float32):
         adj = _grid_adj_8(adj, height, width)
 
     return adj
-
 
 
 def embedded_adj(points, neighbors, dtype=np.float32):

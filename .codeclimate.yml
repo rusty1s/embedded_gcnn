@@ -9,6 +9,8 @@ engines:
           mass_threshold: 100
   radon:
     enabled: true
+    config:
+      threshold: "C"
   fixme:
     enabled: true
   pep8:
