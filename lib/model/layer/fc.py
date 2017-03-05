@@ -4,7 +4,7 @@ from .layer import Layer
 from .inits import weight_variable, bias_variable
 
 
-class GCNN(Layer):
+class FC(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
@@ -39,8 +39,10 @@ class GCNN(Layer):
             self._log_vars()
 
     def _call(self, inputs):
+        outputs = inputs
+
         if self.dropout:
-            outputs = tf.nn.dropout(inputs, 1 - self.dropout)
+            outputs = tf.nn.dropout(outputs, 1 - self.dropout)
 
         outputs = tf.matmul(outputs, self.vars['weights'])
 

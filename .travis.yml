@@ -1,0 +1,17 @@
+language: python
+sudo: required
+dist: trusty
+matrix:
+  include:
+    - python: 2.7
+    - python: 3.4
+    - python: 3.5
+install:
+  - pip install -r requirements_test.txt
+  - pip install codecov
+script:
+  - bash bin/test.sh
+after_success:
+  - codecov
+notifications:
+  email: false

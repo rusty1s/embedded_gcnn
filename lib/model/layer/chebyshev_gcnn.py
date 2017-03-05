@@ -10,7 +10,7 @@ class ChebyshevGCNN(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 k,
+                 max_degree,
                  weight_stddev=0.01,
                  weight_decay=None,
                  bias=True,
@@ -20,13 +20,13 @@ class ChebyshevGCNN(Layer):
 
         super().__init__(**kwargs)
 
-        self.k = k
+        self.max_degree = max_degree
         self.bias = bias
         self.act = act
 
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
-                [k, in_channels, out_channels],
+                [max_degree, in_channels, out_channels],
                 weight_stddev,
                 weight_decay,
                 name='{}_weights'.format(self.name))
@@ -40,8 +40,9 @@ class ChebyshevGCNN(Layer):
         if self.logging:
             self._log_vars()
 
-    def _filter(T, k):
-        pass
+    def _filter(self, T, k):
+        W = self.vars['weights'][k]
+        return tf.matmul(T, W)
 
     def _call(self, inputs, L):
         batch_size = inputs.get_shape()[0].value
@@ -59,7 +60,7 @@ class ChebyshevGCNN(Layer):
                 T_1 = tf.sparse_tensor_dense_matmul(L_i, inputs[i])
                 output += self._filter(T_1, 1)
 
-            for k in xrange(2, self.k+1):
+            for k in xrange(2, self.max_degree + 1):
                 T_2 = 2 * tf.sparse_tensor_dense_matmul(L_i, T_1) - T_0
                 output += self._filter(T_2, k)
                 T_0, T_1 = T_1, T_2

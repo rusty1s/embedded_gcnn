@@ -6,7 +6,7 @@ from .gcnn import GCNN
 
 class GCNNTest(tf.test.TestCase):
     def test_init(self):
-        layer = GCNN(1, 2, bias=True)
+        layer = GCNN(1, 2)
         self.assertEqual(layer.name, 'gcnn_1')
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, True)
@@ -26,8 +26,8 @@ class GCNNTest(tf.test.TestCase):
         self.assertNotIn('bias', layer.vars)
 
     def test_bias_constant(self):
-        layer1 = GCNN(2, 3, bias=True, name='bias_1')
-        layer2 = GCNN(2, 3, bias=True, bias_constant=0.1, name='bias_2')
+        layer1 = GCNN(2, 3, name='bias_1')
+        layer2 = GCNN(2, 3, bias_constant=0.1, name='bias_2')
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -37,7 +37,7 @@ class GCNNTest(tf.test.TestCase):
                                 np.array([0.1, 0.1, 0.1], dtype=np.float32))
 
     def test_call(self):
-        layer = GCNN(1, 3, bias=True, bias_constant=1, name='call')
+        layer = GCNN(1, 3, bias_constant=1, name='call')
         A = tf.SparseTensor([[0, 0, 0], [0, 1, 1], [0, 2, 2], [1, 1, 1]],
                             [1.0, 1.0, 1.0, 1.0], [2, 3, 3])
         inputs = tf.constant([[[1.0], [2.0], [3.0]], [[4.0], [5.0], [6.0]]])
