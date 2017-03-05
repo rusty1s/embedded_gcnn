@@ -18,6 +18,6 @@ def lmax(lap, normalized=True):
         return eigsh(lap, 1, return_eigenvectors=False)[0]
 
 
-def rescale(lap, lmax=2):
+def rescale_lap(lap, lmax=2):
     """Rescale laplacian based on upper-bound on the spectrum."""
     return (2 / lmax) * lap - sp.eye(lap.shape[0])
