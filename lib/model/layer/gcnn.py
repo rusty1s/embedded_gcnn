@@ -38,16 +38,15 @@ class GCNN(Layer):
         if self.logging:
             self._log_vars()
 
-    def _call(self, inputs, A):
+    def _call(self, inputs, adj):
         batch_size = inputs.get_shape()[0].value
-        n = A.get_shape()[1].value
+        n = adj.get_shape()[1].value
 
         outputs = list()
-        A = tf.sparse_split(sp_input=A, num_split=batch_size, axis=0)
+        adj = tf.sparse_split(sp_input=adj, num_split=batch_size, axis=0)
         for i in xrange(batch_size):
-            # A * F * W
-            A_i = tf.sparse_reshape(A[i], [n, n])
-            output = tf.sparse_tensor_dense_matmul(A_i, inputs[i])
+            adj_i = tf.sparse_reshape(adj[i], [n, n])
+            output = tf.sparse_tensor_dense_matmul(adj_i, inputs[i])
             output = tf.matmul(output, self.vars['weights'])
 
             outputs.append(output)

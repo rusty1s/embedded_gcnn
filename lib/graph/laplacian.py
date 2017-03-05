@@ -9,7 +9,7 @@ def laplacian(adj, normalized=False):
     return sp.csgraph.laplacian(adj, normalized)
 
 
-def _lmax(lap, normalized=True):
+def lmax(lap, normalized=True):
     """Upper-bound on the spectrum."""
 
     if normalized:
@@ -18,6 +18,6 @@ def _lmax(lap, normalized=True):
         return eigsh(lap, 1, return_eigenvectors=False)[0]
 
 
-def _rescale(lap, lmax=2):
+def rescale(lap, lmax=2):
     """Rescale laplacian based on upper-bound on the spectrum."""
     return (2 / lmax) * lap - sp.eye(lap.shape[0])

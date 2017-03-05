@@ -40,30 +40,31 @@ class ChebyshevGCNN(Layer):
         if self.logging:
             self._log_vars()
 
-    def _filter(self, T, k):
-        W = self.vars['weights'][k]
-        return tf.matmul(T, W)
+    def _filter(self, cheb, degree):
+        weights = self.vars['weights'][degree]
+        return tf.matmul(cheb, weights)
 
-    def _call(self, inputs, L):
+    def _call(self, inputs, lap):
         batch_size = inputs.get_shape()[0].value
-        n = L.get_shape()[1].value
+        n = lap.get_shape()[1].value
 
         outputs = list()
-        L = tf.sparse_split(sp_input=L, num_split=batch_size, axis=0)
+        lap = tf.sparse_split(sp_input=lap, num_split=batch_size, axis=0)
         for i in xrange(batch_size):
-            L_i = tf.sparse_reshape(L[i], [n, n])
+            lap_i = tf.sparse_reshape(lap[i], [n, n])
 
-            T_0 = inputs[i]
-            output = self._filter(T_0, 0)
+            cheb_0 = inputs[i]
+            output = self._filter(cheb_0, 0)
 
-            if self.k > 0:
-                T_1 = tf.sparse_tensor_dense_matmul(L_i, inputs[i])
-                output += self._filter(T_1, 1)
+            if self.max_degree > 0:
+                cheb_1 = tf.sparse_tensor_dense_matmul(lap_i, inputs[i])
+                output += self._filter(cheb_1, 1)
 
             for k in xrange(2, self.max_degree + 1):
-                T_2 = 2 * tf.sparse_tensor_dense_matmul(L_i, T_1) - T_0
-                output += self._filter(T_2, k)
-                T_0, T_1 = T_1, T_2
+                cheb_2 = 2 * tf.sparse_tensor_dense_matmul(lap_i,
+                                                           cheb_1) - cheb_0
+                output += self._filter(cheb_2, k)
+                cheb_0, cheb_1 = cheb_1, cheb_2
 
             outputs.append(output)
 

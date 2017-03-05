@@ -24,4 +24,3 @@ class ChebyshevGCNNTest(tf.test.TestCase):
         self.assertIn('weights', layer.vars)
         self.assertEqual(layer.vars['weights'].get_shape(), [5, 3, 4])
         self.assertNotIn('bias', layer.vars)
-
