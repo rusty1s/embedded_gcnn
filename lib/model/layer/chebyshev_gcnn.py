@@ -18,7 +18,7 @@ class ChebyshevGCNN(Layer):
                  act=tf.nn.relu,
                  **kwargs):
 
-        super().__init__(**kwargs)
+        super(ChebyshevGCNN, self).__init__(**kwargs)
 
         self.max_degree = max_degree
         self.bias = bias

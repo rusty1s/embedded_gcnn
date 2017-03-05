@@ -17,7 +17,7 @@ class GCNN(Layer):
                  act=tf.nn.relu,
                  **kwargs):
 
-        super().__init__(**kwargs)
+        super(GCNN, self).__init__(**kwargs)
 
         self.bias = bias
         self.act = act

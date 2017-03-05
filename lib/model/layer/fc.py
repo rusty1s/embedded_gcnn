@@ -16,7 +16,7 @@ class FC(Layer):
                  act=tf.nn.relu,
                  **kwargs):
 
-        super().__init__(**kwargs)
+        super(FC, self).__init__(**kwargs)
 
         self.bias = bias
         self.act = act
