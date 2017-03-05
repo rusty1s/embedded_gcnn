@@ -12,14 +12,13 @@ def _layer_uid(name):
 
 
 class Layer(object):
-    def __init__(self, **kwargs):
-        name = kwargs.get('name')
+    def __init__(self, name=None, logging=False):
         if not name:
             layer = self.__class__.__name__.lower()
             name = '{}_{}'.format(layer, _layer_uid(layer))
 
         self.name = name
-        self.logging = kwargs.get('logging', False)
+        self.logging = logging
         self.vars = {}
 
     def __call__(self, inputs, **kwargs):

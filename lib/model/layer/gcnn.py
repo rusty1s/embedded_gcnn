@@ -1,3 +1,5 @@
+from six.moves import xrange
+
 import tensorflow as tf
 
 from .layer import Layer
@@ -36,11 +38,23 @@ class GCNN(Layer):
         if self.logging:
             self._log_vars()
 
-    def _call(self, inputs, **kwargs):
-        X = tf.sparse_tensor_dense_matmul(kwargs.get('A'), inputs)
-        outputs = tf.matmul(X, self.vars['weights'])
+    def _call(self, inputs, A):
+        batch_size = inputs.get_shape()[0].value
+        n = A.get_shape()[1].value
 
-        if self.bias:
-            outputs += self.vars['bias']
+        outputs = list()
+        A = tf.sparse_split(sp_input=A, num_split=batch_size, axis=0)
+        for i in xrange(batch_size):
+            a = A[i]
+            a = tf.sparse_reshape(a, [n, n])
+            output = tf.sparse_tensor_dense_matmul(a, inputs[i])
+            output = tf.matmul(output, self.vars['weights'])
 
+            if self.bias:
+                output += self.vars['bias']
+
+            outputs.append(output)
+
+        outputs = tf.concat(outputs, axis=0)
+        outputs = tf.reshape(outputs, [batch_size, n, -1])
         return self.act(outputs)

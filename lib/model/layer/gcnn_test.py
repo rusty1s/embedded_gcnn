@@ -38,13 +38,21 @@ class GCNNTest(tf.test.TestCase):
     def test_call(self):
         layer = GCNN(1, 3, bias=True, name='call')
 
-        inputs = tf.constant([[1.0], [2.0], [3.0]])
-        A = tf.SparseTensor([[0, 0], [1, 1], [2, 2]], [1.0, 1.0, 1.0], [3, 3])
+        A = tf.SparseTensor([[0, 0, 0], [0, 1, 1], [0, 2, 2], [1, 1, 1]],
+                            [1.0, 1.0, 1.0, 1.0], [2, 3, 3])
+        inputs = tf.constant([[[1.0], [2.0], [3.0]], [[4.0], [5.0], [6.0]]])
 
         outputs = layer(inputs, A=A)
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
+            outputs = outputs.eval()
             self.assertAllEqual(
-                outputs.eval(),
-                tf.nn.relu(tf.matmul(inputs, layer.vars['weights'])).eval())
+                outputs[0],
+                tf.nn.relu(tf.matmul(inputs[0], layer.vars['weights'])).eval())
+            self.assertAllEqual(
+                outputs[1],
+                tf.nn.relu(
+                    tf.matmul(
+                        tf.matmul(tf.sparse_tensor_to_dense(A)[1], inputs[1]),
+                        layer.vars['weights'])).eval())
