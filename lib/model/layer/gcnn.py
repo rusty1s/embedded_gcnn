@@ -45,6 +45,7 @@ class GCNN(Layer):
         outputs = list()
         A = tf.sparse_split(sp_input=A, num_split=batch_size, axis=0)
         for i in xrange(batch_size):
+            # A * F * W
             A_i = tf.sparse_reshape(A[i], [n, n])
             output = tf.sparse_tensor_dense_matmul(A_i, inputs[i])
             output = tf.matmul(output, self.vars['weights'])
