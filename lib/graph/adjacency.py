@@ -22,6 +22,32 @@ def invert_adj(m, sigma=1):
         return np.exp(-m / (2 * sigma * sigma))
 
 
+def _grid_adj_4(adj, height, width):
+    for i in xrange(height * width):
+        if i % width > 0:
+            adj[i, i-1] = 1
+        if i % width < width-1:
+            adj[i, i+1] = 1
+        if i >= width:
+            adj[i, i-width] = 1
+        if i < (height-1) * width:
+            adj[i, i+width] = 1
+    return adj
+
+
+def _grid_adj_8(adj, height, width):
+    for i in xrange(height * width):
+        if i >= width and i % width > 0:
+            adj[i, i-width-1] = 2
+        if i >= width and i % width < width-1:
+            adj[i, i-width+1] = 2
+        if i < (height-1) * width and i % width > 0:
+            adj[i, i+width-1] = 2
+        if i < (height-1) * width and i % width < width-1:
+            adj[i, i+width+1] = 2
+    return adj
+
+
 def grid_adj(shape, connectivity=4, dtype=np.float32):
     """Return adjacency matrix of a regular grid."""
 
@@ -29,28 +55,16 @@ def grid_adj(shape, connectivity=4, dtype=np.float32):
         'Invalid connectivity {}'.format(connectivity)
 
     height, width = shape
-    num_nodes = height * width
-    adj = sp.lil_matrix((num_nodes, num_nodes), dtype=dtype)
+    n = height * width
+    adj = sp.lil_matrix((n, n), dtype=dtype)
 
-    for i in xrange(0, num_nodes):
-        if i % width > 0:  # left node
-            adj[i, i - 1] = 1
-        if i % width < width - 1:  # right node
-            adj[i, i + 1] = 1
-        if i >= width:  # top node
-            adj[i, i - width] = 1
-            if connectivity > 4 and i % width > 0:  # top left node
-                adj[i, i - width - 1] = 2
-            if connectivity > 4 and i % width < width - 1:  # top right node
-                adj[i, i - width + 1] = 2
-        if i < height * width - width:  # bottom node
-            adj[i, i + width] = 1
-            if connectivity > 4 and i % width > 0:  # bottom left node
-                adj[i, i + width - 1] = 2
-            if connectivity > 4 and i % width < width - 1:  # bottom right node
-                adj[i, i + width + 1] = 2
+    adj = _grid_adj_4(adj, height, width)
+
+    if connectivity == 8:
+        adj = _grid_adj_8(adj, height, width)
 
     return adj
+
 
 
 def embedded_adj(points, neighbors, dtype=np.float32):
