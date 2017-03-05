@@ -18,5 +18,5 @@ class LayerTest(tf.test.TestCase):
         self.assertEqual(layer.name, 'layer_2')
 
     def test_call(self):
-        layer = Layer(name='layer')
+        layer = Layer(name='layer', logging=True)
         self.assertRaises(NotImplementedError, layer.__call__, None)
