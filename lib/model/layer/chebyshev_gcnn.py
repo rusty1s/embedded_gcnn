@@ -6,10 +6,11 @@ from .layer import Layer
 from .inits import weight_variable, bias_variable
 
 
-class GCNN(Layer):
+class ChebyshevGCNN(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
+                 k,
                  weight_stddev=0.01,
                  weight_decay=None,
                  bias=True,
@@ -19,12 +20,13 @@ class GCNN(Layer):
 
         super().__init__(**kwargs)
 
+        self.k = k
         self.bias = bias
         self.act = act
 
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
-                [in_channels, out_channels],
+                [k, in_channels, out_channels],
                 weight_stddev,
                 weight_decay,
                 name='{}_weights'.format(self.name))
@@ -38,16 +40,29 @@ class GCNN(Layer):
         if self.logging:
             self._log_vars()
 
-    def _call(self, inputs, A):
+    def _filter(T, k):
+        pass
+
+    def _call(self, inputs, L):
         batch_size = inputs.get_shape()[0].value
-        n = A.get_shape()[1].value
+        n = L.get_shape()[1].value
 
         outputs = list()
-        A = tf.sparse_split(sp_input=A, num_split=batch_size, axis=0)
+        L = tf.sparse_split(sp_input=L, num_split=batch_size, axis=0)
         for i in xrange(batch_size):
-            A_i = tf.sparse_reshape(A[i], [n, n])
-            output = tf.sparse_tensor_dense_matmul(A_i, inputs[i])
-            output = tf.matmul(output, self.vars['weights'])
+            L_i = tf.sparse_reshape(L[i], [n, n])
+
+            T_0 = inputs[i]
+            output = self._filter(T_0, 0)
+
+            if self.k > 0:
+                T_1 = tf.sparse_tensor_dense_matmul(L_i, inputs[i])
+                output += self._filter(T_1, 1)
+
+            for k in xrange(2, self.k+1):
+                T_2 = 2 * tf.sparse_tensor_dense_matmul(L_i, T_1) - T_0
+                output += self._filter(T_2, k)
+                T_0, T_1 = T_1, T_2
 
             outputs.append(output)
 

@@ -13,6 +13,7 @@ def _layer_uid(name):
 
 class Layer(object):
     def __init__(self, name=None, logging=False):
+
         if not name:
             layer = self.__class__.__name__.lower()
             name = '{}_{}'.format(layer, _layer_uid(layer))

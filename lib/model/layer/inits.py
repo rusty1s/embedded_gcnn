@@ -1,7 +1,11 @@
 import tensorflow as tf
 
 
-def weight_variable(shape, stddev, decay=None, name=None, dtype=tf.float32):
+def weight_variable(shape,
+                    stddev=0.01,
+                    decay=None,
+                    name=None,
+                    dtype=tf.float32):
     initial = tf.truncated_normal_initializer(stddev, dtype=dtype)
     var = tf.get_variable(name, shape, dtype, initializer=initial)
 
