@@ -13,7 +13,7 @@ from .laplacian import laplacian, lmax, rescale_lap
 class LaplacianTest(TestCase):
     def test_laplacian(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(np.array(adj))
+        adj = sp.coo_matrix(adj)
 
         combinatorial = [[1, -1, 0], [-1, 3, -2], [0, -2, 2]]
 
@@ -39,7 +39,7 @@ class LaplacianTest(TestCase):
 
     def test_rescale_lap(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(np.array(adj))
+        adj = sp.coo_matrix(adj)
 
         lap = laplacian(adj, normalized=True)
 

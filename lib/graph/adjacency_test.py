@@ -12,7 +12,7 @@ from .adjacency import normalize_adj, invert_adj, grid_adj, embedded_adj
 class GraphTest(TestCase):
     def test_normalize_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(np.array(adj))
+        adj = sp.coo_matrix(adj)
 
         expected = [[0, 0.5, 0], [0.5, 0, 1], [0, 1, 0]]
 
@@ -20,7 +20,7 @@ class GraphTest(TestCase):
 
     def test_invert_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(np.array(adj))
+        adj = sp.coo_matrix(adj)
 
         expected = [[0, np.exp(-1 / 2), 0],
                     [np.exp(-1 / 2), 0, np.exp(-2 / 2)],

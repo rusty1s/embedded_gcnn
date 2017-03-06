@@ -1,0 +1,18 @@
+from unittest import TestCase
+
+import numpy as np
+from numpy.testing import *
+import scipy.sparse as sp
+
+from .coarsening import coarsen_adj
+
+
+class CoarseningTest(TestCase):
+    def test_coarsen(self):
+        adj = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
+        adj = sp.coo_matrix(adj)
+        print(coarsen_adj(adj))
+
+        adj = [[0, 3, 2, 0, 0], [3, 0, 0, 2, 0], [2, 0, 0, 3, 0], [0, 2, 3, 0, 1], [0, 0, 0, 1, 0]]
+        adj = sp.coo_matrix(adj)
+        print(coarsen_adj(adj))
