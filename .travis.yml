@@ -10,7 +10,9 @@ install:
   - pip install -r requirements_test.txt
   - pip install codecov
 script:
-  - bash bin/test.sh
+  - pep8 ./**/*.py
+  - flake8 ./**/*.py
+  - nosetests --with-coverage --nologcapture
 after_success:
   - codecov
 notifications:
