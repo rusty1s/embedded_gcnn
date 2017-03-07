@@ -1,12 +1,20 @@
-from __future__ import division
-
 from six.moves import xrange
 
 import numpy as np
 import scipy.sparse as sp
 
 
-def cluster_adj(adj, level=1, rid=None):
+def coarsen(adj, levels=1):
+    pass
+
+
+def coarsen_one_level(adj):
+    # clusters = cluster_adj(adj)
+
+    return adj
+
+
+def cluster_adj(adj, rid=None):
     # Sort by row index.
     rows, cols, weights = sp.find(adj)
     perm = np.argsort(rows)
@@ -16,8 +24,7 @@ def cluster_adj(adj, level=1, rid=None):
 
     # Local normalized cut.
     degree = np.array(adj.sum(axis=1)).flatten()
-    for i in xrange(weights.shape[0]):
-        weights[i] = weights[i] * (1 / degree[rows[i]] + 1 / degree[cols[i]])
+    weights = weights / degree[rows] + weights / degree[cols]
 
     # Get the beginning indices and the count of a new row of rows
     _, rowstart, rowlength = np.unique(
@@ -45,6 +52,8 @@ def cluster_adj(adj, level=1, rid=None):
         # Randomly sort sliced weights.
         perm = np.random.permutation(np.arange(weights_i.shape[0]))
         weights_i = weights_i[perm]
+
+        # Find best neighbor.
         j = np.argmax(weights_i)
 
         if weights_i[j] > 0:
