@@ -28,7 +28,7 @@ class Model(object):
 
         self.accuracy = 0
         self.loss = 0
-        self.train_op = None
+        self.train = None
 
     def build(self):
         with tf.variable_scope(self.name):
@@ -40,6 +40,7 @@ class Model(object):
         self.vars = {var.name: var for var in variables}
 
         # Call each layer with the previous outputs.
+        print(self.placeholders['features'])
         self.outputs = self.inputs
         for layer in self.layers:
             self.outputs = layer(self.outputs)
@@ -48,7 +49,7 @@ class Model(object):
         self.loss = cal_softmax_cross_entropy(self.outputs, self.labels)
         self.accuracy = cal_accuracy(self.outputs, self.labels)
 
-        self.train_op = self.optimizer.minimize(self.loss)
+        self.train = self.optimizer.minimize(self.loss)
 
     def _build(self):
         raise NotImplementedError
