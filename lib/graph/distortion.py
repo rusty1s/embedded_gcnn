@@ -2,10 +2,6 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def remove_random_edge(adj):
-    pass
-
-
 def perm_adj(adj, perm=None):
     if perm is None:
         perm = np.random.permutation(np.arange(adj.shape[0]))

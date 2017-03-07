@@ -1,3 +1,5 @@
+from __future__ import division
+
 from six.moves import xrange
 
 import numpy as np
@@ -9,7 +11,9 @@ def coarsen(adj, levels=1):
 
 
 def coarsen_one_level(adj):
-    # clusters = cluster_adj(adj)
+    clusters = cluster_adj(adj)
+
+
 
     return adj
 
@@ -20,7 +24,7 @@ def cluster_adj(adj, rid=None):
     perm = np.argsort(rows)
     rows = rows[perm]
     cols = cols[perm]
-    weights = np.array(weights[perm], np.float32)
+    weights = weights[perm]
 
     # Local normalized cut.
     degree = np.array(adj.sum(axis=1)).flatten()
