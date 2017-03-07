@@ -34,7 +34,7 @@ class Model(object):
         with tf.variable_scope(self.name):
             self._build()
 
-        # Store model variables for easy access.
+        # Store model variables for saving and loading.
         variables = tf.get_collection(
             tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
         self.vars = {var.name: var for var in variables}
@@ -45,19 +45,13 @@ class Model(object):
             self.outputs = layer(self.outputs)
 
         # Build metrics.
-        self.loss = self._loss()
-        self.accuracy = self._accuracy()
+        self.loss = cal_softmax_cross_entropy(self.outputs, self.labels)
+        self.accuracy = cal_accuracy(self.outputs, self.labels)
 
         self.train_op = self.optimizer.minimize(self.loss)
 
     def _build(self):
         raise NotImplementedError
-
-    def _loss(self):
-        return cal_softmax_cross_entropy(self.outputs, self.labels)
-
-    def _accuracy(self):
-        return cal_accuracy(self.outputs, self.labels)
 
     def save(self, sess=None):
         if not sess:

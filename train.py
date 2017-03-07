@@ -4,8 +4,8 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
 from lib.graph.preprocess import preprocess_adj
-from lib.model.layer.fc import FC
-
+from lib.layer.fc import FC
+from lib.model.model import Model
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -30,20 +30,40 @@ adj = normalize_adj(adj)
 adj = invert_adj(adj)
 adj = preprocess_adj(adj)  # D^(-1/2) * A * D^(-1/2)
 
+placeholders = {
+    'features': tf.placeholder(tf.float32, shape=[None, N]),
+    'labels': tf.placeholder(tf.int32, shape=[None]),
+    'dropout': tf.placeholder_with_default(0.0, shape=[]),
+}
+
+
+class MNIST(Model):
+    def __init__(self, **kwargs):
+        super(MNIST, self).__init__(**kwargs)
+        self.build()
+
+    def _build(self):
+        self.layers.append(FC(N, NUM_LABELS))
+
+
+model = MNIST(placeholders=placeholders, logging=True)
+
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
+
 # Build model
-x = tf.placeholder(tf.float32, [None, N])
+# x = tf.placeholder(tf.float32, [None, N])
 # A = tf.sparse_placeholder(tf.float32, shape=[N, N])
-y = tf.placeholder(tf.float32, [None, NUM_LABELS])
-dropout = tf.placeholder(tf.float32)
+# y = tf.placeholder(tf.float32, [None, NUM_LABELS])
+# dropout = tf.placeholder(tf.float32)
 
 # gcnn1 = GCNN(1, 4, logging=True)
 # outputs = gcnn1(x, adj=A)
 
-fc1 = FC(N, 10, dropout=dropout)
-outputs = fc1(x)
+# fc1 = FC(N, 10, dropout=dropout)
+# outputs = fc1(x)
 
-# sess = tf.Session()
-# sess.run(tf.global_variables_initializer())
 
 # for epoch in xrange(FLAGS.epochs):
 #     t = time.time()
