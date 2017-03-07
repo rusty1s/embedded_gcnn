@@ -1,22 +1,34 @@
 import tensorflow as tf
 
+from .metrics import cal_softmax_cross_entropy, cal_accuracy
+
 
 class Model(object):
-    def __init__(self, name=None, logging=False):
+    def __init__(self,
+                 placeholders,
+                 name=None,
+                 learning_rate=0.001,
+                 logging=False):
+
         if not name:
             name = self.__class__.__name__.lower()
+
+        self.placeholders = placeholders
         self.name = name
         self.logging = logging
 
-        self.inputs = None
+        self.inputs = placeholders['features']
+        self.labels = placeholders['labels']
         self.outputs = None
 
         self.layers = []
         self.vars = {}
-        self.placeholders = {}
-        self.optimizer = None
-        self.train_op = None
+
+        self.optimizer = tf.train.AdamOptimizer(learning_rate)
+
+        self.accuracy = 0
         self.loss = 0
+        self.train_op = None
 
     def build(self):
         with tf.variable_scope(self.name):
@@ -30,13 +42,22 @@ class Model(object):
         # Call each layer with the previous outputs.
         self.outputs = self.inputs
         for layer in self.layers:
-            self.outputs = layer(self.outputs, self.placeholders)
+            self.outputs = layer(self.outputs)
 
         # Build metrics.
-        self._loss()
-        self._accuracy()
+        self.loss = self._loss()
+        self.accuracy = self._accuracy()
 
         self.train_op = self.optimizer.minimize(self.loss)
+
+    def _build(self):
+        raise NotImplementedError
+
+    def _loss(self):
+        return cal_softmax_cross_entropy(self.outputs, self.labels)
+
+    def _accuracy(self):
+        return cal_accuracy(self.outputs, self.labels)
 
     def save(self, sess=None):
         if not sess:
@@ -55,12 +76,3 @@ class Model(object):
         save_path = 'data/{}/checkpoint.ckpt'.format(self.name)
         saver.restore(sess, save_path)
         print('Model restored from file {}.'.format(save_path))
-
-    def _build(self):
-        raise NotImplementedError
-
-    def _loss(self):
-        raise NotImplementedError
-
-    def _accuracy(self):
-        raise NotImplementedError

@@ -9,7 +9,7 @@ class FC(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 dropout=None,
+                 dropout=False,
                  weight_stddev=0.01,
                  weight_decay=None,
                  bias=True,
@@ -43,8 +43,8 @@ class FC(Layer):
         in_channels = int(np.multiply.reduce(inputs.get_shape()[1:]))
         outputs = tf.reshape(inputs, [-1, in_channels])
 
-        if self.dropout is not None:
-            outputs = tf.nn.dropout(outputs, 1 - self.dropout)
+        if self.dropout:
+            outputs = tf.nn.dropout(outputs, 1 - self.placeholders['dropout'])
 
         outputs = tf.matmul(outputs, self.vars['weights'])
 
