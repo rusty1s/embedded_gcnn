@@ -1,13 +1,6 @@
-import re
-
 import tensorflow as tf
 
 _LAYER_UIDS = {}
-
-
-def _camel_case(name):
-    name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', name).lower()
 
 
 def _layer_uid(name):
@@ -22,7 +15,7 @@ class Layer(object):
     def __init__(self, name=None, logging=False):
 
         if not name:
-            layer = _camel_case(self.__class__.__name__)
+            layer = self.__class__.__name__.lower()
             name = '{}_{}'.format(layer, _layer_uid(layer))
 
         self.name = name
