@@ -6,10 +6,7 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def coarsen_adj(adj, level=1, rid=None):
-    if rid is None:
-        rid = np.random.permutation(np.arange(adj.shape[0]))
-
+def cluster_adj(adj, level=1, rid=None):
     # Sort by row index.
     rows, cols, weights = sp.find(adj)
     perm = np.argsort(rows)
@@ -28,6 +25,10 @@ def coarsen_adj(adj, level=1, rid=None):
 
     # Save nearest neighbor to all nodes.
     clusters = np.zeros_like(rowstart, np.int32) - 1
+
+    if rid is None:
+        rid = np.random.permutation(np.arange(adj.shape[0]))
+
     for i in xrange(rowstart.shape[0]):
         # Iterate randomly.
         tid = rid[i]
