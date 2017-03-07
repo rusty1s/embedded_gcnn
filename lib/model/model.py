@@ -40,7 +40,6 @@ class Model(object):
         self.vars = {var.name: var for var in variables}
 
         # Call each layer with the previous outputs.
-        print(self.placeholders['features'])
         self.outputs = self.inputs
         for layer in self.layers:
             self.outputs = layer(self.outputs)

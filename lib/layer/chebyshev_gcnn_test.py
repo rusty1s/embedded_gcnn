@@ -6,7 +6,7 @@ from .chebyshev_gcnn import ChebyshevGCNN
 class ChebyshevGCNNTest(tf.test.TestCase):
     def test_init(self):
         layer = ChebyshevGCNN(1, 2, max_degree=3)
-        self.assertEqual(layer.name, 'chebyshev_gcnn_1')
+        self.assertEqual(layer.name, 'chebyshevgcnn_1')
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, True)
         self.assertEqual(layer.logging, False)
@@ -16,7 +16,7 @@ class ChebyshevGCNNTest(tf.test.TestCase):
         self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
         layer = ChebyshevGCNN(3, 4, max_degree=5, bias=False, logging=True)
-        self.assertEqual(layer.name, 'chebyshev_gcnn_2')
+        self.assertEqual(layer.name, 'chebyshevgcnn_2')
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, False)
         self.assertEqual(layer.logging, True)
