@@ -11,9 +11,7 @@ def coarsen(adj, levels=1):
 
 
 def coarsen_one_level(adj):
-    clusters = cluster_adj(adj)
-
-
+    # clusters = cluster_adj(adj)
 
     return adj
 

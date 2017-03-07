@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 
 from .layer import Layer
 from .inits import weight_variable, bias_variable
@@ -8,7 +9,7 @@ class FC(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 dropout=False,
+                 dropout=None,
                  weight_stddev=0.01,
                  weight_decay=None,
                  bias=True,
@@ -39,9 +40,10 @@ class FC(Layer):
             self._log_vars()
 
     def _call(self, inputs):
-        outputs = inputs
+        in_channels = int(np.multiply.reduce(inputs.get_shape()[1:]))
+        outputs = tf.reshape(inputs, [-1, in_channels])
 
-        if self.dropout:
+        if self.dropout is not None:
             outputs = tf.nn.dropout(outputs, 1 - self.dropout)
 
         outputs = tf.matmul(outputs, self.vars['weights'])

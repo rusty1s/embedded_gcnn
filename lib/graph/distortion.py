@@ -11,7 +11,7 @@ def perm_adj(adj, perm=None):
 
     assert n_new >= n, 'Invalid shapes'
 
-    if n_new >= n:
+    if n_new > n:
         rows = sp.coo_matrix((n_new - n, n), dtype=adj.dtype)
         cols = sp.coo_matrix((n_new, n_new - n), dtype=adj.dtype)
         adj = sp.vstack([adj, rows])

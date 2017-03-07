@@ -81,7 +81,7 @@ def _grid_adj_8(adj, height, width):
         if bottom and right:
             adj[v, v + width + 1] = 2
 
-    return adj
+    return adj.tocoo()
 
 
 def embedded_adj(points, neighbors, dtype=np.float32):
@@ -97,4 +97,4 @@ def embedded_adj(points, neighbors, dtype=np.float32):
         adj[v1, v2] = d
         adj[v2, v1] = d
 
-    return adj
+    return adj.tocoo()
