@@ -72,6 +72,6 @@ class ChebyshevGCNN(Layer):
         outputs = tf.reshape(outputs, [batch_size, n, -1])
 
         if self.bias:
-            outputs += self.vars['bias']
+            outputs = tf.nn.bias_add(outputs, self.vars['bias'])
 
         return self.act(outputs)

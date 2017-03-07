@@ -1,15 +1,15 @@
 import tensorflow as tf
-import numpy as np
 
 from .layer import Layer
 from .inits import weight_variable, bias_variable
 
 
-class FC(Layer):
+class Conv2d(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 dropout=False,
+                 size=3,
+                 stride=1,
                  weight_stddev=0.01,
                  weight_decay=None,
                  bias=True,
@@ -17,16 +17,15 @@ class FC(Layer):
                  act=tf.nn.relu,
                  **kwargs):
 
-        super(FC, self).__init__(**kwargs)
+        super(Conv2d, self).__init__(**kwargs)
 
-        self.in_channels = in_channels
+        self.stride = stride
         self.bias = bias
         self.act = act
-        self.dropout = dropout
 
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
-                [in_channels, out_channels],
+                [size, size, in_channels, out_channels],
                 weight_stddev,
                 weight_decay,
                 name='{}_weights'.format(self.name))
@@ -41,12 +40,10 @@ class FC(Layer):
             self._log_vars()
 
     def _call(self, inputs):
-        outputs = tf.reshape(inputs, [-1, self.in_channels])
-
-        if self.dropout:
-            outputs = tf.nn.dropout(outputs, 1 - self.placeholders['dropout'])
-
-        outputs = tf.matmul(outputs, self.vars['weights'])
+        outputs = tf.nn.conv2d(
+            inputs,
+            self.vars['weights'], [1, self.stride, self.stride, 1],
+            padding='SAME')
 
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
