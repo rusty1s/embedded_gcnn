@@ -20,7 +20,7 @@ def cal_softmax_cross_entropy(outputs, labels):
 def cal_accuracy(outputs, labels):
     """Calculate accuracy."""
 
-    with tf.name_scope('accurary'):
+    with tf.name_scope('accuracy'):
         predicted_labels = tf.argmax(outputs, 1)
         predicted_labels = tf.cast(predicted_labels, tf.int32)
 
