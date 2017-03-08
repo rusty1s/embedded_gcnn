@@ -27,14 +27,15 @@ class FCTest(tf.test.TestCase):
 
     def test_bias_constant(self):
         layer1 = FC(2, 3, name='bias_1')
-        layer2 = FC(2, 3, bias_constant=0.1, name='bias_2')
+        layer2 = FC(2, 3, bias_constant=1.0, name='bias_2')
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
 
-            self.assertAllEqual(layer1.vars['bias'].eval(), [0, 0, 0])
-            self.assertAllEqual(layer2.vars['bias'].eval(),
+            self.assertAllEqual(layer1.vars['bias'].eval(),
                                 np.array([0.1, 0.1, 0.1], dtype=np.float32))
+            self.assertAllEqual(layer2.vars['bias'].eval(),
+                                np.array([1.0, 1.0, 1.0], dtype=np.float32))
 
     def test_call(self):
         layer = FC(3, 5, bias_constant=1, name='call')

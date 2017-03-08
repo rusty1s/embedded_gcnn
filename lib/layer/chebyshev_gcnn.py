@@ -27,15 +27,15 @@ class ChebyshevGCNN(Layer):
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
                 [max_degree, in_channels, out_channels],
+                '{}_weights'.format(self.name),
                 weight_stddev,
-                weight_decay,
-                name='{}_weights'.format(self.name))
+                weight_decay)
 
             if self.bias:
                 self.vars['bias'] = bias_variable(
                     [out_channels],
-                    bias_constant,
-                    name='{}_bias'.format(self.name))
+                    '{}_bias'.format(self.name),
+                    bias_constant)
 
         if self.logging:
             self._log_vars()
