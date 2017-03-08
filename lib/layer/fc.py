@@ -9,7 +9,7 @@ class FC(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 dropout=False,
+                 dropout=0.0,
                  placeholders={},
                  weight_stddev=0.1,
                  weight_decay=None,
@@ -21,14 +21,9 @@ class FC(Layer):
         super(FC, self).__init__(**kwargs)
 
         self.in_channels = in_channels
-        self.placeholders = placeholders
+        self.dropout = dropout
         self.bias = bias
         self.act = act
-
-        if dropout:
-            self.dropout = placeholders['dropout']
-        else:
-            self.dropout = 0.0
 
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(

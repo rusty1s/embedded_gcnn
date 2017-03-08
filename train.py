@@ -8,16 +8,13 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
 from lib.graph.preprocess import preprocess_adj
-from lib.layer.conv2d import Conv2d
-from lib.layer.max_pool2d import MaxPool2d
-from lib.layer.fc import FC
-from lib.model.model import Model
+from lib.model.mnist_conv2d import MNISTConv2d
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
-flags.DEFINE_float('dropout', 0.25, 'Dropout rate (1 - keep probability).')
+flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_string('data_dir', 'data/mnist/input/',
                     'Directory for storing input data.')
 flags.DEFINE_string('train_dir', 'data/mnist/train/',
@@ -40,38 +37,12 @@ adj = preprocess_adj(adj)  # D^(-1/2) * A * D^(-1/2)
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32, [None, HEIGHT, WIDTH, 1], 'features'),
+    tf.placeholder(tf.float32, [None, HEIGHT*WIDTH], 'features'),
     'labels': tf.placeholder(tf.int32, [None], 'labels'),
     'dropout': tf.placeholder(tf.float32, [], 'dropout'),
 }
 
-
-class MNIST(Model):
-    def __init__(self, **kwargs):
-        super(MNIST, self).__init__(**kwargs)
-        self.build()
-
-    def _build(self):
-        self.layers.append(
-            Conv2d(1, 32, size=5, stride=1, logging=self.logging))
-        self.layers.append(MaxPool2d(size=2, stride=2, logging=self.logging))
-        self.layers.append(
-            Conv2d(32, 64, size=5, stride=1, logging=self.logging))
-        self.layers.append(MaxPool2d(size=2, stride=2, logging=self.logging))
-        self.layers.append(FC(7 * 7 * 64, 1024, logging=self.logging))
-        self.layers.append(
-            FC(1024,
-               NUM_LABELS,
-               dropout=True,
-               placeholders={'dropout': placeholders['dropout']},
-               act=lambda x: x,
-               logging=self.logging))
-
-
-if tf.gfile.Exists(FLAGS.log_dir):
-    tf.gfile.DeleteRecursively(FLAGS.log_dir)
-
-model = MNIST(
+model = MNISTConv2d(
     placeholders=placeholders,
     learning_rate=FLAGS.learning_rate,
     train_dir=FLAGS.train_dir,
@@ -90,12 +61,13 @@ def evaluate(features, labels):
 
 
 sess = tf.Session()
+if tf.gfile.Exists(FLAGS.log_dir):
+    tf.gfile.DeleteRecursively(FLAGS.log_dir)
 writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 sess.run(tf.global_variables_initializer())
 
 for step in xrange(500):
     train_features, train_labels = mnist.train.next_batch(BATCH_SIZE)
-    train_features = np.reshape(train_features, (-1, HEIGHT, WIDTH, 1))
 
     train_feed_dict = {
         placeholders['features']: train_features,
@@ -110,7 +82,6 @@ for step in xrange(500):
         # Evaluate on training and validation set.
         train_loss, train_acc = evaluate(train_features, train_labels)
         val_features, val_labels = mnist.validation.next_batch(BATCH_SIZE)
-        val_features = np.reshape(val_features, (-1, HEIGHT, WIDTH, 1))
         val_loss, val_acc = evaluate(val_features, val_labels)
 
         # Print results.
@@ -126,7 +97,6 @@ print('Optimization finished!')
 
 # Evaluate on test set.
 test_features = mnist.test.images[:256]
-test_features = np.reshape(test_features, (-1, HEIGHT, WIDTH, 1))
 test_labels = mnist.test.labels[:256]
 test_loss, test_acc = evaluate(test_features, test_labels)
 print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(test_loss,

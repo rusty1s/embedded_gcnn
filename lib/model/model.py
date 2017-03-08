@@ -11,6 +11,9 @@ class Model(object):
                  train_dir='/tmp/checkpoint_dir/',
                  logging=False):
 
+        if tf.gfile.Exists(train_dir):
+            tf.gfile.DeleteRecursively(train_dir)
+
         if not name:
             name = self.__class__.__name__.lower()
 
@@ -42,8 +45,10 @@ class Model(object):
             tf.GraphKeys.GLOBAL_VARIABLES, scope=self.name)
         self.vars = {var.name: var for var in variables}
 
+        # Preprocess inputs if necassary.
+        self.outputs = self._preprocess()
+
         # Call each layer with the previous outputs.
-        self.outputs = self.inputs
         for layer in self.layers:
             self.outputs = layer(self.outputs)
 
@@ -53,6 +58,10 @@ class Model(object):
 
         self.train = self.optimizer.minimize(self.loss)
         self.summary = tf.summary.merge_all()
+
+    def _preprocess(self):
+        # Default behaviour: No preprocessing.
+        return self.inputs
 
     def _build(self):
         raise NotImplementedError
