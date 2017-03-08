@@ -8,12 +8,12 @@ class Conv2d(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 size=3,
-                 stride=1,
-                 weight_stddev=0.01,
+                 size,
+                 stride,
+                 weight_stddev=0.1,
                  weight_decay=None,
                  bias=True,
-                 bias_constant=0.0,
+                 bias_constant=0.1,
                  act=tf.nn.relu,
                  **kwargs):
 
@@ -26,15 +26,15 @@ class Conv2d(Layer):
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
                 [size, size, in_channels, out_channels],
+                '{}_weights'.format(self.name),
                 weight_stddev,
-                weight_decay,
-                name='{}_weights'.format(self.name))
+                weight_decay)
 
             if self.bias:
                 self.vars['bias'] = bias_variable(
                     [out_channels],
-                    bias_constant,
-                    name='{}_bias'.format(self.name))
+                    '{}_bias'.format(self.name),
+                    bias_constant)
 
         if self.logging:
             self._log_vars()

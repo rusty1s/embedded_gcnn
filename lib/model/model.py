@@ -8,6 +8,7 @@ class Model(object):
                  placeholders,
                  name=None,
                  learning_rate=0.001,
+                 train_dir='/tmp/checkpoint_dir/',
                  logging=False):
 
         if not name:
@@ -15,6 +16,7 @@ class Model(object):
 
         self.placeholders = placeholders
         self.name = name
+        self.train_dir = train_dir
         self.logging = logging
 
         self.inputs = placeholders['features']
@@ -29,6 +31,7 @@ class Model(object):
         self.accuracy = 0
         self.loss = 0
         self.train = None
+        self.summary = None
 
     def build(self):
         with tf.variable_scope(self.name):
@@ -49,6 +52,7 @@ class Model(object):
         self.accuracy = cal_accuracy(self.outputs, self.labels)
 
         self.train = self.optimizer.minimize(self.loss)
+        self.summary = tf.summary.merge_all()
 
     def _build(self):
         raise NotImplementedError
@@ -58,7 +62,7 @@ class Model(object):
             raise AttributeError('TensorFlow session not provided.')
 
         saver = tf.train.Saver(self.vars)
-        save_path = 'data/{}/checkpoint.ckpt'.format(self.name)
+        save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
         saver.save(sess, save_path)
         print('Model saved in file {}.'.format(save_path))
 
@@ -67,6 +71,6 @@ class Model(object):
             raise AttributeError('TensorFlow session not provided.')
 
         saver = tf.train.Saver(self.vars)
-        save_path = 'data/{}/checkpoint.ckpt'.format(self.name)
+        save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
         saver.restore(sess, save_path)
         print('Model restored from file {}.'.format(save_path))

@@ -11,10 +11,10 @@ class ChebyshevGCNN(Layer):
                  in_channels,
                  out_channels,
                  max_degree,
-                 weight_stddev=0.01,
+                 weight_stddev=0.1,
                  weight_decay=None,
                  bias=True,
-                 bias_constant=0.0,
+                 bias_constant=0.1,
                  act=tf.nn.relu,
                  **kwargs):
 

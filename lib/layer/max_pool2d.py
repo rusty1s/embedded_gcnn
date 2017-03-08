@@ -4,7 +4,7 @@ from .layer import Layer
 
 
 class MaxPool2d(Layer):
-    def __init__(self, size=2, stride=1, **kwargs):
+    def __init__(self, size, stride, **kwargs):
 
         super(MaxPool2d, self).__init__(**kwargs)
 
@@ -13,6 +13,7 @@ class MaxPool2d(Layer):
 
     def _call(self, inputs):
         return tf.nn.max_pool(
-            inputs, [1, self.size, self.size, 1],
-            [1, self.stride, self.stride, 1],
+            inputs,
+            ksize=[1, self.size, self.size, 1],
+            strides=[1, self.stride, self.stride, 1],
             padding='SAME')

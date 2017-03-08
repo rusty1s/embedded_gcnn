@@ -2,12 +2,12 @@ import tensorflow as tf
 
 
 def weight_variable(shape,
-                    stddev=0.01,
+                    name,
+                    stddev=0.1,
                     decay=None,
-                    name=None,
                     dtype=tf.float32):
-    initial = tf.truncated_normal_initializer(stddev, dtype=dtype)
-    var = tf.get_variable(name, shape, dtype, initializer=initial)
+    initializer = tf.truncated_normal_initializer(stddev=stddev, dtype=dtype)
+    var = tf.get_variable(name, shape, dtype, initializer)
 
     if decay is not None:
         decay = tf.multiply(tf.nn.l2_loss(var), decay, name='weight_loss')
@@ -16,6 +16,6 @@ def weight_variable(shape,
     return var
 
 
-def bias_variable(shape, constant=0.0, name=None, dtype=tf.float32):
-    initial = tf.constant_initializer(constant)
-    return tf.get_variable(name, shape, dtype, initializer=initial)
+def bias_variable(shape, name, constant=0.1, dtype=tf.float32):
+    initializer = tf.constant_initializer(constant, dtype)
+    return tf.get_variable(name, shape, dtype, initializer)

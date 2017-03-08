@@ -20,14 +20,14 @@ def cal_softmax_cross_entropy(outputs, labels):
 def cal_accuracy(outputs, labels):
     """Calculate accuracy."""
 
-    predicted_labels = tf.argmax(outputs, 1)
-    predicted_labels = tf.cast(predicted_labels, tf.int32)
+    with tf.name_scope('accurary'):
+        predicted_labels = tf.argmax(outputs, 1)
+        predicted_labels = tf.cast(predicted_labels, tf.int32)
 
-    correct_prediction = tf.equal(predicted_labels, labels)
-    correct_prediction = tf.cast(correct_prediction, tf.float32)
+        correct_prediction = tf.equal(predicted_labels, labels)
+        correct_prediction = tf.cast(correct_prediction, tf.float32)
 
-    accuracy = tf.reduce_mean(correct_prediction)
+        accuracy = tf.reduce_mean(correct_prediction)
 
     tf.summary.scalar('train_accuracy', accuracy)
-
     return accuracy
