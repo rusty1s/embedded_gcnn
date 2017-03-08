@@ -3,41 +3,32 @@ from __future__ import print_function
 from six.moves import xrange
 
 import tensorflow as tf
-import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 
-from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
-from lib.graph.preprocess import preprocess_adj
 from lib.model.mnist_conv2d import MNISTConv2d
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('epochs', 200, 'Number of epochs to train.')
+flags.DEFINE_integer('batch_size', 128, 'How many inputs to process at once.')
+flags.DEFINE_integer('max_steps', 2000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
-flags.DEFINE_string('data_dir', 'data/mnist/input/',
+flags.DEFINE_string('data_dir', 'data/mnist/input',
                     'Directory for storing input data.')
-flags.DEFINE_string('train_dir', 'data/mnist/train/',
+flags.DEFINE_string('train_dir', 'data/mnist/train',
                     'Directory for storing training data.')
-flags.DEFINE_string('log_dir', 'data/mnist/summaries/',
+flags.DEFINE_string('log_dir', 'data/mnist/summaries',
                     'Summaries log directory.')
+flags.DEFINE_integer('save_step', 100,
+                     'How many steps to save checkpoint after.')
+flags.DEFINE_integer('display_step', 10,
+                     'How many steps to print logging after.')
 flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
 mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 
-WIDTH = 28
-HEIGHT = 28
-NUM_LABELS = 10
-BATCH_SIZE = 128
-
-adj = grid_adj([HEIGHT, WIDTH], connectivity=8)
-adj = normalize_adj(adj)
-adj = invert_adj(adj)
-adj = preprocess_adj(adj)  # D^(-1/2) * A * D^(-1/2)
-
 placeholders = {
-    'features':
-    tf.placeholder(tf.float32, [None, HEIGHT*WIDTH], 'features'),
+    'features': tf.placeholder(tf.float32, [None, 28 * 28], 'features'),
     'labels': tf.placeholder(tf.int32, [None], 'labels'),
     'dropout': tf.placeholder(tf.float32, [], 'dropout'),
 }
@@ -61,13 +52,11 @@ def evaluate(features, labels):
 
 
 sess = tf.Session()
-if tf.gfile.Exists(FLAGS.log_dir):
-    tf.gfile.DeleteRecursively(FLAGS.log_dir)
+global_step = model.initialize(sess)
 writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
-sess.run(tf.global_variables_initializer())
 
-for step in xrange(500):
-    train_features, train_labels = mnist.train.next_batch(BATCH_SIZE)
+for step in xrange(global_step, FLAGS.max_steps):
+    train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
 
     train_feed_dict = {
         placeholders['features']: train_features,
@@ -78,10 +67,11 @@ for step in xrange(500):
     _, summary = sess.run([model.train, model.summary], train_feed_dict)
     writer.add_summary(summary, step)
 
-    if step % 10 == 0:
+    if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
         train_loss, train_acc = evaluate(train_features, train_labels)
-        val_features, val_labels = mnist.validation.next_batch(BATCH_SIZE)
+        val_features, val_labels = mnist.validation.next_batch(
+            FLAGS.batch_size)
         val_loss, val_acc = evaluate(val_features, val_labels)
 
         # Print results.
@@ -93,11 +83,14 @@ for step in xrange(500):
             'val_acc={:.5f}'.format(val_acc),
         ]))
 
+    if step % FLAGS.save_step == 0:
+        model.save(sess)
+
 print('Optimization finished!')
 
 # Evaluate on test set.
-test_features = mnist.test.images[:256]
-test_labels = mnist.test.labels[:256]
+test_features = mnist.test.images
+test_labels = mnist.test.labels
 test_loss, test_acc = evaluate(test_features, test_labels)
 print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(test_loss,
                                                               test_acc))

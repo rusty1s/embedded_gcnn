@@ -8,11 +8,8 @@ class Model(object):
                  placeholders,
                  name=None,
                  learning_rate=0.001,
-                 train_dir='/tmp/checkpoint_dir/',
+                 train_dir='/tmp/checkpoint_dir',
                  logging=False):
-
-        if tf.gfile.Exists(train_dir):
-            tf.gfile.DeleteRecursively(train_dir)
 
         if not name:
             name = self.__class__.__name__.lower()
@@ -36,6 +33,14 @@ class Model(object):
         self.train = None
         self.summary = None
 
+        # Create global step variable.
+        self.global_step = tf.get_variable(
+            '{}/global_step'.format(self.name),
+            shape=[],
+            dtype=tf.int32,
+            initializer=tf.constant_initializer(0, dtype=tf.int32),
+            trainable=False)
+
     def build(self):
         with tf.variable_scope(self.name):
             self._build()
@@ -56,7 +61,9 @@ class Model(object):
         self.loss = cal_softmax_cross_entropy(self.outputs, self.labels)
         self.accuracy = cal_accuracy(self.outputs, self.labels)
 
-        self.train = self.optimizer.minimize(self.loss)
+        self.train = self.optimizer.minimize(
+            self.loss,
+            global_step=self.global_step)
         self.summary = tf.summary.merge_all()
 
     def _preprocess(self):
@@ -72,14 +79,23 @@ class Model(object):
 
         saver = tf.train.Saver(self.vars)
         save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
-        saver.save(sess, save_path)
+        saver.save(
+            sess,
+            save_path)
         print('Model saved in file {}.'.format(save_path))
 
-    def load(self, sess=None):
+    def initialize(self, sess=None):
         if not sess:
             raise AttributeError('TensorFlow session not provided.')
 
-        saver = tf.train.Saver(self.vars)
-        save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
-        saver.restore(sess, save_path)
-        print('Model restored from file {}.'.format(save_path))
+        sess.run(tf.global_variables_initializer())
+
+        if tf.gfile.Exists(self.train_dir):
+            saver = tf.train.Saver(self.vars)
+            save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
+            saver.restore(sess, save_path)
+            print('Model restored from file {}.'.format(save_path))
+        else:
+            tf.gfile.MakeDirs(self.train_dir)
+
+        return sess.run(self.global_step)
