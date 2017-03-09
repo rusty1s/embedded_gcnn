@@ -5,7 +5,7 @@ from six.moves import xrange
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from lib.model.mnist_conv2d import MNISTConv2d
+from lib.model.mnist_gcnn import MNIST_GCNN
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -28,12 +28,12 @@ flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 
 placeholders = {
-    'features': tf.placeholder(tf.float32, [None, 28 * 28], 'features'),
-    'labels': tf.placeholder(tf.int32, [None], 'labels'),
+    'features': tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28], 'features'),
+    'labels': tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout': tf.placeholder(tf.float32, [], 'dropout'),
 }
 
-model = MNISTConv2d(
+model = MNIST_GCNN(
     placeholders=placeholders,
     learning_rate=FLAGS.learning_rate,
     train_dir=FLAGS.train_dir,
