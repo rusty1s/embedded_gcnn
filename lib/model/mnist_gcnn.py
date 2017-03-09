@@ -24,8 +24,8 @@ class MNIST_GCNN(Model):
         return tf.reshape(self.inputs, [-1, 28 * 28, 1])
 
     def _build(self):
-        gcnn1 = GCNN(1, 32, adjs=self.adj, logging=self.logging)
-        fc1 = FC(28 * 28 * 32, 1024, logging=self.logging)
+        gcnn1 = GCNN(1, 8, self.adj, logging=self.logging)
+        fc1 = FC(28 * 28 * 8, 1024, logging=self.logging)
         fc2 = FC(1024,
                  10,
                  dropout=self.placeholders['dropout'],

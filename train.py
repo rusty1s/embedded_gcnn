@@ -27,6 +27,11 @@ flags.DEFINE_integer('max_degree', 3, 'Maximum Chebyshev polynomial degree.')
 
 mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 
+if tf.gfile.Exists(FLAGS.train_dir):
+    tf.gfile.DeleteRecursively(FLAGS.train_dir)
+if tf.gfile.Exists(FLAGS.log_dir):
+    tf.gfile.DeleteRecursively(FLAGS.log_dir)
+
 placeholders = {
     'features':
     tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28], 'features'),

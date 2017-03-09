@@ -10,7 +10,7 @@ class GCNN(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 adjs,
+                 adj,
                  weight_stddev=0.1,
                  weight_decay=None,
                  bias=True,
@@ -20,7 +20,7 @@ class GCNN(Layer):
 
         super(GCNN, self).__init__(**kwargs)
 
-        self.adjs = adjs
+        self.adj = adj
         self.bias = bias
         self.act = act
 
@@ -37,24 +37,28 @@ class GCNN(Layer):
             self._log_vars()
 
     def _call(self, inputs):
-        batch_size = inputs.get_shape()[0].value
-        n = inputs.get_shape()[1].value
-        multiple_adjs = len(self.adjs.get_shape().as_list()) > 2
+        n = self.adj.get_shape()[0].value
+        in_channels, out_channels = self.vars['weights'].get_shape()
+        in_channels = int(in_channels)
+        out_channels = int(out_channels)
 
-        if multiple_adjs:
-            adjs = tf.sparse_split(
-                sp_input=self.adjs, num_split=batch_size, axis=0)
+        # Align batches "horizontally", not "vertically".
+        inputs = tf.transpose(inputs, [1, 0, 2])
+        inputs = tf.reshape(inputs, [n, -1])
 
-        outputs = list()
-        for i in xrange(batch_size):
-            adj = tf.sparse_reshape(adjs[i],
-                                    [n, n]) if multiple_adjs else self.adjs
-            output = tf.sparse_tensor_dense_matmul(adj, inputs[i])
-            output = tf.matmul(output, self.vars['weights'])
-            outputs.append(output)
+        # Multiply with adjacency matrix.
+        outputs = tf.sparse_tensor_dense_matmul(self.adj, inputs)
 
-        outputs = tf.concat(outputs, axis=0)
-        outputs = tf.reshape(outputs, [batch_size, n, -1])
+        # Align output batches "vertically", not "horizontally".
+        outputs = tf.reshape(outputs, [n, in_channels, -1])
+        outputs = tf.transpose(outputs, [1, 0, 2])
+        outputs = tf.reshape(outputs, [-1, in_channels])
+
+        # Finally multiply with weight matrix.
+        outputs = tf.matmul(outputs, self.vars['weights'])
+
+        # Shape to 3D Tensor.
+        outputs = tf.reshape(outputs, [-1, n, out_channels])
 
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
