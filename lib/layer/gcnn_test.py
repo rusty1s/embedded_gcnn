@@ -1,7 +1,7 @@
-import numpy as np
+# import numpy as np
 import tensorflow as tf
 
-from .gcnn import GCNN
+# from .gcnn import GCNN
 
 
 class GCNNTest(tf.test.TestCase):

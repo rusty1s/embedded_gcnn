@@ -1,5 +1,4 @@
 import tensorflow as tf
-import numpy as np
 
 from .layer import Layer
 from .inits import weight_variable, bias_variable
@@ -27,16 +26,12 @@ class FC(Layer):
 
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
-                [in_channels, out_channels],
-                '{}_weights'.format(self.name),
-                weight_stddev,
-                weight_decay)
+                [in_channels, out_channels], '{}_weights'.format(self.name),
+                weight_stddev, weight_decay)
 
             if self.bias:
                 self.vars['bias'] = bias_variable(
-                    [out_channels],
-                    '{}_bias'.format(self.name),
-                    bias_constant)
+                    [out_channels], '{}_bias'.format(self.name), bias_constant)
 
         if self.logging:
             self._log_vars()

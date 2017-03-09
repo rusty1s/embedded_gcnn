@@ -30,4 +30,3 @@ class DistortionTest(TestCase):
         assert_equal(adj_new.shape, [4, 4])
         assert_equal(np.array(adj_new.sum(1)).flatten(), [3, 3, 3, 3])
         assert_equal(np.array(adj_new.sum(0)).flatten(), [3, 3, 3, 3])
-
