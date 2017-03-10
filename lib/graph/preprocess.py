@@ -3,6 +3,7 @@ import scipy.sparse as sp
 
 
 def preprocess_adj(adj):
+    # TODO, add only one if node contain at least one edge.
     adj = adj + sp.eye(adj.shape[0], dtype=adj.dtype)
     deg = np.array(adj.sum(1)).flatten()
 

@@ -17,7 +17,7 @@ class DistortionTest(TestCase):
 
         assert_equal(perm_adj(adj, perm).toarray(), expected)
 
-        # Add fake nodes
+        # Add fake nodes.
         perm = np.array([3, 2, 0, 4, 1])
 
         expected = [[0, 0, 0, 1, 2], [0, 0, 0, 0, 0], [0, 0, 0, 2, 1],
@@ -25,7 +25,7 @@ class DistortionTest(TestCase):
 
         assert_equal(perm_adj(adj, perm).toarray(), expected)
 
-        # Test random perm
+        # Test random permutation.
         adj_new = perm_adj(adj)
         assert_equal(adj_new.shape, [4, 4])
         assert_equal(np.array(adj_new.sum(1)).flatten(), [3, 3, 3, 3])
