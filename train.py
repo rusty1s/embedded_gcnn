@@ -5,7 +5,7 @@ from six.moves import xrange
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from lib.model.mnist_gcnn import MNIST_GCNN
+from lib.model.mnist_chebyshev_gcnn import MNISTChebyshevGCNN
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -41,7 +41,7 @@ placeholders = {
     tf.placeholder(tf.float32, [], 'dropout'),
 }
 
-model = MNIST_GCNN(
+model = MNISTChebyshevGCNN(
     placeholders=placeholders,
     learning_rate=FLAGS.learning_rate,
     train_dir=FLAGS.train_dir,
@@ -97,8 +97,8 @@ for step in xrange(global_step, FLAGS.max_steps):
 print('Optimization finished!')
 
 # Evaluate on test set.
-test_features = mnist.test.images
-test_labels = mnist.test.labels
+test_features = mnist.test.images[:FLAGS.batch_size]
+test_labels = mnist.test.labels[:FLAGS.batch_size]
 test_loss, test_acc = evaluate(test_features, test_labels)
 print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(test_loss,
                                                               test_acc))

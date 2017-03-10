@@ -37,28 +37,13 @@ class GCNN(Layer):
             self._log_vars()
 
     def _call(self, inputs):
-        n = self.adj.get_shape()[0].value
-        in_channels, out_channels = self.vars['weights'].get_shape()
-        in_channels = int(in_channels)
-        out_channels = int(out_channels)
+        outputs = list()
+        for i in xrange(inputs.get_shape()[0].value):
+            output = tf.sparse_tensor_dense_matmul(self.adj, inputs[i])
+            output = tf.matmul(output, self.vars['weights'])
+            outputs.append(output)
 
-        # Align batches "horizontally", not "vertically".
-        inputs = tf.transpose(inputs, [1, 0, 2])
-        inputs = tf.reshape(inputs, [n, -1])
-
-        # Multiply with adjacency matrix.
-        outputs = tf.sparse_tensor_dense_matmul(self.adj, inputs)
-
-        # Align output batches "vertically", not "horizontally".
-        outputs = tf.reshape(outputs, [n, in_channels, -1])
-        outputs = tf.transpose(outputs, [1, 0, 2])
-        outputs = tf.reshape(outputs, [-1, in_channels])
-
-        # Finally multiply with weight matrix.
-        outputs = tf.matmul(outputs, self.vars['weights'])
-
-        # Shape to 3D Tensor.
-        outputs = tf.reshape(outputs, [-1, n, out_channels])
+        outputs = tf.stack(outputs, axis=0)
 
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])

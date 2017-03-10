@@ -1,12 +1,13 @@
 from __future__ import division
 
+import numpy as np
 import scipy.sparse as sp
 from scipy.sparse.linalg import eigsh
 
 
-def laplacian(adj, normalized=False):
+def laplacian(adj, normalized=False, dtype=np.float32):
     """Return the (normalized) laplacian of the adjacency matrix."""
-    return sp.csgraph.laplacian(adj, normalized)
+    return sp.csgraph.laplacian(adj, normalized).astype(dtype)
 
 
 def lmax(lap, normalized=True):
@@ -20,4 +21,4 @@ def lmax(lap, normalized=True):
 
 def rescale_lap(lap, lmax=2):
     """Rescale laplacian based on upper-bound on the spectrum."""
-    return (2 / lmax) * lap - sp.eye(lap.shape[0])
+    return (2 / lmax) * lap - sp.eye(lap.shape[0], dtype=lap.dtype)
