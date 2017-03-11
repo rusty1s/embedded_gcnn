@@ -35,10 +35,10 @@ def perm_features(features, perm=None):
     assert n_new >= n, 'Invalid shapes'
 
     # Features of none existing nodes should only contain zeros.
-    new_features = np.zeros(n_new, k)
+    features_new = np.zeros((n_new, k), features.dtype)
     for i in xrange(n_new):
         tid = perm[i]
         if tid < n:
-            new_features[i] = new_features[tid]
+            features_new[i] = features[tid]
 
-    return new_features
+    return features_new
