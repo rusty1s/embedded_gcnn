@@ -34,9 +34,9 @@ class MNISTChebyshevGCNN(Model):
 
     def _build(self):
 
-        conv_1 = Conv(1, 32, self.laps[0], max_degree=5, logging=self.logging)
+        conv_1 = Conv(1, 32, self.laps[0], max_degree=2, logging=self.logging)
         max_pool_1 = MaxPool(size=4, logging=self.logging)
-        conv_2 = Conv(32, 64, self.laps[1], max_degree=5, logging=self.logging)
+        conv_2 = Conv(32, 64, self.laps[1], max_degree=2, logging=self.logging)
         max_pool_2 = MaxPool(size=4, logging=self.logging)
         fc_1 = FC((976 // 4 // 4) * 64, 1024, logging=self.logging)
         fc_2 = FC(1024,
