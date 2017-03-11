@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .coarsening import _cluster_adj
+from .coarsening import _cluster_adj, _compute_perms
 
 
 class CoarseningTest(TestCase):
@@ -29,3 +29,15 @@ class CoarseningTest(TestCase):
         rid = np.array([4, 3, 2, 1, 0])
         expected = [1, 2, 1, 0, 0]
         assert_equal(_cluster_adj(adj, rid), expected)
+
+    def test_compute_perms(self):
+        cluster_map_1 = np.array([4, 1, 1, 2, 2, 3, 0, 0, 3])
+        cluster_map_2 = np.array([2, 1, 0, 1, 0])
+        cluster_maps = [cluster_map_1, cluster_map_2]
+
+        perms = _compute_perms(cluster_maps)
+
+        assert_equal(len(perms), 3)
+        assert_equal(perms[2], [0, 1, 2])
+        assert_equal(perms[1], [2, 4, 1, 3, 0, 5])
+        assert_equal(perms[0], [3, 4, 0, 9, 1, 2, 5, 8, 6, 7, 10, 11])

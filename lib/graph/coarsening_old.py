@@ -23,57 +23,6 @@ def coarsen_adj(adj, levels):
 
 
 
-# Coarsen a graph given by rr,cc,vv.  rr is assumed to be ordered
-def metis_one_level(rr, cc, vv, rid, weights):
-
-    nnz = rr.shape[0]
-    N = rr[nnz - 1] + 1
-
-    marked = np.zeros(N, np.bool)
-    rowstart = np.zeros(N, np.int32)
-    rowlength = np.zeros(N, np.int32)
-    cluster_id = np.zeros(N, np.int32)
-
-    oldval = rr[0]
-    count = 0
-    clustercount = 0
-
-    for ii in range(nnz):
-        rowlength[count] = rowlength[count] + 1
-        if rr[ii] > oldval:
-            oldval = rr[ii]
-            rowstart[count + 1] = ii
-            count = count + 1
-
-    for ii in range(N):
-        tid = rid[ii]
-        if not marked[tid]:
-            wmax = 0.0
-            rs = rowstart[tid]
-            marked[tid] = True
-            bestneighbor = -1
-            for jj in range(rowlength[tid]):
-                nid = cc[rs + jj]
-                if marked[nid]:
-                    tval = 0.0
-                else:
-                    tval = vv[rs + jj] * (
-                        1.0 / weights[tid] + 1.0 / weights[nid])
-                if tval > wmax:
-                    wmax = tval
-                    bestneighbor = nid
-
-            cluster_id[tid] = clustercount
-
-            if bestneighbor > -1:
-                cluster_id[bestneighbor] = clustercount
-                marked[bestneighbor] = True
-
-            clustercount += 1
-
-    return cluster_id
-
-
 
 def graclus(W, levels, rid=None):
     """Coarsen a graph multiple times using the GRACLUS algorithm."""
