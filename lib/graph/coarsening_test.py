@@ -70,11 +70,11 @@ class CoarseningTest(TestCase):
 
         adjs, perm = coarsen_adj(adj, levels=1, rid=rid)
 
+        assert_equal(len(adjs), 2)
         assert_equal(adjs[0].shape, (6, 6))
         assert_equal(adjs[1].shape, (3, 3))
 
-        expected_perm = [0, 1, 2, 3, 4, 5]
-        assert_equal(perm, expected_perm)
+        assert_equal(perm, [0, 1, 2, 3, 4, 5])
 
         expected_1 = [[0, 3, 2, 0, 0, 0], [3, 0, 0, 2, 0, 0],
                       [2, 0, 0, 3, 0, 0], [0, 2, 3, 0, 1, 0],
@@ -85,9 +85,13 @@ class CoarseningTest(TestCase):
         assert_equal(adjs[1].toarray(), expected_2)
 
         adjs, perm = coarsen_adj(adj, levels=2, rid=rid)
+
+        assert_equal(len(adjs), 3)
         assert_equal(adjs[0].shape, (8, 8))
         assert_equal(adjs[1].shape, (4, 4))
         assert_equal(adjs[2].shape, (2, 2))
+
+        assert_equal(perm, [0, 1, 2, 3, 4, 5, 6, 7])
 
         expected_1 = [[0, 3, 2, 0, 0, 0, 0, 0], [3, 0, 0, 2, 0, 0, 0, 0],
                       [2, 0, 0, 3, 0, 0, 0, 0], [0, 2, 3, 0, 1, 0, 0, 0],
@@ -100,3 +104,11 @@ class CoarseningTest(TestCase):
 
         expected_3 = [[0, 1], [1, 0]]
         assert_equal(adjs[2].toarray(), expected_3)
+
+        adjs, perm = coarsen_adj(adj, levels=2)
+        assert_equal(len(adjs), 3)
+        assert_equal(adjs[0].shape, (8, 8))
+        assert_equal(adjs[1].shape, (4, 4))
+        assert_equal(adjs[2].shape, (2, 2))
+
+        assert_equal(np.max(perm), 7)
