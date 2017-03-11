@@ -8,14 +8,15 @@ import scipy.sparse as sp
 from .distortion import perm_adj
 
 
-def coarsen_adj(adj, levels):
+def coarsen_adj(adj, levels, rid=None):
     assert levels > 0, 'Levels must be greater than zero.'
 
     # Generate levels + 1 graphs.
     adjs = [adj]
     cluster_maps = []
     for i in xrange(levels):
-        adj, cluster_map = _coarsen_adj(adjs[-1])
+        adj, cluster_map = _coarsen_adj(adjs[-1]) if i > 0 else _coarsen_adj(
+            adjs[-1], rid)
         adjs.append(adj)
         cluster_maps.append(cluster_map)
 
@@ -44,6 +45,7 @@ def _coarsen_adj(adj, rid=None):
     adj_new = sp.coo_matrix(
         (weights_new, (rows_new, cols_new)), shape=(n_new, n_new))
     adj_new.setdiag(0)
+    adj.eliminate_zeros()
     return adj_new, cluster_map
 
 

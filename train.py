@@ -2,10 +2,12 @@ from __future__ import print_function
 
 from six.moves import xrange
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.model.mnist_chebyshev_gcnn import MNISTChebyshevGCNN
+from lib.graph.distortion import perm_batch_of_features
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -34,7 +36,7 @@ if tf.gfile.Exists(FLAGS.log_dir):
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28], 'features'),
+    tf.placeholder(tf.float32, [FLAGS.batch_size, 976, 1], 'features'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
@@ -46,6 +48,11 @@ model = MNISTChebyshevGCNN(
     learning_rate=FLAGS.learning_rate,
     train_dir=FLAGS.train_dir,
     logging=True)
+
+
+def preprocess_features(features):
+    features = np.reshape(features, (features.shape[0], features.shape[1], 1))
+    return perm_batch_of_features(features, model.perm)
 
 
 def evaluate(features, labels):
@@ -65,6 +72,7 @@ writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
 for step in xrange(global_step, FLAGS.max_steps):
     train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
+    train_features = preprocess_features(train_features)
 
     train_feed_dict = {
         placeholders['features']: train_features,
@@ -78,8 +86,10 @@ for step in xrange(global_step, FLAGS.max_steps):
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
         train_loss, train_acc = evaluate(train_features, train_labels)
+
         val_features, val_labels = mnist.validation.next_batch(
             FLAGS.batch_size)
+        val_features = preprocess_features(val_features)
         val_loss, val_acc = evaluate(val_features, val_labels)
 
         # Print results.
@@ -98,6 +108,7 @@ print('Optimization finished!')
 
 # Evaluate on test set.
 test_features = mnist.test.images[:FLAGS.batch_size]
+test_features = preprocess_features(test_features)
 test_labels = mnist.test.labels[:FLAGS.batch_size]
 test_loss, test_acc = evaluate(test_features, test_labels)
 print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(test_loss,

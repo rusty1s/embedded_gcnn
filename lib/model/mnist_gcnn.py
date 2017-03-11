@@ -3,7 +3,7 @@ import tensorflow as tf
 from .model import Model
 from ..graph.adjacency import grid_adj, normalize_adj, invert_adj, adj_to_tf
 from ..graph.preprocess import preprocess_adj
-from ..layer.gcnn import GCNN
+from ..layer.gcnn import GCNN as Conv
 from ..layer.fc import FC
 
 
@@ -25,12 +25,12 @@ class MNIST_GCNN(Model):
         return tf.reshape(self.inputs, [-1, 28 * 28, 1])
 
     def _build(self):
-        gcnn1 = GCNN(1, 8, self.adj, logging=self.logging)
-        fc1 = FC(28 * 28 * 8, 1024, logging=self.logging)
-        fc2 = FC(1024,
-                 10,
-                 dropout=self.placeholders['dropout'],
-                 act=lambda x: x,
-                 logging=self.logging)
+        conv_1 = Conv(1, 8, self.adj, logging=self.logging)
+        fc_1 = FC(28 * 28 * 8, 1024, logging=self.logging)
+        fc_2 = FC(1024,
+                  10,
+                  dropout=self.placeholders['dropout'],
+                  act=lambda x: x,
+                  logging=self.logging)
 
-        self.layers = [gcnn1, fc1, fc2]
+        self.layers = [conv_1, fc_1, fc_2]

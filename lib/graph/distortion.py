@@ -42,3 +42,18 @@ def perm_features(features, perm=None):
             features_new[i] = features[tid]
 
     return features_new
+
+
+def perm_batch_of_features(batch, perm=None):
+    if perm is None:
+        perm = np.random.permutation(np.arange(batch.shape[1]))
+
+    batch_size, _, k = batch.shape
+    n_new = perm.shape[0]
+
+    # Features of none existing nodes should only contain zeros.
+    batch_new = np.zeros((batch_size, n_new, k), batch.dtype)
+    for i in xrange(batch_size):
+        batch_new[i] -= perm_features(batch[i], perm)
+
+    return batch_new
