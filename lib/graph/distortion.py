@@ -54,6 +54,6 @@ def perm_batch_of_features(batch, perm=None):
     # Features of none existing nodes should only contain zeros.
     batch_new = np.zeros((batch_size, n_new, k), batch.dtype)
     for i in xrange(batch_size):
-        batch_new[i] -= perm_features(batch[i], perm)
+        batch_new[i] = perm_features(batch[i], perm)
 
     return batch_new

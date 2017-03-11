@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .distortion import perm_adj, perm_features
+from .distortion import perm_adj, perm_features, perm_batch_of_features
 
 
 class DistortionTest(TestCase):
@@ -50,3 +50,16 @@ class DistortionTest(TestCase):
         features_new = perm_features(features)
         assert_equal(features_new.shape, [4, 2])
         assert_equal(features_new.sum(), 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8)
+
+    def test_perm_batch_of_features(self):
+        features_1 = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
+        features_2 = np.array([[11, 12], [13, 14], [15, 16], [17, 18]])
+        features = np.array([features_1, features_2])
+        print(features)
+        perm = np.array([2, 1, 3, 0])
+
+        print(perm_batch_of_features(features, perm))
+
+        expected = [[[5, 6], [3, 4], [7, 8], [1, 2]], [[15, 16], [13, 14],
+                                                       [17, 18], [11, 12]]]
+        assert_equal(perm_batch_of_features(features, perm), expected)
