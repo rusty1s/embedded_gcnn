@@ -16,7 +16,7 @@ class MNISTChebyshevGCNN(Model):
         # 3 placeholders: features, labels, dropout
         super(MNISTChebyshevGCNN, self).__init__(**kwargs)
 
-        # We use the same graph for every example.
+        # We use the same graphs for every example.
         adj = grid_adj([28, 28], connectivity=8)
         adj = normalize_adj(adj)
         adj = invert_adj(adj)
