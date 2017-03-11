@@ -11,5 +11,3 @@ class MNISTChebyshevGCNNTest(tf.test.TestCase):
             'labels': tf.placeholder(tf.int32, [1], 'labels'),
             'dropout': tf.placeholder(tf.float32, [], 'dropout'),
         }
-        model = MNISTChebyshevGCNN(placeholders=placeholders)
-        print(model)
