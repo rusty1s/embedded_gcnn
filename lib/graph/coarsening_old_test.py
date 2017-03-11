@@ -5,7 +5,7 @@ from unittest import TestCase
 import scipy.sparse as sp
 
 # from .coarsening import cluster_adj
-from .coarsening_old import coarsen
+from .coarsening_old import coarsen_adj
 
 
 class CoarseningTest(TestCase):
@@ -13,9 +13,9 @@ class CoarseningTest(TestCase):
         adj = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
         adj = sp.coo_matrix(adj)
 
-        graphs, perm = coarsen(adj, levels=2)
-        print('graphs', graphs)
-        print('perm', perm)
+        # graphs, perm = coarsen_adj(adj, levels=2)
+        # print('graphs', graphs)
+        # print('perm', perm)
         # print(cluster_adj(adj))
 
         # adj = [[0, 3, 2, 0, 0], [3, 0, 0, 2, 0], [2, 0, 0, 3, 0],
