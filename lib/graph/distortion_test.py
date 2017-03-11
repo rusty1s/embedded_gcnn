@@ -55,11 +55,14 @@ class DistortionTest(TestCase):
         features_1 = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
         features_2 = np.array([[11, 12], [13, 14], [15, 16], [17, 18]])
         features = np.array([features_1, features_2])
-        print(features)
         perm = np.array([2, 1, 3, 0])
-
-        print(perm_batch_of_features(features, perm))
 
         expected = [[[5, 6], [3, 4], [7, 8], [1, 2]], [[15, 16], [13, 14],
                                                        [17, 18], [11, 12]]]
         assert_equal(perm_batch_of_features(features, perm), expected)
+
+        # Test random permutation.
+        features_new = perm_batch_of_features(features)
+        assert_equal(features_new.shape, [2, 4, 2])
+        assert_equal(np.array(features_new[0].sum()).flatten(), [36])
+        assert_equal(np.array(features_new[1].sum()).flatten(), [116])
