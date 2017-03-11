@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .coarsening import _cluster_adj, _coarsen_adj, _compute_perms
+from .coarsening import _cluster_adj, _coarsen_adj, _compute_perms, coarsen_adj
 
 
 class CoarseningTest(TestCase):
@@ -30,7 +30,7 @@ class CoarseningTest(TestCase):
         expected = [1, 2, 1, 0, 0]
         assert_equal(_cluster_adj(adj, rid), expected)
 
-    def test_coarsen_adj(self):
+    def test_coarsen_one_adj(self):
         adj = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
         adj = sp.coo_matrix(adj)
         rid = np.array([0, 1, 2, 3])
@@ -61,3 +61,42 @@ class CoarseningTest(TestCase):
         assert_equal(perms[2], [0, 1, 2])
         assert_equal(perms[1], [2, 4, 1, 3, 0, 5])
         assert_equal(perms[0], [3, 4, 0, 9, 1, 2, 5, 8, 6, 7, 10, 11])
+
+    def test_coarsen_adj(self):
+        adj = [[0, 3, 2, 0, 0], [3, 0, 0, 2, 0], [2, 0, 0, 3, 0],
+               [0, 2, 3, 0, 1], [0, 0, 0, 1, 0]]
+        adj = sp.coo_matrix(adj)
+        rid = np.array([0, 1, 2, 3, 4])
+
+        adjs, perm = coarsen_adj(adj, levels=1, rid=rid)
+
+        assert_equal(adjs[0].shape, (6, 6))
+        assert_equal(adjs[1].shape, (3, 3))
+
+        expected_perm = [0, 1, 2, 3, 4, 5]
+        assert_equal(perm, expected_perm)
+
+        expected_1 = [[0, 3, 2, 0, 0, 0], [3, 0, 0, 2, 0, 0],
+                      [2, 0, 0, 3, 0, 0], [0, 2, 3, 0, 1, 0],
+                      [0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0]]
+        assert_equal(adjs[0].toarray(), expected_1)
+
+        expected_2 = [[0, 4, 0], [4, 0, 1], [0, 1, 0]]
+        assert_equal(adjs[1].toarray(), expected_2)
+
+        adjs, perm = coarsen_adj(adj, levels=2, rid=rid)
+        assert_equal(adjs[0].shape, (8, 8))
+        assert_equal(adjs[1].shape, (4, 4))
+        assert_equal(adjs[2].shape, (2, 2))
+
+        expected_1 = [[0, 3, 2, 0, 0, 0, 0, 0], [3, 0, 0, 2, 0, 0, 0, 0],
+                      [2, 0, 0, 3, 0, 0, 0, 0], [0, 2, 3, 0, 1, 0, 0, 0],
+                      [0, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0],
+                      [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]
+        assert_equal(adjs[0].toarray(), expected_1)
+
+        expected_2 = [[0, 4, 0, 0], [4, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]]
+        assert_equal(adjs[1].toarray(), expected_2)
+
+        expected_3 = [[0, 1], [1, 0]]
+        assert_equal(adjs[2].toarray(), expected_3)
