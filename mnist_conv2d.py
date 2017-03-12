@@ -61,7 +61,7 @@ model = MNIST(
 
 
 def preprocess_features(features):
-    features = np.reshape(features, (features.shape[0], 28, 28, 1))
+    return np.reshape(features, (features.shape[0], 28, 28, 1))
 
 
 def evaluate(features, labels):
