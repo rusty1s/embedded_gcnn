@@ -3,14 +3,18 @@ import scipy.sparse as sp
 
 
 def preprocess_adj(adj):
-    # TODO, add only one if node contain at least one edge.
-    adj = adj + sp.eye(adj.shape[0], dtype=adj.dtype)
-    deg = np.array(adj.sum(1)).flatten()
+    # Set diagonal entries to one, if the corresponding node has at least one
+    # edge.
+    degree = np.array(adj.sum(1)).flatten()
+    ones = degree.astype(bool).astype(adj.dtype)
+    adj = adj.copy()
+    adj.setdiag(ones)
 
+    # Calculate normalization.
+    degree = degree + ones
     with np.errstate(divide='ignore'):
-        deg = np.power(deg, -0.5)
-        deg[np.isinf(deg)] = 0
+        degree = np.power(degree, -0.5)
+        degree[np.isinf(degree)] = 0
+    degree = sp.diags(degree)
 
-    deg = sp.diags(deg)
-
-    return deg.dot(adj).dot(deg)
+    return degree.dot(adj).dot(degree)
