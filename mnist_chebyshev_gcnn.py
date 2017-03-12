@@ -10,6 +10,7 @@ from tensorflow.examples.tutorials.mnist import input_data
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
 from lib.graph.coarsening import coarsen_adj
 from lib.graph.laplacian import laplacian, lmax, rescale_lap
+from lib.graph.sparse import sparse_to_tensor
 from lib.graph.distortion import perm_batch_of_features
 from lib.model.model import Model
 from lib.layer.chebyshev_gcnn import ChebyshevGCNN as Conv
@@ -48,15 +49,16 @@ laps = []
 for adj in adjs:
     lap = laplacian(adj, normalized=FLAGS.normalize_laplacian)
     lap = rescale_lap(lap, lmax(lap, normalized=FLAGS.normalize_laplacian))
+    lap = sparse_to_tensor(lap)
     laps.append(lap)
 
 placeholders = {
     'features':
     tf.placeholder(tf.float32, [FLAGS.batch_size, n_1, 1], 'features'),
     'laplacian_1':
-    tf.sparse_placeholder(tf.float32, name='laplacian_1'),
+    tf.sparse_placeholder(tf.float32, [n_1, n_1], 'laplacian_1'),
     'laplacian_2':
-    tf.sparse_placeholder(tf.float32, name='laplacian_2'),
+    tf.sparse_placeholder(tf.float32, [n_2, n_2], 'laplacian_2'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
@@ -123,10 +125,10 @@ writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
 for step in xrange(global_step, FLAGS.max_steps):
     train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
-    train_features = preprocess_features(train_features)
+    train_preprocessed_features = preprocess_features(train_features)
 
     train_feed_dict = {
-        placeholders['features']: train_features,
+        placeholders['features']: train_preprocessed_features,
         placeholders['laplacian_1']: laps[0],
         placeholders['laplacian_2']: laps[1],
         placeholders['labels']: train_labels,
