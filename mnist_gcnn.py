@@ -40,8 +40,8 @@ adj = normalize_adj(adj)
 adj = invert_adj(adj)
 adjs, perm = coarsen_adj(adj, levels=4)
 adjs = [adjs[0], adjs[2]]
-n_1 = int(adjs[0].shape[0])
-n_2 = int(adjs[1].shape[0])
+n_1 = adjs[0].shape[0]
+n_2 = adjs[1].shape[0]
 normalized_adjs = []
 for adj in adjs:
     adj = preprocess_adj(adj)
@@ -49,16 +49,13 @@ for adj in adjs:
     normalized_adjs.append(adj)
 adjs = normalized_adjs
 
-shape_1 = tf.constant([n_1, n_1], tf.int64)
-shape_2 = tf.constant([n_2, n_2], tf.int64)
-
 placeholders = {
     'features':
     tf.placeholder(tf.float32, [FLAGS.batch_size, n_1, 1], 'features'),
     'adjacency_1':
-    tf.sparse_placeholder(tf.float32, shape_1, 'adjacency_1'),
+    tf.sparse_placeholder(tf.float32, [n_1, n_1], 'adjacency_1'),
     'adjacency_2':
-    tf.sparse_placeholder(tf.float32, shape_2, 'adjacency_2'),
+    tf.sparse_placeholder(tf.float32, [n_2, n_2], 'adjacency_2'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
