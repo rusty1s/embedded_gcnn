@@ -29,11 +29,11 @@ class PreprocessTest(TestCase):
         adj = [[0, 1, 0, 0], [1, 0, 1, 0], [0, 1, 0, 0], [0, 0, 0, 0]]
         adj = sp.coo_matrix(adj)
 
-        adj_new = [[1, 1, 0, 0], [1, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0]]
+        adj_new = [[1, 1, 0, 0], [1, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 1]]
         adj_new = sp.coo_matrix(adj_new)
-        degree = [[2, 0, 0, 0], [0, 3, 0, 0], [0, 0, 2, 0], [0, 0, 0, 0]]
+        degree = [[2, 0, 0, 0], [0, 3, 0, 0], [0, 0, 2, 0], [0, 0, 0, 1]]
         degree = [[np.power(2, -0.5), 0, 0, 0], [0, np.power(3, -0.5), 0, 0],
-                  [0, 0, np.power(2, -0.5), 0], [0, 0, 0, 0]]
+                  [0, 0, np.power(2, -0.5), 0], [0, 0, 0, np.power(1, -0.5)]]
         degree = sp.coo_matrix(degree)
 
         assert_equal(

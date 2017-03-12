@@ -6,7 +6,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from lib.model.mnist_chebyshev_gcnn import MNISTChebyshevGCNN
+# from lib.model.mnist_chebyshev_gcnn import MNISTChebyshevGCNN
+from lib.model.mnist_gcnn import MNIST_GCNN
 from lib.graph.distortion import perm_batch_of_features
 
 flags = tf.app.flags
@@ -36,14 +37,14 @@ if tf.gfile.Exists(FLAGS.log_dir):
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32, [FLAGS.batch_size, 976, 1], 'features'),
+    tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28, 1], 'features'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
     tf.placeholder(tf.float32, [], 'dropout'),
 }
 
-model = MNISTChebyshevGCNN(
+model = MNIST_GCNN(
     placeholders=placeholders,
     learning_rate=FLAGS.learning_rate,
     train_dir=FLAGS.train_dir,
@@ -52,7 +53,8 @@ model = MNISTChebyshevGCNN(
 
 def preprocess_features(features):
     features = np.reshape(features, (features.shape[0], features.shape[1], 1))
-    return perm_batch_of_features(features, model.perm)
+    return features
+    # return perm_batch_of_features(features, model.perm)
 
 
 def evaluate(features, labels):
