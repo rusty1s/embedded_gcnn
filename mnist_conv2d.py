@@ -118,7 +118,6 @@ num_iterations = 10000 // FLAGS.batch_size
 test_loss, test_acc = (0, 0)
 for i in xrange(num_iterations):
     test_features, test_labels = mnist.test.next_batch(FLAGS.batch_size)
-    test_labels = mnist.test.labels[:FLAGS.batch_size]
     test_single_loss, test_single_acc = evaluate(test_features, test_labels)
     test_loss += test_single_loss
     test_acc += test_single_acc
