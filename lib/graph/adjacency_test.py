@@ -5,20 +5,10 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import scipy.sparse as sp
 
-from .adjacency import (adj_to_tf, normalize_adj, invert_adj, grid_adj,
-                        embedded_adj)
+from .adjacency import normalize_adj, invert_adj, grid_adj, embedded_adj
 
 
 class GraphTest(tf.test.TestCase):
-    def test_adj_to_tf(self):
-        adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(adj)
-
-        with self.test_session():
-            self.assertAllEqual(
-                tf.sparse_tensor_to_dense(adj_to_tf(adj)).eval(),
-                adj.toarray())
-
     def test_normalize_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj)

@@ -8,7 +8,7 @@ class Model(object):
                  placeholders,
                  name=None,
                  learning_rate=0.001,
-                 train_dir='/tmp/checkpoint_dir',
+                 train_dir=None,
                  logging=False):
 
         if not name:
@@ -77,6 +77,9 @@ class Model(object):
         if not sess:
             raise AttributeError('TensorFlow session not provided.')
 
+        if self.train_dir is None:
+            return
+
         saver = tf.train.Saver(self.vars)
         save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
         saver.save(
@@ -89,6 +92,9 @@ class Model(object):
             raise AttributeError('TensorFlow session not provided.')
 
         sess.run(tf.global_variables_initializer())
+
+        if self.train_dir is None:
+            return sess.run(self.global_step)
 
         if tf.gfile.Exists(self.train_dir):
             saver = tf.train.Saver(self.vars)

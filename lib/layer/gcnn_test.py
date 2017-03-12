@@ -10,7 +10,7 @@ class GCNNTest(tf.test.TestCase):
 
         layer = GCNN(1, 2, adj)
         self.assertEqual(layer.name, 'gcnn_1')
-        self.assertEqual(layer.adj, adj)
+        self.assertEqual(layer.adjs, adj)
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, True)
         self.assertEqual(layer.logging, False)
@@ -21,7 +21,7 @@ class GCNNTest(tf.test.TestCase):
 
         layer = GCNN(3, 4, adj, bias=False, logging=True)
         self.assertEqual(layer.name, 'gcnn_2')
-        self.assertEqual(layer.adj, adj)
+        self.assertEqual(layer.adjs, adj)
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, False)
         self.assertEqual(layer.logging, True)

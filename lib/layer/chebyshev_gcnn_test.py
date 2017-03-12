@@ -10,7 +10,7 @@ class ChebyshevGCNNTest(tf.test.TestCase):
 
         layer = ChebyshevGCNN(1, 2, lap, max_degree=3)
         self.assertEqual(layer.name, 'chebyshevgcnn_1')
-        self.assertEqual(layer.lap, lap)
+        self.assertEqual(layer.laps, lap)
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, True)
         self.assertEqual(layer.logging, False)
@@ -22,7 +22,7 @@ class ChebyshevGCNNTest(tf.test.TestCase):
         layer = ChebyshevGCNN(
             3, 4, lap, max_degree=5, bias=False, logging=True)
         self.assertEqual(layer.name, 'chebyshevgcnn_2')
-        self.assertEqual(layer.lap, lap)
+        self.assertEqual(layer.laps, lap)
         self.assertEqual(layer.act, tf.nn.relu)
         self.assertEqual(layer.bias, False)
         self.assertEqual(layer.logging, True)
@@ -59,13 +59,13 @@ class ChebyshevGCNNTest(tf.test.TestCase):
 
         Tx_1_0 = inputs[0]
         output_1 = tf.matmul(Tx_1_0, layer.vars['weights'][0])
-        Tx_1_1 = tf.sparse_tensor_dense_matmul(layer.lap, inputs[0])
+        Tx_1_1 = tf.sparse_tensor_dense_matmul(lap, inputs[0])
         output_1 = tf.add(
             tf.matmul(Tx_1_1, layer.vars['weights'][1]), output_1)
-        Tx_1_2 = 2 * tf.sparse_tensor_dense_matmul(layer.lap, Tx_1_1) - Tx_1_0
+        Tx_1_2 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_1_1) - Tx_1_0
         output_1 = tf.add(
             tf.matmul(Tx_1_2, layer.vars['weights'][2]), output_1)
-        Tx_1_3 = 2 * tf.sparse_tensor_dense_matmul(layer.lap, Tx_1_2) - Tx_1_1
+        Tx_1_3 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_1_2) - Tx_1_1
         output_1 = tf.add(
             tf.matmul(Tx_1_3, layer.vars['weights'][3]), output_1)
         output_1 = tf.nn.bias_add(output_1, layer.vars['bias'])
@@ -73,13 +73,13 @@ class ChebyshevGCNNTest(tf.test.TestCase):
 
         Tx_2_0 = inputs[1]
         output_2 = tf.matmul(Tx_2_0, layer.vars['weights'][0])
-        Tx_2_1 = tf.sparse_tensor_dense_matmul(layer.lap, inputs[1])
+        Tx_2_1 = tf.sparse_tensor_dense_matmul(lap, inputs[1])
         output_2 = tf.add(
             tf.matmul(Tx_2_1, layer.vars['weights'][1]), output_2)
-        Tx_2_2 = 2 * tf.sparse_tensor_dense_matmul(layer.lap, Tx_2_1) - Tx_2_0
+        Tx_2_2 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_2_1) - Tx_2_0
         output_2 = tf.add(
             tf.matmul(Tx_2_2, layer.vars['weights'][2]), output_2)
-        Tx_2_3 = 2 * tf.sparse_tensor_dense_matmul(layer.lap, Tx_2_2) - Tx_2_1
+        Tx_2_3 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_2_2) - Tx_2_1
         output_2 = tf.add(
             tf.matmul(Tx_2_3, layer.vars['weights'][3]), output_2)
         output_2 = tf.nn.bias_add(output_2, layer.vars['bias'])

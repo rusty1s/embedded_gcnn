@@ -2,17 +2,8 @@ from __future__ import division
 
 from six.moves import xrange
 
-import tensorflow as tf
 import numpy as np
 import scipy.sparse as sp
-
-
-def adj_to_tf(adj):
-    adj = adj.tocoo()
-    row = np.reshape(adj.row, (-1, 1))
-    col = np.reshape(adj.col, (-1, 1))
-    indices = np.concatenate((row, col), axis=1)
-    return tf.SparseTensor(indices, adj.data, dense_shape=adj.shape)
 
 
 def normalize_adj(adj):
