@@ -10,7 +10,7 @@ class GCNN(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
-                 adj,
+                 adjs,
                  weight_stddev=0.1,
                  weight_decay=None,
                  bias=True,
@@ -20,7 +20,7 @@ class GCNN(Layer):
 
         super(GCNN, self).__init__(**kwargs)
 
-        self.adj = adj
+        self.adjs = adjs
         self.bias = bias
         self.act = act
 
@@ -37,9 +37,12 @@ class GCNN(Layer):
             self._log_vars()
 
     def _call(self, inputs):
+        multiple = isinstance(self.adjs, (list, tuple))
+
         outputs = list()
         for i in xrange(inputs.get_shape()[0].value):
-            output = tf.sparse_tensor_dense_matmul(self.adj, inputs[i])
+            adj = self.adjs[i] if multiple else self.adjs
+            output = tf.sparse_tensor_dense_matmul(adj, inputs[i])
             output = tf.matmul(output, self.vars['weights'])
             outputs.append(output)
 
