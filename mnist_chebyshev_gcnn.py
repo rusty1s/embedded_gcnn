@@ -56,9 +56,9 @@ placeholders = {
     'features':
     tf.placeholder(tf.float32, [FLAGS.batch_size, n_1, 1], 'features'),
     'laplacian_1':
-    tf.sparse_placeholder(tf.float32, [n_1, n_1], 'laplacian_1'),
+    tf.sparse_placeholder(tf.float32, name='laplacian_1'),
     'laplacian_2':
-    tf.sparse_placeholder(tf.float32, [n_2, n_2], 'laplacian_2'),
+    tf.sparse_placeholder(tf.float32, name='laplacian_2'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
