@@ -42,6 +42,9 @@ class ChebyshevGCNN(Layer):
         return tf.matmul(Tx, self.vars['weights'][degree])
 
     def _call(self, inputs):
+        n = inputs.get_shape()[1].value
+        out_channels = self.vars['weights'].get_shape()[1].value
+
         multiple = isinstance(self.laps, (list, tuple))
 
         outputs = list()
@@ -64,6 +67,7 @@ class ChebyshevGCNN(Layer):
             outputs.append(output)
 
         outputs = tf.stack(outputs, axis=0)
+        outputs.set_shape([None, n, out_channels])
 
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
