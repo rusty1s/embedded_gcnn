@@ -2,6 +2,7 @@ from __future__ import print_function
 from __future__ import division
 
 from six.moves import xrange
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -66,6 +67,7 @@ def preprocess_features(features):
 
 
 def evaluate(features, labels):
+    t_eval = time.time()
     features = preprocess_features(features)
     feed_dict = {
         placeholders['features']: features,
@@ -74,7 +76,7 @@ def evaluate(features, labels):
     }
 
     loss, acc = sess.run([model.loss, model.accuracy], feed_dict)
-    return loss, acc
+    return loss, acc, (time.time() - t_eval)
 
 
 sess = tf.Session()
@@ -82,6 +84,7 @@ global_step = model.initialize(sess)
 writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
 for step in xrange(global_step, FLAGS.max_steps):
+    t = time.time()
     train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
     train_preprocessed_features = preprocess_features(train_features)
 
@@ -96,17 +99,18 @@ for step in xrange(global_step, FLAGS.max_steps):
 
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
-        train_loss, train_acc = evaluate(train_features, train_labels)
+        train_loss, train_acc, _ = evaluate(train_features, train_labels)
 
         val_features, val_labels = mnist.validation.next_batch(
             FLAGS.batch_size)
-        val_loss, val_acc = evaluate(val_features, val_labels)
+        val_loss, val_acc, _ = evaluate(val_features, val_labels)
 
         # Print results.
         print(', '.join([
             'Step: {}'.format(step),
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
+            'time={:.2f}s'.format(time.time() - t),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
@@ -115,12 +119,14 @@ print('Optimization finished!')
 
 # Evaluate on test set.
 num_iterations = 10000 // FLAGS.batch_size
-test_loss, test_acc = (0, 0)
+test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
     test_features, test_labels = mnist.test.next_batch(FLAGS.batch_size)
-    test_single_loss, test_single_acc = evaluate(test_features, test_labels)
+    test_single_loss, test_single_acc, test_single_duration = evaluate(
+        test_features, test_labels)
     test_loss += test_single_loss
     test_acc += test_single_acc
+    test_duration += test_single_duration
 
-print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(
-    test_loss / num_iterations, test_acc / num_iterations))
+print('Test set results: cost={:.5f}, accuracy={:.5f}, time={:.2f}s'.format(
+    test_loss / num_iterations, test_acc / num_iterations, test_duration))
