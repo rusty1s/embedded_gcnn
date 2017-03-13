@@ -1,5 +1,6 @@
 from six.moves import xrange
 
+import numpy as np
 import tensorflow as tf
 
 from .layer import Layer
@@ -13,7 +14,7 @@ class GCNN(Layer):
                  adjs,
                  weight_stddev=0.1,
                  weight_decay=None,
-                 bias=True,
+                 bias=False,
                  bias_constant=0.1,
                  act=tf.nn.relu,
                  **kwargs):
@@ -38,19 +39,26 @@ class GCNN(Layer):
 
     def _call(self, inputs):
         n = inputs.get_shape()[1].value
-        out_channels = self.vars['weights'].get_shape()[1].value
+        in_channels = inputs.get_shape()[2].value
+
+        # We add a zero to the output, so TensowFlow knows the shape of the
+        # bugged sparse placehoder shape. This is not elegant, but there's
+        # no other way :(
+        zero = tf.zeros([n, in_channels], dtype=inputs.dtype)
 
         multiple = isinstance(self.adjs, (list, tuple))
 
         outputs = list()
         for i in xrange(inputs.get_shape()[0].value):
             adj = self.adjs[i] if multiple else self.adjs
+
             output = tf.sparse_tensor_dense_matmul(adj, inputs[i])
+            output = tf.add(output, zero)
+
             output = tf.matmul(output, self.vars['weights'])
             outputs.append(output)
 
         outputs = tf.stack(outputs, axis=0)
-        outputs.set_shape([None, n, out_channels])
 
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
