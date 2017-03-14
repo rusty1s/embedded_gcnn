@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
-from lib.graph.coarsening import coarsen_adj
+from lib.graph.coarsening_copy import coarsen
 from lib.graph.laplacian import laplacian, lmax, rescale_lap
 from lib.graph.sparse import sparse_to_tensor
 from lib.graph.distortion import perm_batch_of_features
@@ -23,7 +23,7 @@ flags.DEFINE_integer('grid_connectivity', 8,
                      'Connectivity of the generated grid.')
 flags.DEFINE_bool('normalize_laplacian', True,
                   'Whether to normalize laplacian or not.')
-flags.DEFINE_integer('max_degree', 2, 'Maximum Chebyshev polynomial degree.')
+flags.DEFINE_integer('max_degree', 5, 'Maximum Chebyshev polynomial degree.')
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_integer('batch_size', 128, 'How many inputs to process at once.')
 flags.DEFINE_integer('max_steps', 2000, 'Number of steps to train.')
@@ -41,7 +41,8 @@ mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 adj = grid_adj([28, 28], FLAGS.grid_connectivity)
 adj = normalize_adj(adj)
 adj = invert_adj(adj)
-adjs, perm = coarsen_adj(adj, levels=4)
+adjs, perm = coarsen(adj, levels=4)
+perm = np.array(perm)
 adjs = [adjs[0], adjs[2]]
 n_1 = adjs[0].shape[0]
 n_2 = adjs[1].shape[0]
@@ -97,7 +98,10 @@ class MNIST(Model):
 
 
 model = MNIST(
-    placeholders=placeholders, learning_rate=FLAGS.learning_rate, logging=True)
+    placeholders=placeholders,
+    learning_rate=FLAGS.learning_rate,
+    log_dir=FLAGS.log_dir)
+global_step = model.initialize()
 
 
 def preprocess_features(features):
@@ -115,13 +119,8 @@ def evaluate(features, labels):
         placeholders['dropout']: 0.0,
     }
 
-    loss, acc = sess.run([model.loss, model.accuracy], feed_dict)
-    return loss, acc
+    return model.evaluate(feed_dict)
 
-
-sess = tf.Session()
-global_step = model.initialize(sess)
-writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
 for step in xrange(global_step, FLAGS.max_steps):
     train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
@@ -135,22 +134,22 @@ for step in xrange(global_step, FLAGS.max_steps):
         placeholders['dropout']: FLAGS.dropout,
     }
 
-    _, summary = sess.run([model.train, model.summary], train_feed_dict)
-    writer.add_summary(summary, step)
+    duration = model.train(train_feed_dict, step)
 
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
-        train_loss, train_acc = evaluate(train_features, train_labels)
+        train_loss, train_acc, _ = evaluate(train_features, train_labels)
 
         val_features, val_labels = mnist.validation.next_batch(
             FLAGS.batch_size)
-        val_loss, val_acc = evaluate(val_features, val_labels)
+        val_loss, val_acc, _ = evaluate(val_features, val_labels)
 
         # Print results.
         print(', '.join([
             'Step: {}'.format(step),
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
+            'time={:.2f}s'.format(duration),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
@@ -159,12 +158,14 @@ print('Optimization finished!')
 
 # Evaluate on test set.
 num_iterations = 10000 // FLAGS.batch_size
-test_loss, test_acc = (0, 0)
+test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
     test_features, test_labels = mnist.test.next_batch(FLAGS.batch_size)
-    test_single_loss, test_single_acc = evaluate(test_features, test_labels)
+    test_single_loss, test_single_acc, test_single_duration = evaluate(
+        test_features, test_labels)
     test_loss += test_single_loss
     test_acc += test_single_acc
+    test_duration += test_single_duration
 
-print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(
-    test_loss / num_iterations, test_acc / num_iterations))
+print('Test set results: cost={:.5f}, accuracy={:.5f}, time={:.2f}s'.format(
+    test_loss / num_iterations, test_acc / num_iterations, test_duration))

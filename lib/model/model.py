@@ -71,6 +71,10 @@ class Model(object):
         # Create session.
         self.sess = tf.Session()
         if self.log_dir is not None:
+            if tf.gfile.Exists(self.log_dir):
+                tf.gfile.DeleteRecursively(self.log_dir)
+            tf.gfile.MakeDirs(self.log_dir)
+
             self._summary = tf.summary.merge_all()
             self._writer = tf.summary.FileWriter(self.log_dir, self.sess.graph)
 
@@ -116,4 +120,4 @@ class Model(object):
     def evaluate(self, feed_dict):
         t = time.time()
         loss, acc = self.sess.run([self._loss, self._accuracy], feed_dict)
-        return loss, acc, t - time.time()
+        return loss, acc, time.time() - t

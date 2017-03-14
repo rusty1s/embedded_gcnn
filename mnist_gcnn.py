@@ -8,10 +8,10 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
-# from lib.graph.coarsening import coarsen_adj
+from lib.graph.coarsening_copy import coarsen
 from lib.graph.preprocess import preprocess_adj
 from lib.graph.sparse import sparse_to_tensor
-# from lib.graph.distortion import perm_batch_of_features
+from lib.graph.distortion import perm_batch_of_features
 from lib.model.model import Model
 from lib.layer.gcnn import GCNN as Conv
 from lib.layer.max_pool_gcnn import MaxPoolGCNN as MaxPool
@@ -38,14 +38,26 @@ mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 adj = grid_adj([28, 28], FLAGS.grid_connectivity)
 adj = normalize_adj(adj)
 adj = invert_adj(adj)
-adj = preprocess_adj(adj)
-adj = sparse_to_tensor(adj)
+adjs, perm = coarsen(adj, levels=4)
+perm = np.array(perm)
+adjs = [adjs[0], adjs[2]]
+n_1 = adjs[0].shape[0]
+n_2 = adjs[1].shape[0]
+
+l = []
+for adj in adjs:
+    adj = preprocess_adj(adj)
+    adj = sparse_to_tensor(adj)
+    l.append(adj)
+adjs = l
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28, 1], 'features'),
-    'adjacency':
-    tf.sparse_placeholder(tf.float32, name='adjacency'),
+    tf.placeholder(tf.float32, [FLAGS.batch_size, n_1, 1], 'features'),
+    'adjacency_1':
+    tf.sparse_placeholder(tf.float32, name='adjacency_1'),
+    'adjacency_2':
+    tf.sparse_placeholder(tf.float32, name='adjacency_2'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
@@ -60,16 +72,19 @@ class MNIST(Model):
 
     def _build(self):
         conv_1 = Conv(
-            1, 32, self.placeholders['adjacency'], logging=self.logging)
-        max_pool_1 = MaxPool(size=2, logging=self.logging)
-        fc_1 = FC(14 * 28 * 32, 1024, logging=self.logging)
+            1, 32, self.placeholders['adjacency_1'], logging=self.logging)
+        max_pool_1 = MaxPool(size=4, logging=self.logging)
+        conv_2 = Conv(
+            32, 64, self.placeholders['adjacency_2'], logging=self.logging)
+        max_pool_2 = MaxPool(size=4, logging=self.logging)
+        fc_1 = FC(n_1 // 4 // 4 * 64, 1024, logging=self.logging)
         fc_2 = FC(1024,
                   10,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [conv_1, max_pool_1, fc_1, fc_2]
+        self.layers = [conv_1, max_pool_1, conv_2, max_pool_2, fc_1, fc_2]
 
 
 model = MNIST(
@@ -80,14 +95,16 @@ global_step = model.initialize()
 
 
 def preprocess_features(features):
-    return np.reshape(features, (features.shape[0], features.shape[1], 1))
+    features = np.reshape(features, (features.shape[0], features.shape[1], 1))
+    return perm_batch_of_features(features, perm)
 
 
 def evaluate(features, labels):
     features = preprocess_features(features)
     feed_dict = {
         placeholders['features']: features,
-        placeholders['adjacency']: adj,
+        placeholders['adjacency_1']: adjs[0],
+        placeholders['adjacency_2']: adjs[1],
         placeholders['labels']: labels,
         placeholders['dropout']: 0.0,
     }
@@ -101,7 +118,8 @@ for step in xrange(global_step, FLAGS.max_steps):
 
     train_feed_dict = {
         placeholders['features']: train_preprocessed_features,
-        placeholders['adjacency']: adj,
+        placeholders['adjacency_1']: adjs[0],
+        placeholders['adjacency_2']: adjs[1],
         placeholders['labels']: train_labels,
         placeholders['dropout']: FLAGS.dropout,
     }
