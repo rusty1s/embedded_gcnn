@@ -11,9 +11,10 @@ class PartitionedGCNN(Layer):
                  in_channels,
                  out_channels,
                  adjs,
+                 num_partitions,
                  weight_stddev=0.1,
                  weight_decay=None,
-                 bias=False,
+                 bias=True,
                  bias_constant=0.1,
                  act=tf.nn.relu,
                  **kwargs):
@@ -26,8 +27,8 @@ class PartitionedGCNN(Layer):
 
         with tf.variable_scope('{}_vars'.format(self.name)):
             self.vars['weights'] = weight_variable(
-                [in_channels, out_channels], '{}_weights'.format(self.name),
-                weight_stddev, weight_decay)
+                [num_partitions, in_channels, out_channels],
+                '{}_weights'.format(self.name), weight_stddev, weight_decay)
 
             if self.bias:
                 self.vars['bias'] = bias_variable(
@@ -39,22 +40,20 @@ class PartitionedGCNN(Layer):
     def _call(self, inputs):
         n = inputs.get_shape()[1].value
         in_channels = inputs.get_shape()[2].value
-
-        # We add a zero to the output, so TensowFlow knows the shape of the
-        # bugged sparse placehoder shape. This is not elegant, but there's
-        # no other way :(
-        zero = tf.zeros([n, in_channels], dtype=inputs.dtype)
-
-        multiple = isinstance(self.adjs, (list, tuple))
+        out_channels = self.vars['weights'].get_shape()[2].value
+        multiple = isinstance(self.adjs[0], (list, tuple))
 
         outputs = list()
         for i in xrange(inputs.get_shape()[0].value):
-            adj = self.adjs[i] if multiple else self.adjs
+            adjs = self.adjs[i] if multiple else self.adjs
 
-            output = tf.sparse_tensor_dense_matmul(adj, inputs[i])
-            output = tf.add(output, zero)
+            output = tf.zeros([n, out_channels], dtype=inputs.dtype)
+            for j in xrange(self.vars['weights'].get_shape()[0].value):
+                x = tf.zeros([n, in_channels], dtype=inputs.dtype)
+                x += tf.sparse_tensor_dense_matmul(adjs[j], inputs[i])
+                x = tf.matmul(x, self.vars['weights'][j])
+                output += x
 
-            output = tf.matmul(output, self.vars['weights'])
             outputs.append(output)
 
         outputs = tf.stack(outputs, axis=0)
@@ -63,4 +62,3 @@ class PartitionedGCNN(Layer):
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
 
         return self.act(outputs)
-

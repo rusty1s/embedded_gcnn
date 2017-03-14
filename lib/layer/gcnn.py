@@ -39,21 +39,14 @@ class GCNN(Layer):
     def _call(self, inputs):
         n = inputs.get_shape()[1].value
         in_channels = inputs.get_shape()[2].value
-
-        # We add a zero to the output, so TensowFlow knows the shape of the
-        # bugged sparse placehoder shape. This is not elegant, but there's
-        # no other way :(
-        zero = tf.zeros([n, in_channels], dtype=inputs.dtype)
-
         multiple = isinstance(self.adjs, (list, tuple))
 
         outputs = list()
         for i in xrange(inputs.get_shape()[0].value):
             adj = self.adjs[i] if multiple else self.adjs
 
-            output = tf.sparse_tensor_dense_matmul(adj, inputs[i])
-            output = tf.add(output, zero)
-
+            output = tf.zeros([n, in_channels], dtype=inputs.dtype)
+            output += tf.sparse_tensor_dense_matmul(adj, inputs[i])
             output = tf.matmul(output, self.vars['weights'])
             outputs.append(output)
 
