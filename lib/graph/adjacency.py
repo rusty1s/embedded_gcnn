@@ -72,13 +72,13 @@ def _grid_adj_8(adj, height, width):
     for v in xrange(height * width):
         top, right, bottom, left = _grid_neighbors(v, height, width)
 
-        if top and left:
-            adj[v, v - width - 1] = 2
         if top and right:
             adj[v, v - width + 1] = 2
-        if bottom and left:
-            adj[v, v + width - 1] = 2
         if bottom and right:
             adj[v, v + width + 1] = 2
+        if bottom and left:
+            adj[v, v + width - 1] = 2
+        if top and left:
+            adj[v, v - width - 1] = 2
 
     return adj
