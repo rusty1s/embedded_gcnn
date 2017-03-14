@@ -1,8 +1,9 @@
+from __future__ import division
+
 from six.moves import xrange
 
 import numpy as np
 import scipy.sparse as sp
-
 
 from .adjacency import _grid_neighbors
 
@@ -62,3 +63,38 @@ def _grid_adj_8(adj_dist, adj_rad, height, width):
             adj_rad[v, v - width - 1] = 1.75 * np.pi
 
     return adj_dist, adj_rad
+
+
+def partition_embedded_adj(adj_dist, adj_rad, num_partitions, offset=0.0):
+    adj_rad = adj_rad.tocoo()
+
+    n = adj_dist.shape[0]
+    dists = adj_dist.data
+    rads = adj_rad.data.copy()
+    rows = adj_rad.row
+    cols = adj_rad.col
+    adjs = []
+
+    # Take care of offset greater interval case.
+    interval = 2 * np.pi / num_partitions
+    offset = offset % interval
+    max_rad = offset
+
+    for i in xrange(num_partitions+1):
+        if i < num_partitions:
+            adj = sp.coo_matrix((n, n), dtype=adj_dist.dtype)
+            adjs.append(adj)
+        else:
+            adj = adjs[0]
+
+        indices = np.where(rads < max_rad)
+        rads[indices] = np.inf
+
+        adj.row = np.concatenate((adj.row, rows[indices]))
+        adj.col = np.concatenate((adj.col, cols[indices]))
+        adj.data = np.concatenate((adj.data, dists[indices]))
+
+        # Be sure to take all indices in the last step.
+        max_rad = max_rad + interval if i < num_partitions - 1 else 7
+
+    return adjs
