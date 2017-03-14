@@ -35,7 +35,7 @@ class GraphTest(tf.test.TestCase):
 
         assert_equal(invert_adj(2, sigma=1), np.exp(-1))
 
-    def test_grid_adj(self):
+    def test_grid_adj_connectivity_4(self):
         adj = grid_adj((3, 2), connectivity=4)
 
         expected = [[0, 1, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 1, 0],
@@ -43,6 +43,7 @@ class GraphTest(tf.test.TestCase):
 
         assert_equal(adj.toarray(), expected)
 
+    def test_grid_adj_connectivity_8(self):
         adj = grid_adj((3, 2), connectivity=8)
 
         expected = [[0, 1, 1, 2, 0, 0], [1, 0, 2, 1, 0, 0], [1, 2, 0, 1, 1, 2],
