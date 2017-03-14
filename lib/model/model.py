@@ -1,3 +1,5 @@
+import time
+
 import tensorflow as tf
 
 from .metrics import cal_softmax_cross_entropy, cal_accuracy
@@ -9,7 +11,7 @@ class Model(object):
                  name=None,
                  learning_rate=0.001,
                  train_dir=None,
-                 logging=False):
+                 log_dir=None):
 
         if not name:
             name = self.__class__.__name__.lower()
@@ -17,7 +19,9 @@ class Model(object):
         self.placeholders = placeholders
         self.name = name
         self.train_dir = train_dir
-        self.logging = logging
+        self.log_dir = log_dir
+        self.logging = False if log_dir is None else True
+        self.sess = None
 
         self.inputs = placeholders['features']
         self.labels = placeholders['labels']
@@ -28,13 +32,14 @@ class Model(object):
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate)
 
-        self.accuracy = 0
-        self.loss = 0
-        self.train = None
-        self.summary = None
+        self._accuracy = 0
+        self._loss = 0
+        self._train = None
+        self._summary = None
+        self._writer = None
 
         # Create global step variable.
-        self.global_step = tf.get_variable(
+        self._global_step = tf.get_variable(
             '{}/global_step'.format(self.name),
             shape=[],
             dtype=tf.int32,
@@ -56,46 +61,57 @@ class Model(object):
             self.outputs = layer(self.outputs)
 
         # Build metrics.
-        self.loss = cal_softmax_cross_entropy(self.outputs, self.labels)
-        self.accuracy = cal_accuracy(self.outputs, self.labels)
+        self._loss = cal_softmax_cross_entropy(self.outputs, self.labels)
+        self._accuracy = cal_accuracy(self.outputs, self.labels)
 
-        self.train = self.optimizer.minimize(
-            self.loss,
-            global_step=self.global_step)
-        self.summary = tf.summary.merge_all()
+        self._train = self.optimizer.minimize(
+            self._loss, global_step=self._global_step)
+
+        self.sess = tf.Session()
+        if self.log_dir is not None:
+            self._summary = tf.summary.merge_all()
+            self._writer = tf.summary.FileWriter(self.log_dir, self.sess.graph)
 
     def _build(self):
         raise NotImplementedError
 
-    def save(self, sess=None):
-        if not sess:
-            raise AttributeError('TensorFlow session not provided.')
+    def initialize(self):
+        self.sess.run(tf.global_variables_initializer())
 
+        if self.train_dir is None:
+            return self.sess.run(self._global_step)
+
+        if tf.gfile.Exists(self.train_dir):
+            saver = tf.train.Saver(self.vars)
+            save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
+            saver.restore(self.sess, save_path)
+            print('Model restored from file {}.'.format(save_path))
+        else:
+            tf.gfile.MakeDirs(self.train_dir)
+
+        return self.sess.run(self.global_step)
+
+    def save(self):
         if self.train_dir is None:
             return
 
         saver = tf.train.Saver(self.vars)
         save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
-        saver.save(
-            sess,
-            save_path)
+        saver.save(self.sess, save_path)
         print('Model saved in file {}.'.format(save_path))
 
-    def initialize(self, sess=None):
-        if not sess:
-            raise AttributeError('TensorFlow session not provided.')
+    def train(self, feed_dict, step=None):
+        t = time.time()
 
-        sess.run(tf.global_variables_initializer())
-
-        if self.train_dir is None:
-            return sess.run(self.global_step)
-
-        if tf.gfile.Exists(self.train_dir):
-            saver = tf.train.Saver(self.vars)
-            save_path = '{}/checkpoint.ckpt'.format(self.train_dir)
-            saver.restore(sess, save_path)
-            print('Model restored from file {}.'.format(save_path))
+        if self.log_dir is None:
+            self.sess.run(self._train, feed_dict)
         else:
-            tf.gfile.MakeDirs(self.train_dir)
+            _, summary = self.sess.run([self._train, self._summary], feed_dict)
+            self._writer.add_summary(summary, step)
 
-        return sess.run(self.global_step)
+        return time.time() - t
+
+    def evaluate(self, feed_dict):
+        t = time.time()
+        loss, acc = self.sess.run([self._loss, self._accuracy], feed_dict)
+        return loss, acc, t - time.time()

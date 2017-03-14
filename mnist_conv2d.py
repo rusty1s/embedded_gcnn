@@ -2,7 +2,6 @@ from __future__ import print_function
 from __future__ import division
 
 from six.moves import xrange
-import time
 
 import numpy as np
 import tensorflow as tf
@@ -59,7 +58,10 @@ class MNIST(Model):
 
 
 model = MNIST(
-    placeholders=placeholders, learning_rate=FLAGS.learning_rate, logging=True)
+    placeholders=placeholders,
+    learning_rate=FLAGS.learning_rate,
+    log_dir=FLAGS.log_dir)
+global_step = model.initialize()
 
 
 def preprocess_features(features):
@@ -67,7 +69,6 @@ def preprocess_features(features):
 
 
 def evaluate(features, labels):
-    t_eval = time.time()
     features = preprocess_features(features)
     feed_dict = {
         placeholders['features']: features,
@@ -75,16 +76,10 @@ def evaluate(features, labels):
         placeholders['dropout']: 0.0,
     }
 
-    loss, acc = sess.run([model.loss, model.accuracy], feed_dict)
-    return loss, acc, (time.time() - t_eval)
+    return model.evaluate(feed_dict)
 
-
-sess = tf.Session()
-global_step = model.initialize(sess)
-writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
 for step in xrange(global_step, FLAGS.max_steps):
-    t = time.time()
     train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
     train_preprocessed_features = preprocess_features(train_features)
 
@@ -94,8 +89,7 @@ for step in xrange(global_step, FLAGS.max_steps):
         placeholders['dropout']: FLAGS.dropout,
     }
 
-    _, summary = sess.run([model.train, model.summary], train_feed_dict)
-    writer.add_summary(summary, step)
+    duration = model.train(train_feed_dict, step)
 
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
@@ -110,7 +104,7 @@ for step in xrange(global_step, FLAGS.max_steps):
             'Step: {}'.format(step),
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
-            'time={:.2f}s'.format(time.time() - t),
+            'time={:.2f}s'.format(duration),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
