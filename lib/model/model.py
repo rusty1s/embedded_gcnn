@@ -64,9 +64,11 @@ class Model(object):
         self._loss = cal_softmax_cross_entropy(self.outputs, self.labels)
         self._accuracy = cal_accuracy(self.outputs, self.labels)
 
+        # Build train op.
         self._train = self.optimizer.minimize(
             self._loss, global_step=self._global_step)
 
+        # Create session.
         self.sess = tf.Session()
         if self.log_dir is not None:
             self._summary = tf.summary.merge_all()

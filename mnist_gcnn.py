@@ -8,10 +8,10 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
-from lib.graph.coarsening import coarsen_adj
+# from lib.graph.coarsening import coarsen_adj
 from lib.graph.preprocess import preprocess_adj
 from lib.graph.sparse import sparse_to_tensor
-from lib.graph.distortion import perm_batch_of_features
+# from lib.graph.distortion import perm_batch_of_features
 from lib.model.model import Model
 from lib.layer.gcnn import GCNN as Conv
 from lib.layer.max_pool_gcnn import MaxPoolGCNN as MaxPool
@@ -38,24 +38,14 @@ mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 adj = grid_adj([28, 28], FLAGS.grid_connectivity)
 adj = normalize_adj(adj)
 adj = invert_adj(adj)
-adjs, perm = coarsen_adj(adj, levels=4)
-adjs = [adjs[0], adjs[2]]
-n_1 = adjs[0].shape[0]
-n_2 = adjs[1].shape[0]
-normalized_adjs = []
-for adj in adjs:
-    adj = preprocess_adj(adj)
-    adj = sparse_to_tensor(adj)
-    normalized_adjs.append(adj)
-adjs = normalized_adjs
+adj = preprocess_adj(adj)
+adj = sparse_to_tensor(adj)
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32, [FLAGS.batch_size, n_1, 1], 'features'),
-    'adjacency_1':
-    tf.sparse_placeholder(tf.float32, name='adjacency_1'),
-    'adjacency_2':
-    tf.sparse_placeholder(tf.float32, name='adjacency_2'),
+    tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28, 1], 'features'),
+    'adjacency':
+    tf.sparse_placeholder(tf.float32, name='adjacency'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
@@ -70,53 +60,40 @@ class MNIST(Model):
 
     def _build(self):
         conv_1 = Conv(
-            1, 32, self.placeholders['adjacency_1'], logging=self.logging)
-        conv_2 = Conv(
-            32, 32, self.placeholders['adjacency_1'], logging=self.logging)
-        max_pool_1 = MaxPool(size=4, logging=self.logging)
-        conv_3 = Conv(
-            32, 64, self.placeholders['adjacency_2'], logging=self.logging)
-        conv_4 = Conv(
-            64, 64, self.placeholders['adjacency_2'], logging=self.logging)
-        max_pool_2 = MaxPool(size=4, logging=self.logging)
-        fc_1 = FC(n_1 // 4 // 4 * 64, 1024, logging=self.logging)
+            1, 32, self.placeholders['adjacency'], logging=self.logging)
+        max_pool_1 = MaxPool(size=2, logging=self.logging)
+        fc_1 = FC(14 * 28 * 32, 1024, logging=self.logging)
         fc_2 = FC(1024,
                   10,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [
-            conv_1, conv_2, max_pool_1, conv_3, conv_4, max_pool_2, fc_1, fc_2
-        ]
+        self.layers = [conv_1, max_pool_1, fc_1, fc_2]
 
 
 model = MNIST(
-    placeholders=placeholders, learning_rate=FLAGS.learning_rate, logging=True)
+    placeholders=placeholders,
+    learning_rate=FLAGS.learning_rate,
+    log_dir=FLAGS.log_dir)
+global_step = model.initialize()
 
 
 def preprocess_features(features):
-    features = np.reshape(features, (features.shape[0], features.shape[1], 1))
-    return perm_batch_of_features(features, perm)
+    return np.reshape(features, (features.shape[0], features.shape[1], 1))
 
 
 def evaluate(features, labels):
     features = preprocess_features(features)
     feed_dict = {
         placeholders['features']: features,
-        placeholders['adjacency_1']: adjs[0],
-        placeholders['adjacency_2']: adjs[1],
+        placeholders['adjacency']: adj,
         placeholders['labels']: labels,
         placeholders['dropout']: 0.0,
     }
 
-    loss, acc = sess.run([model.loss, model.accuracy], feed_dict)
-    return loss, acc
+    return model.evaluate(feed_dict)
 
-
-sess = tf.Session()
-global_step = model.initialize(sess)
-writer = tf.summary.FileWriter(FLAGS.log_dir, sess.graph)
 
 for step in xrange(global_step, FLAGS.max_steps):
     train_features, train_labels = mnist.train.next_batch(FLAGS.batch_size)
@@ -124,28 +101,27 @@ for step in xrange(global_step, FLAGS.max_steps):
 
     train_feed_dict = {
         placeholders['features']: train_preprocessed_features,
-        placeholders['adjacency_1']: adjs[0],
-        placeholders['adjacency_2']: adjs[1],
+        placeholders['adjacency']: adj,
         placeholders['labels']: train_labels,
         placeholders['dropout']: FLAGS.dropout,
     }
 
-    _, summary = sess.run([model.train, model.summary], train_feed_dict)
-    writer.add_summary(summary, step)
+    duration = model.train(train_feed_dict, step)
 
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
-        train_loss, train_acc = evaluate(train_features, train_labels)
+        train_loss, train_acc, _ = evaluate(train_features, train_labels)
 
         val_features, val_labels = mnist.validation.next_batch(
             FLAGS.batch_size)
-        val_loss, val_acc = evaluate(val_features, val_labels)
+        val_loss, val_acc, _ = evaluate(val_features, val_labels)
 
         # Print results.
         print(', '.join([
             'Step: {}'.format(step),
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
+            'time={:.2f}s'.format(duration),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
@@ -154,12 +130,14 @@ print('Optimization finished!')
 
 # Evaluate on test set.
 num_iterations = 10000 // FLAGS.batch_size
-test_loss, test_acc = (0, 0)
+test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
     test_features, test_labels = mnist.test.next_batch(FLAGS.batch_size)
-    test_single_loss, test_single_acc = evaluate(test_features, test_labels)
+    test_single_loss, test_single_acc, test_single_duration = evaluate(
+        test_features, test_labels)
     test_loss += test_single_loss
     test_acc += test_single_acc
+    test_duration += test_single_duration
 
-print('Test set results: cost={:.5f}, accuracy={:.5f}'.format(
-    test_loss / num_iterations, test_acc / num_iterations))
+print('Test set results: cost={:.5f}, accuracy={:.5f}, time={:.2f}s'.format(
+    test_loss / num_iterations, test_acc / num_iterations, test_duration))
