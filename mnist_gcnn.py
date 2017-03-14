@@ -72,10 +72,18 @@ class MNIST(Model):
 
     def _build(self):
         conv_1 = Conv(
-            1, 32, self.placeholders['adjacency_1'], logging=self.logging)
+            1,
+            32,
+            self.placeholders['adjacency_1'],
+            bias=False,
+            logging=self.logging)
         max_pool_1 = MaxPool(size=4, logging=self.logging)
         conv_2 = Conv(
-            32, 64, self.placeholders['adjacency_2'], logging=self.logging)
+            32,
+            64,
+            self.placeholders['adjacency_2'],
+            bias=False,
+            logging=self.logging)
         max_pool_2 = MaxPool(size=4, logging=self.logging)
         fc_1 = FC(n_1 // 4 // 4 * 64, 1024, logging=self.logging)
         fc_2 = FC(1024,
