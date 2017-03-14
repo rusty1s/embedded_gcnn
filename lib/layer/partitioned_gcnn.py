@@ -6,19 +6,19 @@ from .layer import Layer
 from .inits import weight_variable, bias_variable
 
 
-class GCNN(Layer):
+class PartitionedGCNN(Layer):
     def __init__(self,
                  in_channels,
                  out_channels,
                  adjs,
                  weight_stddev=0.1,
                  weight_decay=None,
-                 bias=True,
+                 bias=False,
                  bias_constant=0.1,
                  act=tf.nn.relu,
                  **kwargs):
 
-        super(GCNN, self).__init__(**kwargs)
+        super(PartitionedGCNN, self).__init__(**kwargs)
 
         self.adjs = adjs
         self.bias = bias
@@ -63,3 +63,4 @@ class GCNN(Layer):
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
 
         return self.act(outputs)
+

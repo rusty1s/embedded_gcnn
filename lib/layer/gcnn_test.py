@@ -12,28 +12,28 @@ class GCNNTest(tf.test.TestCase):
         self.assertEqual(layer.name, 'gcnn_1')
         self.assertEqual(layer.adjs, adj)
         self.assertEqual(layer.act, tf.nn.relu)
-        self.assertEqual(layer.bias, False)
+        self.assertEqual(layer.bias, True)
         self.assertEqual(layer.logging, False)
         self.assertIn('weights', layer.vars)
         self.assertEqual(layer.vars['weights'].get_shape(), [1, 2])
-        self.assertNotIn('bias', layer.vars)
+        self.assertIn('bias', layer.vars)
+        self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
-        layer = GCNN(3, 4, adj, bias=True, logging=True)
+        layer = GCNN(3, 4, adj, bias=False, logging=True)
         self.assertEqual(layer.name, 'gcnn_2')
         self.assertEqual(layer.adjs, adj)
         self.assertEqual(layer.act, tf.nn.relu)
-        self.assertEqual(layer.bias, True)
+        self.assertEqual(layer.bias, False)
         self.assertEqual(layer.logging, True)
         self.assertIn('weights', layer.vars)
         self.assertEqual(layer.vars['weights'].get_shape(), [3, 4])
-        self.assertIn('bias', layer.vars)
-        self.assertEqual(layer.vars['bias'].get_shape(), [4])
+        self.assertNotIn('bias', layer.vars)
 
     def test_bias_constant(self):
         adj = tf.constant(0)
 
-        layer1 = GCNN(2, 3, adj, bias=True, name='bias_1')
-        layer2 = GCNN(2, 3, adj, bias=True, bias_constant=1.0, name='bias_2')
+        layer1 = GCNN(2, 3, adj, name='bias_1')
+        layer2 = GCNN(2, 3, adj, bias_constant=1.0, name='bias_2')
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
@@ -47,7 +47,7 @@ class GCNNTest(tf.test.TestCase):
         adj = tf.SparseTensor([[0, 1], [1, 0], [1, 2], [2, 1]],
                               [1.0, 1.0, 2.0, 2.0], [3, 3])
 
-        layer = GCNN(2, 3, adj, bias=True, name='call_single')
+        layer = GCNN(2, 3, adj, name='call_single')
         input_1 = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
         input_2 = [[7.0, 8.0], [9.0, 10.0], [11.0, 12.0]]
 
