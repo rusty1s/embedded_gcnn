@@ -25,3 +25,9 @@ class MaxPoolGCNN(Layer):
             padding='SAME')
 
         return tf.reshape(inputs, [-1, n // self.size, in_channels])
+
+
+# x = tf.expand_dims(x, 3)  # N x M x F x 1
+# x = tf.nn.max_pool(x, ksize=[1,p,1,1], strides=[1,p,1,1], padding='SAME')
+# #tf.maximum
+# return tf.squeeze(x, [3])  # N x M/p x F
