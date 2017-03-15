@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
-from lib.graph.coarsening import coarsen_adj
+from lib.graph.coarsening_copy import coarsen
 from lib.graph.laplacian import laplacian, lmax, rescale_lap
 from lib.graph.sparse import sparse_to_tensor
 from lib.graph.distortion import perm_batch_of_features
@@ -25,8 +25,8 @@ flags.DEFINE_bool('normalize_laplacian', True,
                   'Whether to normalize laplacian or not.')
 flags.DEFINE_integer('max_degree', 25, 'Maximum Chebyshev polynomial degree.')
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('batch_size', 128, 'How many inputs to process at once.')
-flags.DEFINE_integer('max_steps', 2000, 'Number of steps to train.')
+flags.DEFINE_integer('batch_size', 64, 'How many inputs to process at once.')
+flags.DEFINE_integer('max_steps', 4000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_string('data_dir', 'data/mnist/input',
                     'Directory for storing input data.')
@@ -41,7 +41,8 @@ mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 adj = grid_adj([28, 28], FLAGS.grid_connectivity)
 adj = normalize_adj(adj)
 adj = invert_adj(adj)
-adjs, perm = coarsen_adj(adj, levels=4)
+adjs, perm = coarsen(adj, levels=4)
+perm = np.array(perm)
 adjs = [adjs[0], adjs[2]]
 n_1 = adjs[0].shape[0]
 n_2 = adjs[1].shape[0]

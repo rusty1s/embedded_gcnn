@@ -22,8 +22,8 @@ FLAGS = flags.FLAGS
 flags.DEFINE_integer('grid_connectivity', 8,
                      'Connectivity of the generated grid.')
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('batch_size', 128, 'How many inputs to process at once.')
-flags.DEFINE_integer('max_steps', 2000, 'Number of steps to train.')
+flags.DEFINE_integer('batch_size', 64, 'How many inputs to process at once.')
+flags.DEFINE_integer('max_steps', 4000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_string('data_dir', 'data/mnist/input',
                     'Directory for storing input data.')
