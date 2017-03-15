@@ -18,5 +18,5 @@ class MaxPoolGCNNTest(tf.test.TestCase):
 
         expected = [[[3, 4], [5, 6]], [[9, 10], [11, 12]]]
 
-        with self.test_session() as sess:
+        with self.test_session():
             self.assertAllEqual(layer(inputs).eval(), expected)
