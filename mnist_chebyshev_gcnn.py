@@ -23,7 +23,7 @@ flags.DEFINE_integer('grid_connectivity', 8,
                      'Connectivity of the generated grid.')
 flags.DEFINE_bool('normalize_laplacian', True,
                   'Whether to normalize laplacian or not.')
-flags.DEFINE_integer('max_degree', 5, 'Maximum Chebyshev polynomial degree.')
+flags.DEFINE_integer('max_degree', 25, 'Maximum Chebyshev polynomial degree.')
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_integer('batch_size', 128, 'How many inputs to process at once.')
 flags.DEFINE_integer('max_steps', 2000, 'Number of steps to train.')
