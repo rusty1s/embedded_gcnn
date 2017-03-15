@@ -1,4 +1,3 @@
-import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 
@@ -21,6 +20,7 @@ class SparseTest(tf.test.TestCase):
         value = sparse_to_tensor(value)
 
         # Sparse placeholder is buggy and can't convert shape.
+        # => Need to pass empty shape.
         placeholder = tf.sparse_placeholder(tf.float32)
         output = tf.sparse_tensor_to_dense(placeholder)
 

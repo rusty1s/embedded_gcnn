@@ -13,21 +13,10 @@ class MaxPoolGCNN(Layer):
         self.size = size
 
     def _call(self, inputs):
-        n = inputs.get_shape()[1].value
-        in_channels = inputs.get_shape()[2].value
-
-        inputs = tf.reshape(inputs, [-1, 1, n, in_channels])
-
-        inputs = tf.nn.max_pool(
-            inputs,
-            ksize=[1, 1, self.size, 1],
-            strides=[1, 1, self.size, 1],
+        outputs = tf.expand_dims(inputs, axis=3)
+        outputs = tf.nn.max_pool(
+            outputs,
+            ksize=[1, self.size, 1, 1],
+            strides=[1, self.size, 1, 1],
             padding='SAME')
-
-        return tf.reshape(inputs, [-1, n // self.size, in_channels])
-
-
-# x = tf.expand_dims(x, 3)  # N x M x F x 1
-# x = tf.nn.max_pool(x, ksize=[1,p,1,1], strides=[1,p,1,1], padding='SAME')
-# #tf.maximum
-# return tf.squeeze(x, [3])  # N x M/p x F
+        return tf.squeeze(outputs, axis=3)
