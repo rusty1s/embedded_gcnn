@@ -5,6 +5,7 @@ from numpy.testing import assert_equal
 import scipy.sparse as sp
 
 from .coarsening import _cluster_adj, _coarsen_adj, _compute_perms, coarsen_adj
+from .coarsening_copy import coarsen
 
 
 class CoarseningTest(TestCase):

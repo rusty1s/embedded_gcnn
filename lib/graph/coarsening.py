@@ -42,10 +42,10 @@ def _coarsen_adj(adj, rid=None):
     cols_new = cluster_map[cols]
     weights_new = weights
 
-    adj_new = sp.coo_matrix(
-        (weights_new, (rows_new, cols_new)), shape=(n_new, n_new))
+    adj_new = sp.csr_matrix(
+        (weights_new, (rows_new, cols_new)), shape=(n_new, n_new)).tocoo()
     adj_new.setdiag(0)
-    adj.eliminate_zeros()
+    adj_new.eliminate_zeros()
     return adj_new, cluster_map
 
 
