@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
 from lib.graph.adjacency import grid_adj, normalize_adj, invert_adj
-from lib.graph.coarsening_copy import coarsen
+from lib.graph.coarsening import coarsen_adj
 from lib.graph.laplacian import laplacian, lmax, rescale_lap
 from lib.graph.sparse import sparse_to_tensor
 from lib.graph.distortion import perm_batch_of_features
@@ -41,8 +41,7 @@ mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 adj = grid_adj([28, 28], FLAGS.grid_connectivity)
 adj = normalize_adj(adj)
 adj = invert_adj(adj)
-adjs, perm = coarsen(adj, levels=4)
-perm = np.array(perm)
+adjs, perm = coarsen_adj(adj, levels=4)
 adjs = [adjs[0], adjs[2]]
 n_1 = adjs[0].shape[0]
 n_2 = adjs[1].shape[0]
