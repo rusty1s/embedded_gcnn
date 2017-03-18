@@ -37,8 +37,8 @@ def _coarsen_embedded_adj(points, mass, adj, levels, sigma=1, rid=None):
         cluster_map = normalized_cut(adj_dist, rid)
 
         # Coarsen adjacency.
-        points, mass, adj = _coarsen_clustered_embedded_adj(cluster_map, points, mass,
-                                                   adj)
+        points, mass, adj = _coarsen_clustered_embedded_adj(cluster_map,
+                                                            points, mass, adj)
 
         # Compute to distance/radian adjacency.
         adj_dist, adj_rad = points_to_embedded(points, adj)
