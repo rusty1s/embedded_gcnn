@@ -26,7 +26,7 @@ flags.DEFINE_bool('normalize_laplacian', True,
 flags.DEFINE_integer('max_degree', 25, 'Maximum Chebyshev polynomial degree.')
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_integer('batch_size', 64, 'How many inputs to process at once.')
-flags.DEFINE_integer('max_steps', 4000, 'Number of steps to train.')
+flags.DEFINE_integer('max_steps', 10000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_string('data_dir', 'data/mnist/input',
                     'Directory for storing input data.')

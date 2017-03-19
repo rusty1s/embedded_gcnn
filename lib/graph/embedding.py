@@ -15,14 +15,13 @@ def grid_embedded_adj(shape, connectivity=4, dtype=np.float32):
 
 
 def grid_points(shape, dtype=np.float32):
-    y = np.arange(0, shape[0])
-    x = np.arange(0, shape[1])
-    xx, yy = np.meshgrid(x, y)
+    x, y = np.meshgrid(np.arange(0, shape[1]), np.arange(0, shape[0]))
+    x = x.flatten()
+    y = np.flip(y.flatten(), axis=0)
+
     z = np.empty((shape[0] * shape[1], 2), dtype)
-    xx = xx.flatten()
-    yy = np.flip(yy.flatten(), axis=0)
-    z[:, 0] = xx
-    z[:, 1] = yy
+    z[:, 0] = x
+    z[:, 1] = y
     return z
 
 
