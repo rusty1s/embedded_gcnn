@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .coarsening import coarsen_adj, _coarsen_clustered_adj, _compute_perms
+from .coarsening import coarsen_adj, _coarsen_clustered_adj, compute_perms
 
 
 class CoarseningTest(TestCase):
@@ -43,7 +43,7 @@ class CoarseningTest(TestCase):
         cluster_map_2 = np.array([2, 1, 0, 1, 0])
         cluster_maps = [cluster_map_1, cluster_map_2]
 
-        perms = _compute_perms(cluster_maps)
+        perms = compute_perms(cluster_maps)
 
         assert_equal(len(perms), 3)
         assert_equal(perms[2], [0, 1, 2])
@@ -54,7 +54,7 @@ class CoarseningTest(TestCase):
         cluster_map_2 = np.array([1, 0, 0])
         cluster_maps = [cluster_map_1, cluster_map_2]
 
-        perms = _compute_perms(cluster_maps)
+        perms = compute_perms(cluster_maps)
 
         assert_equal(len(perms), 3)
         assert_equal(perms[2], [0, 1])

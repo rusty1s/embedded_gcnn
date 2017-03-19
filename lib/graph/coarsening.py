@@ -9,7 +9,7 @@ from .distortion import perm_adj
 
 def coarsen_adj(adj, levels, rid=None):
     adjs, cluster_maps = _coarsen_adj(adj, levels, rid)
-    perms = _compute_perms(cluster_maps)
+    perms = compute_perms(cluster_maps)
     adjs = [perm_adj(adjs[i], perms[i]) for i in xrange(levels + 1)]
     return adjs, perms[0]
 
@@ -45,7 +45,7 @@ def _coarsen_clustered_adj(cluster_map, adj):
     return adj
 
 
-def _compute_perms(cluster_maps):
+def compute_perms(cluster_maps):
     # Last permutation is the ordered list of the number of clusters in the
     # last cluster map.
     perms = [np.arange(np.max(cluster_maps[-1] + 1))]
