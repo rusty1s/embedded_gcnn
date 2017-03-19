@@ -13,11 +13,11 @@ from .adjacency import normalize_adj, invert_adj
 
 def coarsen_embedded_adj(points, mass, adj, levels, sigma=1, rid=None):
     # Coarse graph a defined number of levels deep.
-    adjs_dist, adjs_rad, parents = _coarsen_embedded_adj(points, mass, adj,
+    adjs_dist, adjs_rad, cluster_maps = _coarsen_embedded_adj(points, mass, adj,
                                                          levels, sigma, rid)
 
     # Permutate adjacencies to a binary tree for an efficient O(n) pooling.
-    perms = compute_perms(parents)
+    perms = compute_perms(cluster_maps)
     adjs_dist = [perm_adj(adjs_dist[i], perms[i]) for i in xrange(levels + 1)]
     adjs_rad = [perm_adj(adjs_rad[i], perms[i]) for i in xrange(levels + 1)]
 
@@ -30,10 +30,11 @@ def _coarsen_embedded_adj(points, mass, adj, levels, sigma=1, rid=None):
 
     adjs_dist = [adj_dist]
     adjs_rad = [adj_rad]
-    parents = []
+    cluster_maps = []
     for _ in xrange(levels):
         # Calculate normalized cut clustering.
         cluster_map = normalized_cut(adj_dist, rid)
+        cluster_maps.append(cluster_map)
 
         # Coarsen adjacency.
         points, mass, adj = _coarsen_clustered_embedded_adj(cluster_map,
@@ -48,7 +49,7 @@ def _coarsen_embedded_adj(points, mass, adj, levels, sigma=1, rid=None):
         # Iterate by degree at next iteration.
         rid = np.argsort(np.array(adj_dist.sum(axis=0)).flatten())
 
-    return adjs_dist, adjs_rad, parents
+    return adjs_dist, adjs_rad, cluster_maps
 
 
 def _coarsen_clustered_embedded_adj(cluster_map, points, mass, adj):

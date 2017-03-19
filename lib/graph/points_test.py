@@ -8,7 +8,7 @@ from .points import points_to_embedded
 
 
 class PointsTest(TestCase):
-    def test_points_to_embedded_grdi_4(self):
+    def test_points_to_embedded_grid_4(self):
         points = np.array([[2, 2], [2, 3], [3, 2], [2, 1], [1, 2]])
         adj = sp.coo_matrix([[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
                              [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]])
@@ -23,7 +23,7 @@ class PointsTest(TestCase):
         assert_equal(adj_dist.toarray(), expected_dist)
         assert_almost_equal(adj_rad.toarray(), expected_rad, decimal=6)
 
-    def test_points_to_embedded_grdi_8(self):
+    def test_points_to_embedded_grid_8(self):
         points = np.array([[2, 2], [2, 3], [3, 3], [3, 2], [3, 1], [2, 1],
                            [1, 1], [1, 2], [1, 3]])
         adj = sp.coo_matrix(

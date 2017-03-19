@@ -25,3 +25,8 @@ def points_to_embedded(points, adj, dtype=np.float32):
     adj_rad = sp.coo_matrix((rads, (rows, cols)), (n, n))
 
     return adj_dist, adj_rad
+
+
+def points_of_grid(shape):
+    # TODO
+    pass
