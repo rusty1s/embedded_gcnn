@@ -35,7 +35,7 @@ def normalized_cut(adj, rid=None):
             rs = rowstart[tid]
             bestneighbor = -1
 
-            # Find best neighbor (Localized Normcal Cut).
+            # Find best neighbor (Normalized Cut).
             for c in range(rowlength[tid]):
                 nid = cols[rs + c]
                 w = weights[rs + c] * (1.0 / degree[tid] + 1.0 / degree[nid]
