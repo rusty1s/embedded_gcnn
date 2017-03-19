@@ -19,8 +19,9 @@ def grid_points(shape, dtype=np.float32):
     x = np.arange(0, shape[1])
     xx, yy = np.meshgrid(x, y)
     z = np.empty((shape[0] * shape[1], 2), dtype)
+    xx = xx.flatten()
     yy = np.flip(yy.flatten(), axis=0)
-    z[:, 0] = xx.flatten()
+    z[:, 0] = xx
     z[:, 1] = yy
     return z
 
