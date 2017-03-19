@@ -10,8 +10,7 @@ def normalized_cut(adj, rid=None):
         rid = np.random.permutation(np.arange(adj.shape[0]))
 
     n = adj.shape[0]
-    cluster_map = np.zeros(n, np.int32)
-    marked = np.zeros(n, np.bool)
+    cluster_map = np.zeros(n, np.int32) - 1
     clustercount = 0
 
     # Sort by row index.
@@ -30,8 +29,8 @@ def normalized_cut(adj, rid=None):
         # Iterate randomly.
         tid = rid[r]
 
-        if not marked[tid]:
-            marked[tid] = True
+        if cluster_map[tid] == -1:  # Not already marked
+            cluster_map[tid] = clustercount
             wmax = 0.0
             rs = rowstart[tid]
             bestneighbor = -1
@@ -39,16 +38,14 @@ def normalized_cut(adj, rid=None):
             # Find best neighbor (Localized Normcal Cut).
             for c in range(rowlength[tid]):
                 nid = cols[rs + c]
-                tval = weights[rs + c] * (1.0 / degree[tid] + 1.0 / degree[nid]
-                                          ) if not marked[nid] else 0.0
-                if tval > wmax:
-                    wmax = tval
+                w = weights[rs + c] * (1.0 / degree[tid] + 1.0 / degree[nid]
+                                       ) if cluster_map[nid] == -1 else 0.0
+                if w > wmax:
+                    wmax = w
                     bestneighbor = nid
 
-            cluster_map[tid] = clustercount
             if bestneighbor > -1:
                 cluster_map[bestneighbor] = clustercount
-                marked[bestneighbor] = True
             clustercount += 1
 
     return cluster_map
