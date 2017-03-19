@@ -5,62 +5,48 @@ from six.moves import xrange
 import numpy as np
 import scipy.sparse as sp
 
-from .adjacency import _grid_neighbors
+from .adjacency import grid_adj
 
 
 def grid_embedded_adj(shape, connectivity=4, dtype=np.float32):
-    assert connectivity == 4 or connectivity == 8,\
-        'Invalid connectivity {}'.format(connectivity)
-
-    height, width = shape
-    n = height * width
-    adj_dist = sp.lil_matrix((n, n), dtype=dtype)
-    adj_rad = sp.lil_matrix((n, n), dtype=np.float32)
-
-    adj_dist, adj_rad = _grid_adj_4(adj_dist, adj_rad, height, width)
-
-    if connectivity == 8:
-        adj_dist, adj_rad = _grid_adj_8(adj_dist, adj_rad, height, width)
-
-    return adj_dist.tocoo(), adj_rad.tocoo()
+    points = grid_points(shape)
+    adj = grid_adj(shape, connectivity, dtype)
+    return points_to_embedded(points, adj, dtype)
 
 
-def _grid_adj_4(adj_dist, adj_rad, height, width):
-    for v in xrange(height * width):
-        top, right, bottom, left = _grid_neighbors(v, height, width)
-
-        if top:
-            adj_dist[v, v - width] = 1
-            adj_rad[v, v - width] = 2 * np.pi
-        if right:
-            adj_dist[v, v + 1] = 1
-            adj_rad[v, v + 1] = 0.5 * np.pi
-        if bottom:
-            adj_dist[v, v + width] = 1
-            adj_rad[v, v + width] = np.pi
-        if left:
-            adj_dist[v, v - 1] = 1
-            adj_rad[v, v - 1] = 1.5 * np.pi
-
-    return adj_dist, adj_rad
+def grid_points(shape, dtype=np.float32):
+    y = np.arange(0, shape[0])
+    x = np.arange(0, shape[1])
+    xx, yy = np.meshgrid(x, y)
+    z = np.empty((shape[0] * shape[1], 2), dtype)
+    yy = np.flip(yy.flatten(), axis=0)
+    z[:, 0] = xx.flatten()
+    z[:, 1] = yy
+    return z
 
 
-def _grid_adj_8(adj_dist, adj_rad, height, width):
-    for v in xrange(height * width):
-        top, right, bottom, left = _grid_neighbors(v, height, width)
+def points_to_embedded(points, adj, dtype=np.float32):
+    """Builds an embedded adjacency matrix based on points of nodes."""
 
-        if top and right:
-            adj_dist[v, v - width + 1] = 2
-            adj_rad[v, v - width + 1] = 0.25 * np.pi
-        if bottom and right:
-            adj_dist[v, v + width + 1] = 2
-            adj_rad[v, v + width + 1] = 0.75 * np.pi
-        if bottom and left:
-            adj_dist[v, v + width - 1] = 2
-            adj_rad[v, v + width - 1] = 1.25 * np.pi
-        if top and left:
-            adj_dist[v, v - width - 1] = 2
-            adj_rad[v, v - width - 1] = 1.75 * np.pi
+    # Initialize helper variables.
+    n = adj.shape[0]
+    rows, cols, _ = sp.find(adj)  # Ignore edge weights of `adj`.
+    perm = np.argsort(rows)
+    rows = rows[perm]
+    cols = cols[perm]
+    nnz = rows.shape[0]
+    dists = np.empty((nnz), dtype=dtype)
+    rads = np.empty((nnz), dtype=dtype)
+
+    for i in xrange(nnz):
+        # Calculate distance and angle of each edge vector.
+        vector = points[cols[i]] - points[rows[i]]
+        dists[i] = np.sum(np.power(vector, 2))
+        rad = np.arctan2(vector[0], vector[1])
+        rads[i] = rad if rad > 0 else rad + 2 * np.pi
+
+    adj_dist = sp.coo_matrix((dists, (rows, cols)), (n, n))
+    adj_rad = sp.coo_matrix((rads, (rows, cols)), (n, n))
 
     return adj_dist, adj_rad
 

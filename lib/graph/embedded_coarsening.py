@@ -7,14 +7,14 @@ import numpy as np
 from .clustering import normalized_cut
 from .coarsening import compute_perms, _coarsen_clustered_adj
 from .distortion import perm_adj
-from .points import points_to_embedded
+from .embedding import points_to_embedded
 from .adjacency import normalize_adj, invert_adj
 
 
 def coarsen_embedded_adj(points, mass, adj, levels, sigma=1, rid=None):
     # Coarse graph a defined number of levels deep.
-    adjs_dist, adjs_rad, cluster_maps = _coarsen_embedded_adj(points, mass, adj,
-                                                         levels, sigma, rid)
+    adjs_dist, adjs_rad, cluster_maps = _coarsen_embedded_adj(
+        points, mass, adj, levels, sigma, rid)
 
     # Permutate adjacencies to a binary tree for an efficient O(n) pooling.
     perms = compute_perms(cluster_maps)
