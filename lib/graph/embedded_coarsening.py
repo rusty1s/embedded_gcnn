@@ -3,10 +3,9 @@ from __future__ import division
 from six.moves import xrange
 
 import numpy as np
-import scipy.sparse as sp
 
 from .clustering import normalized_cut
-from .coarsening import _compute_perms
+from .coarsening import _compute_perms, _coarsen_clustered_adj
 from .distortion import perm_adj
 from .points import points_to_embedded
 from .adjacency import normalize_adj, invert_adj
@@ -56,13 +55,7 @@ def _coarsen_clustered_embedded_adj(cluster_map, points, mass, adj):
     n_new = cluster_map.max() + 1
 
     # Calculate coarsened adjacency matrix.
-    rows, cols, weights = sp.find(adj)
-    rows = cluster_map[rows]
-    cols = cluster_map[cols]
-    adj_new = sp.csr_matrix(
-        (weights, (rows, cols)), shape=(n_new, n_new)).tocoo()
-    adj_new.setdiag(0)
-    adj_new.eliminate_zeros()
+    adj_new = _coarsen_clustered_adj(cluster_map, adj)
     adj_new = adj_new.astype(np.bool).astype(adj_new.dtype)
 
     # Calculate new points and masses.

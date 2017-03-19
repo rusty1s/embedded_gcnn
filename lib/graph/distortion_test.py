@@ -13,15 +13,15 @@ class DistortionTest(TestCase):
         adj = sp.coo_matrix(adj)
         perm = np.array([2, 1, 3, 0])
 
-        expected = [[0, 1, 0, 2], [1, 0, 2, 0], [0, 2, 0, 1], [2, 0, 1, 0]]
+        expected = [[0, 0, 2, 1], [0, 0, 1, 2], [2, 1, 0, 0], [1, 2, 0, 0]]
 
         assert_equal(perm_adj(adj, perm).toarray(), expected)
 
         # Add fake nodes.
         perm = np.array([3, 2, 0, 4, 1])
 
-        expected = [[0, 0, 0, 1, 2], [0, 0, 0, 0, 0], [0, 0, 0, 2, 1],
-                    [1, 0, 2, 0, 0], [2, 0, 1, 0, 0]]
+        expected = [[0, 2, 0, 0, 1], [2, 0, 1, 0, 0], [0, 1, 0, 0, 2],
+                    [0, 0, 0, 0, 0], [1, 0, 2, 0, 0]]
 
         assert_equal(perm_adj(adj, perm).toarray(), expected)
 

@@ -10,7 +10,7 @@ def normalized_cut(adj, rid=None):
         rid = np.random.permutation(np.arange(adj.shape[0]))
 
     n = adj.shape[0]
-    cluster_map = np.zeros(n, np.int32) - 1
+    cluster_map = np.zeros(n, np.int32)
     marked = np.zeros(n, np.bool)
     clustercount = 0
 
@@ -23,17 +23,8 @@ def normalized_cut(adj, rid=None):
     degree = np.array(adj.sum(axis=0)).flatten()
 
     # Get the beginning indices and the count of every row.
-    rowstart = np.zeros(n, np.int32)
-    rowlength = np.zeros(n, np.int32)
-    oldval = rows[0]
-    count = 0
-
-    for i in range(rows.shape[0]):
-        rowlength[count] = rowlength[count] + 1
-        if rows[i] > oldval:
-            oldval = rows[i]
-            rowstart[count + 1] = i
-            count = count + 1
+    _, rowstart, rowlength = np.unique(
+        rows, return_index=True, return_counts=True)
 
     for r in xrange(n):
         # Iterate randomly.
@@ -60,4 +51,4 @@ def normalized_cut(adj, rid=None):
                 marked[bestneighbor] = True
             clustercount += 1
 
-    return cluster_map, rows, cols, weights, perm
+    return cluster_map

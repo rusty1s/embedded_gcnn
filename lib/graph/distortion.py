@@ -21,8 +21,9 @@ def perm_adj(adj, perm=None):
         adj = sp.vstack([adj, rows])
         adj = sp.hstack([adj, cols])
 
-    adj.row = np.array(perm)[adj.row]
-    adj.col = np.array(perm)[adj.col]
+    sorted_perm = np.argsort(perm)
+    adj.row = np.array(sorted_perm)[adj.row]
+    adj.col = np.array(sorted_perm)[adj.col]
     return adj
 
 

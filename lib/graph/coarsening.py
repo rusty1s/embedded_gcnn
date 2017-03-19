@@ -8,44 +8,44 @@ from .distortion import perm_adj
 
 
 def coarsen_adj(adj, levels, rid=None):
-    adjs, parents = _cluster_adj(adj, levels, rid)
-    perms = _compute_perms(parents)
+    adjs, cluster_maps = _coarsen_adj(adj, levels, rid)
+    perms = _compute_perms(cluster_maps)
     adjs = [perm_adj(adjs[i], perms[i]) for i in xrange(levels + 1)]
     return adjs, perms[0]
 
 
-def _cluster_adj(adj, levels, rid=None):
-    parents = []
+def _coarsen_adj(adj, levels, rid=None):
+    cluster_maps = []
     adjs = [adj]
 
     for _ in xrange(levels):
         # Apply metis.
-        cluster_map, rows, cols, weights, _ = normalized_cut(adj, rid)
-        parents.append(cluster_map)
+        cluster_map = normalized_cut(adj, rid)
+        cluster_maps.append(cluster_map)
 
         # Compute new coarsened adjacency weights based on cluster map.
-        adj = _coarsen_adj_one_level(cluster_map, rows, cols, weights)
+        adj = _coarsen_clustered_adj(cluster_map, adj)
         adjs.append(adj)
 
         # Iterate by degree at next iteration.
         rid = np.argsort(np.array(adj.sum(axis=0)).flatten())
 
-    return adjs, parents
+    return adjs, cluster_maps
 
 
-def _coarsen_adj_one_level(cluster_map, rows, cols, weights):
-    n_new = cluster_map.max() + 1
+def _coarsen_clustered_adj(cluster_map, adj):
+    n = cluster_map.max() + 1
+
+    rows, cols, weights = sp.find(adj)
     rows = cluster_map[rows]
     cols = cluster_map[cols]
-    adj = sp.csr_matrix((weights, (rows, cols)), shape=(n_new, n_new)).tocoo()
+    adj = sp.csr_matrix((weights, (rows, cols)), shape=(n, n)).tocoo()
     adj.setdiag(0)
     adj.eliminate_zeros()
     return adj
 
 
 def _compute_perms(cluster_maps):
-    assert len(cluster_maps) > 0, 'No cluster maps passed.'
-
     # Last permutation is the ordered list of the number of clusters in the
     # last cluster map.
     perms = [np.arange(np.max(cluster_maps[-1] + 1))]
