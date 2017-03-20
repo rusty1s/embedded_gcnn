@@ -41,18 +41,18 @@ adj = grid_adj((28, 28), connectivity=FLAGS.grid_connectivity)
 mass = np.ones((points.shape[0]))
 adjs_dist, adjs_rad, perm = coarsen_embedded_adj(points, mass, adj, levels=4)
 n_1 = adjs_dist[0].shape[0]
-adjs_1 = partition_embedded_adj(
+adjs_np_1 = partition_embedded_adj(
     adjs_dist[0],
     adjs_rad[0],
     num_partitions=FLAGS.grid_connectivity,
     offset=0.125 * np.pi)
-adjs_2 = partition_embedded_adj(
+adjs_np_2 = partition_embedded_adj(
     adjs_dist[2],
     adjs_rad[2],
     num_partitions=FLAGS.grid_connectivity,
     offset=0.125 * np.pi)
-adjs_1 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_1]
-adjs_2 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_2]
+adjs_1 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_np_1]
+adjs_2 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_np_2]
 
 placeholders = {
     'features':
@@ -78,16 +78,30 @@ class MNIST(Model):
         self.build()
 
     def _build(self):
-        conv_1 = Conv(
+        conv_1_1 = Conv(
             1,
             32,
             self.placeholders['adjacency_1'],
             num_partitions=FLAGS.grid_connectivity,
             bias=True,
             logging=self.logging)
-        max_pool_1 = MaxPool(size=4, logging=self.logging)
-        conv_2 = Conv(
+        conv_1_2 = Conv(
             32,
+            32,
+            self.placeholders['adjacency_1'],
+            num_partitions=FLAGS.grid_connectivity,
+            bias=True,
+            logging=self.logging)
+        max_pool_1 = MaxPool(size=4, logging=self.logging)
+        conv_2_1 = Conv(
+            32,
+            64,
+            self.placeholders['adjacency_2'],
+            num_partitions=FLAGS.grid_connectivity,
+            bias=True,
+            logging=self.logging)
+        conv_2_2 = Conv(
+            64,
             64,
             self.placeholders['adjacency_2'],
             num_partitions=FLAGS.grid_connectivity,
@@ -101,7 +115,10 @@ class MNIST(Model):
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [conv_1, max_pool_1, conv_2, max_pool_2, fc_1, fc_2]
+        self.layers = [
+            conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
+            fc_1, fc_2
+        ]
 
 
 model = MNIST(
