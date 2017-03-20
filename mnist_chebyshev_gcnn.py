@@ -77,14 +77,14 @@ class MNIST(Model):
             self.placeholders['laplacian_1'],
             max_degree=FLAGS.max_degree,
             logging=self.logging)
-        max_pool_1 = MaxPool(size=4, logging=self.logging)
+        pool_1 = MaxPool(size=4, logging=self.logging)
         conv_2 = Conv(
             32,
             64,
             self.placeholders['laplacian_2'],
             max_degree=FLAGS.max_degree,
             logging=self.logging)
-        max_pool_2 = MaxPool(size=4, logging=self.logging)
+        pool_2 = MaxPool(size=4, logging=self.logging)
         fc_1 = FC((n_1 // 4 // 4) * 64, 1024, logging=self.logging)
         fc_2 = FC(1024,
                   10,
@@ -92,7 +92,7 @@ class MNIST(Model):
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [conv_1, max_pool_1, conv_2, max_pool_2, fc_1, fc_2]
+        self.layers = [conv_1, pool_1, conv_2, pool_2, fc_1, fc_2]
 
 
 model = MNIST(
