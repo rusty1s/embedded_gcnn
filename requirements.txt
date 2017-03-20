@@ -1,4 +1,8 @@
 numpy>=1.12.0
 scipy>=0.18.1
 tensorflow>=1.0.0
+scikit-image>=0.12.3
 networkx>=1.11
+jupyter
+ipython
+matplotlib

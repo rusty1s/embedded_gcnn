@@ -47,7 +47,7 @@ class MNIST(Model):
         conv_1_2 = Conv(32, 32, size=3, stride=1, logging=self.logging)
         pool_1 = MaxPool(size=2, stride=2, logging=self.logging)
         conv_2_1 = Conv(32, 64, size=3, stride=1, logging=self.logging)
-        conv_2_2 = Conv(32, 32, size=3, stride=1, logging=self.logging)
+        conv_2_2 = Conv(64, 64, size=3, stride=1, logging=self.logging)
         pool_2 = MaxPool(size=2, stride=2, logging=self.logging)
         fc_1 = FC(7 * 7 * 64, 1024, logging=self.logging)
         fc_2 = FC(1024,
