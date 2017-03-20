@@ -4,45 +4,11 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import scipy.sparse as sp
 
-from .embedding import (grid_embedded_adj, grid_points, points_to_embedded,
-                        partition_embedded_adj)
+from .embedding import grid_points, points_to_embedded, partition_embedded_adj
+from .adjacency import grid_adj
 
 
 class EmbeddingTest(TestCase):
-    def test_grid_embedded_adj_connectivity_4(self):
-        adj_dist, adj_rad = grid_embedded_adj((3, 2), connectivity=4)
-
-        expected_dist = [[0, 1, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0],
-                         [1, 0, 0, 1, 1, 0], [0, 1, 1, 0, 0, 1],
-                         [0, 0, 1, 0, 0, 1], [0, 0, 0, 1, 1, 0]]
-        expected_rad = [[0, 0.5 * np.pi, np.pi, 0, 0, 0],
-                        [1.5 * np.pi, 0, 0, np.pi, 0, 0],
-                        [2 * np.pi, 0, 0, 0.5 * np.pi, np.pi, 0],
-                        [0, 2 * np.pi, 1.5 * np.pi, 0, 0, np.pi],
-                        [0, 0, 2 * np.pi, 0, 0, 0.5 * np.pi],
-                        [0, 0, 0, 2 * np.pi, 1.5 * np.pi, 0]]
-
-        assert_equal(adj_dist.toarray(), expected_dist)
-        assert_almost_equal(adj_rad.toarray(), expected_rad, decimal=6)
-
-    def test_grid_embedded_adj_connectivity_8(self):
-        adj_dist, adj_rad = grid_embedded_adj((3, 2), connectivity=8)
-
-        expected_dist = [[0, 1, 1, 2, 0, 0], [1, 0, 2, 1, 0, 0],
-                         [1, 2, 0, 1, 1, 2], [2, 1, 1, 0, 2, 1],
-                         [0, 0, 1, 2, 0, 1], [0, 0, 2, 1, 1, 0]]
-        expected_rad = [
-            [0, 0.5 * np.pi, np.pi, 0.75 * np.pi, 0, 0],
-            [1.5 * np.pi, 0, 1.25 * np.pi, np.pi, 0, 0],
-            [2 * np.pi, 0.25 * np.pi, 0, 0.5 * np.pi, np.pi, 0.75 * np.pi],
-            [1.75 * np.pi, 2 * np.pi, 1.5 * np.pi, 0, 1.25 * np.pi, np.pi],
-            [0, 0, 2 * np.pi, 0.25 * np.pi, 0, 0.5 * np.pi],
-            [0, 0, 1.75 * np.pi, 2 * np.pi, 1.5 * np.pi, 0]
-        ]
-
-        assert_equal(adj_dist.toarray(), expected_dist)
-        assert_almost_equal(adj_rad.toarray(), expected_rad, decimal=6)
-
     def test_grid_points(self):
         expected = [[0, 2], [1, 2], [0, 1], [1, 1], [0, 0], [1, 0]]
         assert_equal(grid_points((3, 2)), expected)
@@ -96,7 +62,10 @@ class EmbeddingTest(TestCase):
         assert_almost_equal(adj_rad.toarray(), expected_rad, decimal=6)
 
     def test_partition_embedded_adj_connectivity_4(self):
-        adj_dist, adj_rad = grid_embedded_adj((3, 2), connectivity=4)
+        points = grid_points((3, 2))
+        adj = grid_adj((3, 2), connectivity=4)
+        adj_dist, adj_rad = points_to_embedded(points, adj)
+
         adjs = partition_embedded_adj(
             adj_dist, adj_rad, num_partitions=4, offset=0.25 * np.pi)
 
@@ -122,7 +91,10 @@ class EmbeddingTest(TestCase):
             assert_equal(adjs[3].toarray(), expected_adj_left)
 
     def test_partition_embedded_adj_connectivity_8(self):
-        adj_dist, adj_rad = grid_embedded_adj((3, 2), connectivity=8)
+        points = grid_points((3, 2))
+        adj = grid_adj((3, 2), connectivity=8)
+        adj_dist, adj_rad = points_to_embedded(points, adj)
+
         adjs = partition_embedded_adj(
             adj_dist, adj_rad, num_partitions=4, offset=0.375 * np.pi)
 

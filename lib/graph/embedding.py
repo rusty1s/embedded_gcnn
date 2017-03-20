@@ -5,14 +5,6 @@ from six.moves import xrange
 import numpy as np
 import scipy.sparse as sp
 
-from .adjacency import grid_adj
-
-
-def grid_embedded_adj(shape, connectivity=4, dtype=np.float32):
-    points = grid_points(shape)
-    adj = grid_adj(shape, connectivity, dtype)
-    return points_to_embedded(points, adj, dtype)
-
 
 def grid_points(shape, dtype=np.float32):
     x, y = np.meshgrid(np.arange(0, shape[1]), np.arange(0, shape[0]))

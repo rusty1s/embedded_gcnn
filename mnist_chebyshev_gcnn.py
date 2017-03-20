@@ -44,7 +44,6 @@ adj = invert_adj(adj)
 adjs, perm = coarsen_adj(adj, levels=4)
 adjs = [adjs[0], adjs[2]]
 n_1 = adjs[0].shape[0]
-n_2 = adjs[1].shape[0]
 laps = []
 for adj in adjs:
     lap = laplacian(adj, normalized=FLAGS.normalize_laplacian)

@@ -7,10 +7,12 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
-from lib.graph.embedding import grid_embedded_adj, partition_embedded_adj
-from lib.graph.adjacency import normalize_adj, invert_adj
+from lib.graph.embedding import grid_points, partition_embedded_adj
+from lib.graph.adjacency import grid_adj
+from lib.graph.embedded_coarsening import coarsen_embedded_adj
 from lib.graph.preprocess import preprocess_adj
 from lib.graph.sparse import sparse_to_tensor
+from lib.graph.distortion import perm_batch_of_features
 from lib.model.model import Model
 from lib.layer.partitioned_gcnn import PartitionedGCNN as Conv
 from lib.layer.max_pool_gcnn import MaxPoolGCNN as MaxPool
@@ -26,7 +28,7 @@ flags.DEFINE_integer('max_steps', 10000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_string('data_dir', 'data/mnist/input',
                     'Directory for storing input data.')
-flags.DEFINE_string('log_dir', 'data/mnist/summaries/gcnn',
+flags.DEFINE_string('log_dir', 'data/mnist/summaries/partitioned_gcnn',
                     'Summaries log directory.')
 flags.DEFINE_integer('display_step', 10,
                      'How many steps to print logging after.')
@@ -34,26 +36,33 @@ flags.DEFINE_integer('display_step', 10,
 mnist = input_data.read_data_sets(FLAGS.data_dir, one_hot=False)
 
 # Generate data.
-adj_dist, adj_rad = grid_embedded_adj([28, 28], FLAGS.grid_connectivity)
-adj_dist = normalize_adj(adj_dist)
-adj_dist = invert_adj(adj_dist)
-adjs = partition_embedded_adj(
-    adj_dist,
-    adj_rad,
+points = grid_points((28, 28))
+adj = grid_adj((28, 28), connectivity=FLAGS.grid_connectivity)
+mass = np.ones((points.shape[0]))
+adjs_dist, adjs_rad, perm = coarsen_embedded_adj(points, mass, adj, levels=4)
+n_1 = adjs_dist[0].shape[0]
+adjs_1 = partition_embedded_adj(
+    adjs_dist[0],
+    adjs_rad[0],
     num_partitions=FLAGS.grid_connectivity,
     offset=0.125 * np.pi)
-new_adjs = []
-for adj in adjs:
-    adj = preprocess_adj(adj)
-    adj = sparse_to_tensor(adj)
-    new_adjs.append(adj)
-adjs = new_adjs
+adjs_2 = partition_embedded_adj(
+    adjs_dist[2],
+    adjs_rad[2],
+    num_partitions=FLAGS.grid_connectivity,
+    offset=0.125 * np.pi)
+adjs_1 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_1]
+adjs_2 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_2]
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32, [FLAGS.batch_size, 28 * 28, 1], 'features'),
-    'adjacency': [
-        tf.sparse_placeholder(tf.float32, name='adjacency_{}'.format(i))
+    tf.placeholder(tf.float32, [FLAGS.batch_size, n_1, 1], 'features'),
+    'adjacency_1': [
+        tf.sparse_placeholder(tf.float32, name='adjacency_1_{}'.format(i + 1))
+        for i in xrange(FLAGS.grid_connectivity)
+    ],
+    'adjacency_2': [
+        tf.sparse_placeholder(tf.float32, name='adjacency_2_{}'.format(i + 1))
         for i in xrange(FLAGS.grid_connectivity)
     ],
     'labels':
@@ -72,19 +81,27 @@ class MNIST(Model):
         conv_1 = Conv(
             1,
             32,
-            self.placeholders['adjacency'],
+            self.placeholders['adjacency_1'],
             num_partitions=FLAGS.grid_connectivity,
             bias=True,
             logging=self.logging)
-        max_pool_1 = MaxPool(size=2, logging=self.logging)
-        fc_1 = FC(28 * 14 * 32, 1024, logging=self.logging)
+        max_pool_1 = MaxPool(size=4, logging=self.logging)
+        conv_2 = Conv(
+            32,
+            64,
+            self.placeholders['adjacency_2'],
+            num_partitions=FLAGS.grid_connectivity,
+            bias=True,
+            logging=self.logging)
+        max_pool_2 = MaxPool(size=4, logging=self.logging)
+        fc_1 = FC((n_1 // 4 // 4) * 64, 1024, logging=self.logging)
         fc_2 = FC(1024,
                   10,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [conv_1, max_pool_1, fc_1, fc_2]
+        self.layers = [conv_1, max_pool_1, conv_2, max_pool_2, fc_1, fc_2]
 
 
 model = MNIST(
@@ -95,7 +112,8 @@ global_step = model.initialize()
 
 
 def preprocess_features(features):
-    return np.reshape(features, (features.shape[0], features.shape[1], 1))
+    features = np.reshape(features, (features.shape[0], features.shape[1], 1))
+    return perm_batch_of_features(features, perm)
 
 
 def evaluate(features, labels):
@@ -107,7 +125,11 @@ def evaluate(features, labels):
     }
 
     feed_dict.update({
-        placeholders['adjacency'][i]: adjs[i]
+        placeholders['adjacency_1'][i]: adjs_1[i]
+        for i in xrange(FLAGS.grid_connectivity)
+    })
+    feed_dict.update({
+        placeholders['adjacency_2'][i]: adjs_2[i]
         for i in xrange(FLAGS.grid_connectivity)
     })
 
@@ -125,7 +147,11 @@ for step in xrange(global_step, FLAGS.max_steps):
     }
 
     train_feed_dict.update({
-        placeholders['adjacency'][i]: adjs[i]
+        placeholders['adjacency_1'][i]: adjs_1[i]
+        for i in xrange(FLAGS.grid_connectivity)
+    })
+    train_feed_dict.update({
+        placeholders['adjacency_2'][i]: adjs_2[i]
         for i in xrange(FLAGS.grid_connectivity)
     })
 
