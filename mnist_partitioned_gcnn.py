@@ -41,18 +41,18 @@ adj = grid_adj((28, 28), connectivity=FLAGS.grid_connectivity)
 mass = np.ones((points.shape[0]))
 adjs_dist, adjs_rad, perm = coarsen_embedded_adj(points, mass, adj, levels=4)
 n_1 = adjs_dist[0].shape[0]
-adjs_np_1 = partition_embedded_adj(
+adjs_1 = partition_embedded_adj(
     adjs_dist[0],
     adjs_rad[0],
     num_partitions=FLAGS.grid_connectivity,
     offset=0.125 * np.pi)
-adjs_np_2 = partition_embedded_adj(
+adjs_2 = partition_embedded_adj(
     adjs_dist[2],
     adjs_rad[2],
     num_partitions=FLAGS.grid_connectivity,
     offset=0.125 * np.pi)
-adjs_1 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_np_1]
-adjs_2 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_np_2]
+adjs_1 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_1]
+adjs_2 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_2]
 
 placeholders = {
     'features':
