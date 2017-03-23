@@ -3,7 +3,6 @@ from __future__ import division
 
 from six.moves import xrange
 
-import numpy as np
 import tensorflow as tf
 
 from lib.dataset.mnist import MNIST
