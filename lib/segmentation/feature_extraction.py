@@ -1,6 +1,7 @@
 import numpy as np
 from skimage.measure import regionprops
 from skimage import color
+from sklearn.preprocessing import MinMaxScaler
 
 
 def feature_extraction(segmentation, image):
@@ -11,7 +12,6 @@ def feature_extraction(segmentation, image):
     intensity_image = color.rgb2gray(image)
     props = regionprops(segmentation, intensity_image)
 
-    NUM_FEATURES = 142
     NUM_FEATURES = 85
     features = np.zeros((len(props), NUM_FEATURES), dtype=np.float32)
 
@@ -69,4 +69,5 @@ def feature_extraction(segmentation, image):
         assert len(feature) == NUM_FEATURES
         features[i] = np.array(feature)
 
-    return features
+    # Scale linear to [0, 1].
+    return MinMaxScaler().fit_transform(features)
