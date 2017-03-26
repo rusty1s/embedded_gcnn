@@ -7,7 +7,7 @@ from .adjacency import segmentation_adjacency
 from .feature_extraction import feature_extraction_minimal
 
 
-class SegmenationIntegrationTest(TestCase):
+class SegmentationIntegrationTest(TestCase):
     def test_adjacency_and_feature_extraction(self):
         segmentation = np.array([[0, 0, 0, 2], [0, 1, 1, 3], [1, 4, 4, 3]])
         image = np.array([[0, 0, 0, 2], [0, 1, 1, 3], [1, 4, 4, 3]])
