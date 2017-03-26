@@ -17,6 +17,6 @@ def segmentation_adjacency(segmentation, connectivity=2, dtype=np.float32):
     for index in np.ndindex(segmentation.shape):
         idx = segmentation[index]
         mass[idx] += 1
-        centroid[idx] += index
+        centroid[idx] += np.flip(index, axis=0)
 
-    return centroid / mass, adj, mass
+    return centroid / mass[:, None], adj, mass

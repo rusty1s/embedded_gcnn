@@ -11,7 +11,7 @@ def feature_extraction_minimal(segmentation, image):
 
     props = regionprops(segmentation)
 
-    NUM_FEATURES = 5
+    NUM_FEATURES = 4
     features = np.zeros((len(props), NUM_FEATURES), dtype=np.float32)
 
     for i, prop in enumerate(props):
@@ -19,10 +19,9 @@ def feature_extraction_minimal(segmentation, image):
         min_row, min_col, max_row, max_col = prop['bbox']
         features[i, 1] = max_row - min_row
         features[i, 2] = max_col - min_col
-        features[i, 3] = prop['perimeter']
         sliced_image = image[min_row:max_row, min_col:max_col]
         sliced_image = sliced_image[prop['image']]
-        features[i, 4] = sliced_image[..., 0].mean()
+        features[i, 3] = sliced_image[..., 0].mean()
 
     return features
 

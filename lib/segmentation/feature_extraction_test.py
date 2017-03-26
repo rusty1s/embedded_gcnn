@@ -14,8 +14,7 @@ class FeatureExtractionTest(TestCase):
 
         features = feature_extraction_minimal(segmentation, image)
 
-        expected = [[2, 2, 1, 0, 0], [4, 2, 2, 4, 1]]
+        expected = [[2, 2, 1, 0], [4, 2, 2, 1]]
 
-        print(features)
-        assert_equal(features.shape, (2, 5))
+        assert_equal(features.shape, (2, 4))
         assert_equal(features, expected)
