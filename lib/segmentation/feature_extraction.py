@@ -55,14 +55,14 @@ def feature_extraction(segmentation, image):
             eccentricity, equivalent_diameter, extent, filled_area,
             major_axis_length, minor_axis_length, diff_intensity,
             mean_intensity, orientation, perimeter, solidity
-        ]
-        feature.extend(inertia_tensor)
-        feature.extend(inertia_tensor_eigvals)
-        feature.extend(local_centroid)
-        feature.extend(moments)
-        feature.extend(moments_central)
-        feature.extend(moments_hu)
-        feature.extend(weighted_moments)
+        ]  # bis index 15
+        feature.extend(inertia_tensor)  # bis index 19
+        feature.extend(inertia_tensor_eigvals)  # bis index 21
+        feature.extend(local_centroid)  # bis index 23
+        feature.extend(moments)  # bis index 39
+        feature.extend(moments_central)  # bis index 55
+        feature.extend(moments_hu)  # bis index 63
+        feature.extend(weighted_moments)  # bis index 79
         feature.extend([mean_color_r, mean_color_g, mean_color_b])
         feature.extend([diff_color_r, diff_color_g, diff_color_b])
 
