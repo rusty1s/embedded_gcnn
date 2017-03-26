@@ -4,7 +4,6 @@ from skimage import color, segmentation
 
 def slic(image, num_segments, compactness=10, max_iterations=10, sigma=0):
     image = _preprocess(image)
-    print(image.shape)
     return segmentation.slic(image, num_segments, compactness, max_iterations,
                              sigma)
 

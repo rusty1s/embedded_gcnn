@@ -38,6 +38,28 @@ class PartitionedGCNN(Layer):
             self._log_vars()
 
     def _call(self, inputs):
+        multiple = isinstance(inputs, list)
+        num_partitions = self.vars['weights'].get_shape()[0].value
+        in_channels = self.vars['weights'].get_shape()[1].value
+        out_channels = self.vars['weights'].get_shape()[2].value
+        batch_size = len(inputs)
+
+        outputs = list()
+
+        for i in xrange(batch_size):
+            output = 0
+            for j in xrange(num_partitions):
+                x = tf.sparse_tensor_dense_matmul(self.adjs[i][j], inputs[i])
+                x = tf.matmul(x, self.vars['weights'][j])
+                output += x
+
+            if self.bias:
+                output = tf.nn.bias_add(output, self.vars['bias'])
+
+            outputs.append(output)
+
+        return outputs
+
         n = inputs.get_shape()[1].value
         in_channels = inputs.get_shape()[2].value
         out_channels = self.vars['weights'].get_shape()[2].value

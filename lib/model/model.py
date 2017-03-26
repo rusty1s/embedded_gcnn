@@ -68,7 +68,7 @@ class Model(object):
         self._train = self.optimizer.minimize(
             self._loss, global_step=self._global_step)
 
-        # Create session.
+        # # Create session.
         self.sess = tf.Session()
         if self.log_dir is not None:
             if tf.gfile.Exists(self.log_dir):
