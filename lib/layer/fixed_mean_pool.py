@@ -19,4 +19,10 @@ class FixedMeanPool(Layer):
                 outputs.append(tf.reduce_mean(inputs[i], axis=0))
             return tf.stack(outputs)
         else:
+            if len(list(inputs.get_shape())) == 4:
+                inputs = tf.reshape(inputs, [
+                    -1, inputs.get_shape()[1].value *
+                    inputs.get_shape()[2].value, inputs.get_shape()[3].value
+                ])
+
             return tf.reduce_mean(inputs, axis=1)

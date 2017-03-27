@@ -8,11 +8,7 @@ NUM_FEATURES_MINIMAL = 4
 
 
 def feature_extraction_minimal(segmentation, image):
-    # We need to increment the segmentation, because labels with value 0 are
-    # ignored when calling `regionprops`.
-    segmentation += 1
-
-    props = regionprops(segmentation)
+    props = regionprops(segmentation + 1)
 
     features = np.zeros((len(props), NUM_FEATURES_MINIMAL), dtype=np.float32)
 

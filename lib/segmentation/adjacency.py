@@ -1,6 +1,9 @@
+from six.moves import xrange
+
 import numpy as np
 import networkx as nx
 from skimage.future.graph import RAG
+from skimage.measure import regionprops
 
 
 def segmentation_adjacency(segmentation, connectivity=2, dtype=np.float32):
@@ -8,13 +11,10 @@ def segmentation_adjacency(segmentation, connectivity=2, dtype=np.float32):
     adj = nx.to_scipy_sparse_matrix(
         graph, dtype=dtype, weight=None, format='coo')
 
-    n = len(graph)
-    mass = np.zeros((n), dtype)
-    centroid = np.zeros((n, 2), dtype)
+    props = regionprops(segmentation + 1)
+    n = len(props)
+    points = np.array(
+        [np.flip(props[i]['centroid'], axis=0) for i in xrange(n)], dtype)
+    mass = np.array([props[i]['area'] for i in xrange(n)], dtype)
 
-    for index in np.ndindex(segmentation.shape):
-        idx = segmentation[index]
-        mass[idx] += 1
-        centroid[idx] += np.flip(index, axis=0)
-
-    return centroid / mass[:, None], adj, mass
+    return points, adj, mass
