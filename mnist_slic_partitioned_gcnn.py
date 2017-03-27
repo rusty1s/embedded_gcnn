@@ -24,6 +24,8 @@ from lib.layer.fc import FC
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
+flags.DEFINE_boolean('locale_normalization', False,
+                     '''Whether to normalize each adjacency locally.''')
 flags.DEFINE_integer('graph_connectivity', 2,
                      '''The connectivity between pixels in the segmentation. A
                      connectivity of 1 corresponds to immediate neighbors up,
@@ -37,7 +39,7 @@ flags.DEFINE_integer('num_partitions', 8,
                      '''The number of partitions of each graph corresponding to
                      the number of weights for each convolution.''')
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('batch_size', 64, 'How many inputs to process at once.')
+flags.DEFINE_integer('batch_size', 8, 'How many inputs to process at once.')
 flags.DEFINE_integer('max_steps', 10000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
 flags.DEFINE_string('data_dir', 'data/mnist/input',
@@ -58,7 +60,7 @@ def preprocess_image(image):
     features = feature_extraction_minimal(segmentation, image)
 
     adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
-        points, mass, adj, levels=4)
+        points, mass, adj, levels=4, locale=FLAGS.locale_normalization)
 
     adjs_1 = partition_embedded_adj(
         adjs_dist[0],
