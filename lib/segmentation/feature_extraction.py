@@ -4,6 +4,9 @@ from skimage import color
 from sklearn.preprocessing import MinMaxScaler
 
 
+NUM_FEATURES_MINIMAL = 4
+
+
 def feature_extraction_minimal(segmentation, image):
     # We need to increment the segmentation, because labels with value 0 are
     # ignored when calling `regionprops`.
@@ -11,8 +14,7 @@ def feature_extraction_minimal(segmentation, image):
 
     props = regionprops(segmentation)
 
-    NUM_FEATURES = 4
-    features = np.zeros((len(props), NUM_FEATURES), dtype=np.float32)
+    features = np.zeros((len(props), NUM_FEATURES_MINIMAL), dtype=np.float32)
 
     for i, prop in enumerate(props):
         features[i, 0] = prop['area']
