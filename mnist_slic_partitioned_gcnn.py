@@ -6,7 +6,7 @@ from six.moves import xrange
 import numpy as np
 import tensorflow as tf
 
-from lib.dataset.mnist import MNIST
+from lib.datasets.mnist import MNIST
 from lib.segmentation.algorithm import slic
 from lib.segmentation.adjacency import segmentation_adjacency
 from lib.segmentation.feature_extraction import (feature_extraction_minimal,
@@ -26,8 +26,8 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_boolean('locale_normalization', False,
                      '''Whether to normalize each adjacency locally.''')
-flags.DEFINE_float('sigma', 1, 'Standard deviation for gaussian invert.')
-flags.DEFINE_integer('graph_connectivity', 2,
+flags.DEFINE_float('stddev', 1, 'Standard deviation for gaussian invert.')
+flags.DEFINE_integer('graph_connectivity', 1,
                      '''The connectivity between pixels in the segmentation. A
                      connectivity of 1 corresponds to immediate neighbors up,
                      down, left and right, while a connectivity of 2 also
@@ -69,7 +69,7 @@ def preprocess_image(image):
 
     adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
         points, mass, adj, levels=4, locale=FLAGS.locale_normalization,
-        sigma=FLAGS.sigma)
+        stddev=FLAGS.stddev)
 
     adjs_1 = partition_embedded_adj(
         adjs_dist[0],
@@ -131,31 +131,31 @@ class MNIST(Model):
 
     def _build(self):
         conv_1_1 = Conv(
-            4,
+            NUM_FEATURES_MINIMAL,
             32,
             self.placeholders['adjacency_1'],
             num_partitions=FLAGS.num_partitions,
             bias=True,
             logging=self.logging)
         pool_1 = MaxPool(size=4, logging=self.logging)
-        conv_2_1 = Conv(
-            32,
-            64,
-            self.placeholders['adjacency_2'],
-            num_partitions=FLAGS.num_partitions,
-            bias=True,
-            logging=self.logging)
-        pool_2 = MaxPool(size=4, logging=self.logging)
+        # conv_2_1 = Conv(
+        #     32,
+        #     64,
+        #     self.placeholders['adjacency_2'],
+        #     num_partitions=FLAGS.num_partitions,
+        #     bias=True,
+        #     logging=self.logging)
+        # pool_2 = MaxPool(size=4, logging=self.logging)
         fixed_pool = FixedPool(logging=self.logging)
-        fc_1 = FC(64, 124, logging=self.logging)
-        fc_2 = FC(124,
+        fc_1 = FC(32, 1024, logging=self.logging)
+        fc_2 = FC(1024,
                   10,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   logging=self.logging)
 
         self.layers = [
-            conv_1_1, pool_1, conv_2_1, pool_2, fixed_pool, fc_1, fc_2
+            conv_1_1, pool_1, fixed_pool, fc_1, fc_2
         ]
 
 

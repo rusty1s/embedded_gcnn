@@ -5,10 +5,11 @@ from six.moves import xrange
 
 import tensorflow as tf
 
-from lib.dataset.mnist import MNIST
+from lib.datasets.mnist import MNIST
 from lib.model.model import Model
 from lib.layer.conv2d import Conv2d as Conv
 from lib.layer.max_pool2d import MaxPool2d as MaxPool
+from lib.layer.fixed_mean_pool import FixedMeanPool as FixedPool
 from lib.layer.fc import FC
 
 flags = tf.app.flags
@@ -48,7 +49,8 @@ class MNISTModel(Model):
         pool_1 = MaxPool(size=2, stride=2, logging=self.logging)
         conv_2 = Conv(32, 64, size=5, stride=1, logging=self.logging)
         pool_2 = MaxPool(size=2, stride=2, logging=self.logging)
-        fc_1 = FC(data.height // 4 * data.width // 4 * 64,
+        fixed_pool = FixedPool(logging=self.logging)
+        fc_1 = FC(64,
                   1024,
                   logging=self.logging)
         fc_2 = FC(1024,
@@ -57,7 +59,7 @@ class MNISTModel(Model):
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [conv_1, pool_1, conv_2, pool_2, fc_1, fc_2]
+        self.layers = [conv_1, pool_1, conv_2, pool_2, fixed_pool, fc_1, fc_2]
 
 
 model = MNISTModel(
