@@ -26,6 +26,7 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_boolean('locale_normalization', False,
                      '''Whether to normalize each adjacency locally.''')
+flags.DEFINE_float('sigma', 1, 'Standard deviation for gaussian invert.')
 flags.DEFINE_integer('graph_connectivity', 2,
                      '''The connectivity between pixels in the segmentation. A
                      connectivity of 1 corresponds to immediate neighbors up,
@@ -60,7 +61,8 @@ def preprocess_image(image):
     features = feature_extraction_minimal(segmentation, image)
 
     adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
-        points, mass, adj, levels=4, locale=FLAGS.locale_normalization)
+        points, mass, adj, levels=4, locale=FLAGS.locale_normalization,
+        sigma=FLAGS.sigma)
 
     adjs_1 = partition_embedded_adj(
         adjs_dist[0],
