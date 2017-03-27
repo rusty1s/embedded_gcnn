@@ -33,15 +33,15 @@ class GraphTest(tf.test.TestCase):
                     [np.exp(-1 / 2), 0, np.exp(-2 / 2)],
                     [0, np.exp(-2 / 2), 0]]
 
-        assert_almost_equal(invert_adj(adj, sigma=1).toarray(), expected)
+        assert_almost_equal(invert_adj(adj, stddev=1).toarray(), expected)
 
         expected = [[0, np.exp(-1 / 8), 0],
                     [np.exp(-1 / 8), 0, np.exp(-2 / 8)],
                     [0, np.exp(-2 / 8), 0]]
 
-        assert_almost_equal(invert_adj(adj, sigma=2).toarray(), expected)
+        assert_almost_equal(invert_adj(adj, stddev=2).toarray(), expected)
 
-        assert_equal(invert_adj(2, sigma=1), np.exp(-1))
+        assert_equal(invert_adj(2, stddev=1), np.exp(-1))
 
     def test_grid_adj_connectivity_4(self):
         adj = grid_adj((3, 2), connectivity=4)

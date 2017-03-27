@@ -1,7 +1,9 @@
+from __future__ import division
+
 from six.moves import xrange
 
+import sys
 import pickle
-import time
 
 import numpy as np
 
@@ -11,8 +13,7 @@ from ..segmentation.algorithm import slic
 from ..segmentation.adjacency import segmentation_adjacency
 from ..segmentation.feature_extraction import feature_extraction_minimal
 from ..graph.embedded_coarsening import coarsen_embedded_adj
-from ..graph.embedding import partition_embedded_adj
-from ..graph.distortion import perm_features
+from ..graph.distortion import perm_features, perm_adj
 
 
 class MNISTSlic(DataSet):
@@ -21,7 +22,11 @@ class MNISTSlic(DataSet):
                  compactness=10,
                  max_iterations=10,
                  sigma=0,
-                 levels=3,
+                 connectivity=1,
+                 locale=False,
+                 stddev=1,
+                 levels=4,
+                 num_partitions=8,
                  **kwargs):
         if 'data_dir' not in kwargs:
             kwargs['data_dir'] = 'data/mnist/input/slic'
@@ -30,88 +35,62 @@ class MNISTSlic(DataSet):
 
         mnist = MNIST()
 
-        train_data = []
+        adjs_dist = []
+        adjs_rad = []
+        features = []
+        n = np.zeros((levels + 1), np.int32)
 
-        n_max_1 = 0
-        n_max_2 = 0
-        n_max_3 = 0
-        n_max_4 = 0
-        num_examples = 20
+        num_examples = mnist.num_train_examples
 
-        t_seg = 0
-        t_adj = 0
-        t_feature = 0
-        t_coarsen = 0
-        t_partition = 0
         for i in xrange(num_examples):
             image = mnist.data.train.images[i]
             image = np.reshape(image, (mnist.height, mnist.width))
 
-            t_start = time.process_time()
             segmentation = slic(image, num_segments, compactness,
                                 max_iterations, sigma)
-            t_seg += time.process_time() - t_start
-            t_start = time.process_time()
 
-            points, adj, mass = segmentation_adjacency(
-                segmentation, connectivity=1)
-            t_adj += time.process_time() - t_start
-            t_start = time.process_time()
-            features = feature_extraction_minimal(segmentation, image)
-            t_feature += time.process_time() - t_start
-            t_start = time.process_time()
+            points, adj, mass = segmentation_adjacency(segmentation,
+                                                       connectivity)
 
-            adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
-                points, mass, adj, levels, locale=False, sigma=1)
-            t_coarsen += time.process_time() - t_start
-            t_start = time.process_time()
+            adj_dist, adj_rad, perm = coarsen_embedded_adj(
+                points, mass, adj, levels, locale, stddev)
+            adjs_dist.append(adj_dist)
+            adjs_rad.append(adj_rad)
 
-            # n_max_1 = max(adjs_dist[0].shape[0], n_max_1)
-            # n_max_2 = max(adjs_dist[1].shape[0], n_max_2)
-            # n_max_3 = max(adjs_dist[2].shape[0], n_max_3)
-            # n_max_4 = max(adjs_dist[3].shape[0], n_max_4)
+            feature = feature_extraction_minimal(segmentation, image)
+            feature = perm_features(feature, perm)
+            features.append(feature)
 
-            adjs_1 = partition_embedded_adj(
-                adjs_dist[0],
-                adjs_rad[0],
-                num_partitions=8,
-                offset=0.125 * np.pi)
-            adjs_2 = partition_embedded_adj(
-                adjs_dist[1],
-                adjs_rad[1],
-                num_partitions=8,
-                offset=0.125 * np.pi)
-            adjs_3 = partition_embedded_adj(
-                adjs_dist[2],
-                adjs_rad[2],
-                num_partitions=8,
-                offset=0.125 * np.pi)
-            adjs_4 = partition_embedded_adj(
-                adjs_dist[3],
-                adjs_rad[3],
-                num_partitions=8,
-                offset=0.125 * np.pi)
-            adjs = [adjs_1, adjs_2, adjs_3, adjs_4]
-            t_partition += time.process_time() - t_start
-            t_start = time.process_time()
+            n = np.maximum(
+                n, np.array([adj_dist[j].shape[0]
+                             for j in xrange(levels + 1)]))
 
-            # features = perm_features(features, perm)
-            # train_data.append({'adjacencies': adjs, 'features': features})
-            print(100 * (i+1) / num_examples)
+            if i % 10 == 0 or i == num_examples - 1:
+                sys.stdout.write('\r>> Generate graphs {:.2f}%'.format(100 * (
+                    i + 1) / num_examples))
+                sys.stdout.flush()
 
-        print(t_seg)
-        print(t_adj)
-        print(t_feature)
-        print(t_coarsen)
-        print(t_partition)
-        print('complete time', t_seg + t_adj + t_feature + t_coarsen + t_partition)
-        print(n_max_1)
-        print(n_max_2)
-        print(n_max_3)
-        print(n_max_4)
+        print()
 
-        # pickle.dump(train_data,
-        #             open('{}/train_data.p'.format(self.data_dir), 'wb'))
-        # pickle.dump(mnist.data.train.labels[:200],
-        #             open('{}/train_labels.p'.format(self.data_dir), 'wb'))
-        # pickle.dump(n_max, open('{}/n_max.p'.format(self.data_dir), 'wb'))
+        # Fill the adjacencies with fake nodes.
+        perms = [np.arange(v) for v in n]
+        train_data = []
+        for i in xrange(num_examples):
+            adjs = []
+            for j in xrange(levels + 1):
+                adj_dist = perm_adj(adjs_dist[i][j], perms[j])
+                adj_rad = perm_adj(adjs_rad[i][j], perms[j])
+                adjs.append([adj_dist, adj_rad])
+            feature = perm_features(features[i], perms[0])
+            train_data.append({'features': feature, 'adjacencies': adjs})
+
+            if i % 10 == 0 or i == num_examples - 1:
+                sys.stdout.write('\r>> Normalize graphs {:.2f}%'.format(100 * (
+                    i + 1) / num_examples))
+                sys.stdout.flush()
+
+        print('\nFinished!')
+
+        pickle.dump(train_data,
+                    open('{}/train_data.p'.format(self.data_dir), 'wb'))
+        pickle.dump(n, open('{}/info_data.p'.format(self.data_dir), 'wb'))

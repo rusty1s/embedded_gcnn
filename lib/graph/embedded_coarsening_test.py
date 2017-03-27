@@ -51,11 +51,11 @@ class EmbeddedCoarseningCopyTest(TestCase):
                [0, 1, 1, 0, 1], [0, 0, 0, 1, 0]]
         adj = sp.coo_matrix(adj)
         mass = np.array([1, 1, 1, 1, 1], np.float32)
-        sigma = 1
+        stddev = 1
         rid = np.array([0, 1, 2, 3, 4])
 
         adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
-            points, mass, adj, levels=1, sigma=sigma, rid=rid)
+            points, mass, adj, levels=1, stddev=stddev, rid=rid)
 
         assert_equal(perm, [0, 1, 2, 3, 4, 5])
         assert_equal(len(adjs_dist), 2)
@@ -70,13 +70,13 @@ class EmbeddedCoarseningCopyTest(TestCase):
                            [0, 0, 0, 20, 0, 0], [0, 0, 0, 0, 0, 0]]
         expected_dist_1 = invert_adj(
             normalize_adj(sp.coo_matrix(expected_dist_1)),
-            sigma=sigma).toarray()
+            stddev=stddev).toarray()
         assert_almost_equal(adjs_dist[0].toarray(), expected_dist_1)
 
         expected_dist_2 = [[0, 3.25, 0], [3.25, 0, 26.5], [0, 26.5, 0]]
         expected_dist_2 = invert_adj(
             normalize_adj(sp.coo_matrix(expected_dist_2)),
-            sigma=sigma).toarray()
+            stddev=stddev).toarray()
         assert_almost_equal(adjs_dist[1].toarray(), expected_dist_2)
 
         expected_rad_1 = [

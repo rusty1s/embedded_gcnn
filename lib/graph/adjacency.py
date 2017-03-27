@@ -17,15 +17,15 @@ def normalize_adj(adj, locale=False):
         return (adj + adj.transpose()) / 2
 
 
-def invert_adj(m, sigma=1):
+def invert_adj(m, stddev=1):
     """Return (inverted) gaussian kernel representation."""
 
     if sp.issparse(m):
         m = m.copy()
-        m.data = np.exp(-m.data / (2 * sigma * sigma))
+        m.data = np.exp(-m.data / (2 * stddev * stddev))
         return m
     else:
-        return np.exp(-m / (2 * sigma * sigma))
+        return np.exp(-m / (2 * stddev * stddev))
 
 
 def grid_adj(shape, connectivity=4, dtype=np.float32):
