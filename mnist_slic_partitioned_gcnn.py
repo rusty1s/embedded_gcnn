@@ -32,10 +32,17 @@ flags.DEFINE_integer('graph_connectivity', 2,
                      connectivity of 1 corresponds to immediate neighbors up,
                      down, left and right, while a connectivity of 2 also
                      includes diagonal neighbors.''')
-flags.DEFINE_integer('slic_num_segments', 100, 'TODO')
-flags.DEFINE_float('slic_compactness', 10, 'TODO')
-flags.DEFINE_integer('slic_max_iterations', 10, 'TODO')
-flags.DEFINE_float('slic_sigma', 0, 'TODO')
+flags.DEFINE_integer('slic_num_segments', 100,
+                     '''Approximate number of labels in the segmented output
+                     image.''')
+flags.DEFINE_float('slic_compactness', 10,
+                   '''Balances color proximity and space proximity. Higher
+                   values give more weight to space proximity, making
+                   superpixel shapes more square.''')
+flags.DEFINE_integer('slic_max_iterations', 10,
+                     'Maximum number of iterations of k-means')
+flags.DEFINE_float('slic_sigma', 0,
+                   'Width of gaussian smoothing kernel for preprocessing.')
 flags.DEFINE_integer('num_partitions', 8,
                      '''The number of partitions of each graph corresponding to
                      the number of weights for each convolution.''')
