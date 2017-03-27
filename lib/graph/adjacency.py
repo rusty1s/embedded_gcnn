@@ -6,9 +6,15 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def normalize_adj(adj):
+def normalize_adj(adj, locale=False):
     """Normalize adjacency matrix to interval [0, 1]."""
-    return (1 / adj.max()) * adj
+    if not locale:
+        return (1 / adj.max()) * adj
+    else:
+        max_row = 1 / adj.max(axis=1).toarray().flatten()
+        diag = sp.diags(max_row)
+        adj = adj.dot(diag)
+        return (adj + adj.transpose()) / 2
 
 
 def invert_adj(m, sigma=1):
