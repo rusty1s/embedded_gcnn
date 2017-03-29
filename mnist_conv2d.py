@@ -52,18 +52,15 @@ class MNISTModel(Model):
         conv_4 = Conv(128, 256, size=5, stride=1, logging=self.logging)
         pool_4 = MaxPool(size=2, stride=2, logging=self.logging)
         average_pool = AveragePool(logging=self.logging)
-        # fc_1 = FC(64,
-        #           1024,
-        #           logging=self.logging)
-        fc_2 = FC(256,
-                  10,
-                  dropout=self.placeholders['dropout'],
-                  act=lambda x: x,
-                  logging=self.logging)
+        fc = FC(256,
+                10,
+                dropout=self.placeholders['dropout'],
+                act=lambda x: x,
+                logging=self.logging)
 
         self.layers = [
             conv_1, pool_1, conv_2, pool_2, conv_3, pool_3, conv_4, pool_4,
-            average_pool, fc_2
+            average_pool, fc
         ]
 
 

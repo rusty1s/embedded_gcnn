@@ -95,7 +95,7 @@ def preprocess_images(images, perm):
 
 placeholders = {
     'features': [
-        tf.placeholder(tf.float32, [None, 1], 'features')
+        tf.placeholder(tf.float32, [None, 1], 'features_{}'.format(i + 1))
         for i in xrange(FLAGS.batch_size)
     ],
     'adjacency_1': [[
@@ -192,16 +192,15 @@ class MNIST(Model):
             logging=self.logging)
         pool_4 = MaxPool(size=4, logging=self.logging)
         average_pool = AveragePool()
-        # fc_1 = FC(5 * 256, 1024, logging=self.logging)
-        fc_2 = FC(256,
-                  10,
-                  dropout=self.placeholders['dropout'],
-                  act=lambda x: x,
-                  logging=self.logging)
+        fc = FC(256,
+                10,
+                dropout=self.placeholders['dropout'],
+                act=lambda x: x,
+                logging=self.logging)
 
         self.layers = [
             conv_1_1, conv_1_2, pool_1, conv_2_1, conv_2_2, pool_2, conv_3_1,
-            conv_3_2, pool_3, conv_4_1, conv_4_2, pool_4, average_pool, fc_2
+            conv_3_2, pool_3, conv_4_1, conv_4_2, pool_4, average_pool, fc
         ]
 
 

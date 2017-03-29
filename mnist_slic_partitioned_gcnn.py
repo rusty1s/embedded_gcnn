@@ -20,6 +20,7 @@ from lib.graph.distortion import perm_features, pad_adj, pad_features
 from lib.model.model import Model
 from lib.layer.partitioned_gcnn import PartitionedGCNN as Conv
 from lib.layer.max_pool_gcnn import MaxPoolGCNN as MaxPool
+from lib.layer.fixed_mean_pool import FixedMeanPool as AveragePool
 from lib.layer.fc import FC
 
 flags = tf.app.flags
@@ -54,7 +55,7 @@ flags.DEFINE_string('data_dir', 'data/mnist/input',
                     'Directory for storing input data.')
 flags.DEFINE_string('log_dir', 'data/mnist/summaries/slic_partitioned_gcnn',
                     'Summaries log directory.')
-flags.DEFINE_integer('display_step', 1,
+flags.DEFINE_integer('display_step', 5,
                      'How many steps to print logging after.')
 
 data = MNIST(data_dir=FLAGS.data_dir)
@@ -100,33 +101,43 @@ def preprocess_image(image):
         adjs_rad[2],
         num_partitions=FLAGS.num_partitions,
         offset=0.125 * np.pi)
+    adjs_4 = partition_embedded_adj(
+        adjs_dist[3],
+        adjs_rad[3],
+        num_partitions=FLAGS.num_partitions,
+        offset=0.125 * np.pi)
 
     adjs_1 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_1]
     adjs_2 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_2]
     adjs_3 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_3]
+    adjs_4 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_4]
 
-    return adjs_1, adjs_2, adjs_3, features
+    return adjs_1, adjs_2, adjs_3, adjs_4, features
 
 
 def preprocess_images(images):
     all_adjs_1 = []
     all_adjs_2 = []
     all_adjs_3 = []
+    all_adjs_4 = []
     all_features = []
     for i in xrange(images.shape[0]):
-        adjs_1, adjs_2, adjs_3, features = preprocess_image(images[i])
+        adjs_1, adjs_2, adjs_3, adjs_4, features = preprocess_image(images[i])
         all_adjs_1.append(adjs_1)
         all_adjs_2.append(adjs_2)
         all_adjs_3.append(adjs_3)
+        all_adjs_4.append(adjs_4)
         all_features.append(features)
 
-    return all_adjs_1, all_adjs_2, all_adjs_3, np.array(all_features)
+    return all_adjs_1, all_adjs_2, all_adjs_3, all_adjs_4, all_features
 
 
 placeholders = {
-    'features':
-    tf.placeholder(tf.float32, [FLAGS.batch_size, n_pad, NUM_FEATURES_MINIMAL],
-                   'features'),
+    'features': [
+        tf.placeholder(tf.float32, [None, NUM_FEATURES_MINIMAL],
+                       'features_{}'.format(i + 1))
+        for i in xrange(FLAGS.batch_size)
+    ],
     'adjacency_1': [[
         tf.sparse_placeholder(
             tf.float32, name='adjacency_1_{}_{}'.format(i + 1, j + 1))
@@ -140,6 +151,11 @@ placeholders = {
     'adjacency_3': [[
         tf.sparse_placeholder(
             tf.float32, name='adjacency_3_{}_{}'.format(i + 1, j + 1))
+        for j in xrange(FLAGS.num_partitions)
+    ] for i in xrange(FLAGS.batch_size)],
+    'adjacency_4': [[
+        tf.sparse_placeholder(
+            tf.float32, name='adjacency_4_{}_{}'.format(i + 1, j + 1))
         for j in xrange(FLAGS.num_partitions)
     ] for i in xrange(FLAGS.batch_size)],
     'labels':
@@ -179,15 +195,24 @@ class MNIST(Model):
             bias=True,
             logging=self.logging)
         pool_3 = MaxPool(size=2, logging=self.logging)
-        fc_1 = FC(20 * 128, 1024, logging=self.logging)
-        fc_2 = FC(1024,
-                  10,
-                  dropout=self.placeholders['dropout'],
-                  act=lambda x: x,
-                  logging=self.logging)
+        conv_4 = Conv(
+            128,
+            256,
+            self.placeholders['adjacency_4'],
+            num_partitions=FLAGS.num_partitions,
+            bias=True,
+            logging=self.logging)
+        pool_4 = MaxPool(size=2, logging=self.logging)
+        average_pool = AveragePool()
+        fc = FC(256,
+                10,
+                dropout=self.placeholders['dropout'],
+                act=lambda x: x,
+                logging=self.logging)
 
         self.layers = [
-            conv_1, pool_1, conv_2, pool_2, conv_3, pool_3, fc_1, fc_2
+            conv_1, pool_1, conv_2, pool_2, conv_3, pool_3, conv_4, pool_4,
+            average_pool, fc
         ]
 
 
@@ -199,18 +224,17 @@ global_step = model.initialize()
 
 
 def evaluate(images, labels):
-    adjs_1, adjs_2, adjs_3, features = preprocess_images(images)
+    adjs_1, adjs_2, adjs_3, adjs_4, features = preprocess_images(images)
 
     feed_dict = {
-        placeholders['features']: features,
         placeholders['labels']: labels,
         placeholders['dropout']: 0.0,
     }
 
-    # feed_dict.update({
-    #     placeholders['features'][i]: features[i]
-    #     for i in xrange(FLAGS.batch_size)
-    # })
+    feed_dict.update({
+        placeholders['features'][i]: features[i]
+        for i in xrange(FLAGS.batch_size)
+    })
 
     feed_dict.update({
         placeholders['adjacency_1'][i][j]: adjs_1[i][j]
@@ -224,49 +248,55 @@ def evaluate(images, labels):
         placeholders['adjacency_3'][i][j]: adjs_3[i][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
+    feed_dict.update({
+        placeholders['adjacency_4'][i][j]: adjs_4[i][j]
+        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
+    })
 
     return model.evaluate(feed_dict)
 
 
 for step in xrange(global_step, FLAGS.max_steps):
     t_start = time.process_time()
-    train_images, train_labels = data.next_train_batch(FLAGS.batch_size)
-    train_a_1, train_a_2, train_a_3, train_features = preprocess_images(
-        train_images)
-    process_duration = time.process_time() - t_start
+    images, labels = data.next_train_batch(FLAGS.batch_size)
+    adjs_1, adjs_2, adjs_3, adjs_4, features = preprocess_images(images)
+    preprocess_duration = time.process_time() - t_start
 
-    train_feed_dict = {
-        placeholders['features']: train_features,
-        placeholders['labels']: train_labels,
+    feed_dict = {
+        placeholders['labels']: labels,
         placeholders['dropout']: FLAGS.dropout,
     }
 
-    # train_feed_dict.update({
-    #     placeholders['features'][i]: train_features[i]
-    #     for i in xrange(FLAGS.batch_size)
-    # })
-
-    train_feed_dict.update({
-        placeholders['adjacency_1'][i][j]: train_a_1[i][j]
-        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
-    })
-    train_feed_dict.update({
-        placeholders['adjacency_2'][i][j]: train_a_2[i][j]
-        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
-    })
-    train_feed_dict.update({
-        placeholders['adjacency_3'][i][j]: train_a_3[i][j]
-        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
+    feed_dict.update({
+        placeholders['features'][i]: features[i]
+        for i in xrange(FLAGS.batch_size)
     })
 
-    duration = model.train(train_feed_dict, step)
+    feed_dict.update({
+        placeholders['adjacency_1'][i][j]: adjs_1[i][j]
+        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
+    })
+    feed_dict.update({
+        placeholders['adjacency_2'][i][j]: adjs_2[i][j]
+        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
+    })
+    feed_dict.update({
+        placeholders['adjacency_3'][i][j]: adjs_3[i][j]
+        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
+    })
+    feed_dict.update({
+        placeholders['adjacency_4'][i][j]: adjs_4[i][j]
+        for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
+    })
+
+    duration = model.train(feed_dict, step)
 
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
-        train_loss, train_acc, _ = evaluate(train_images, train_labels)
+        train_loss, train_acc, _ = evaluate(images, labels)
 
-        val_images, val_labels = data.next_validation_batch(FLAGS.batch_size)
-        val_loss, val_acc, _ = evaluate(val_images, val_labels)
+        images, labels = data.next_validation_batch(FLAGS.batch_size)
+        val_loss, val_acc, _ = evaluate(images, labels)
 
         # Print results.
         print(', '.join([
@@ -274,7 +304,7 @@ for step in xrange(global_step, FLAGS.max_steps):
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
             'time={:.2f}s'.format(duration),
-            'process time={:.2f}s'.format(process_duration),
+            'preprocess time={:.2f}s'.format(preprocess_duration),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
@@ -285,9 +315,9 @@ print('Optimization finished!')
 num_iterations = data.num_test_examples // FLAGS.batch_size
 test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
-    test_images, test_labels = data.next_test_batch(FLAGS.batch_size)
-    test_single_loss, test_single_acc, test_single_duration = evaluate(
-        test_images, test_labels)
+    images, labels = data.next_test_batch(FLAGS.batch_size)
+    test_single_loss, test_single_acc, test_single_duration = evaluate(images,
+                                                                       labels)
     test_loss += test_single_loss
     test_acc += test_single_acc
     test_duration += test_single_duration
