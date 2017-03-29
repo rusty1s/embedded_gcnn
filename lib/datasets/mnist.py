@@ -7,7 +7,7 @@ from .dataset import DataSet
 class MNIST(DataSet):
     def __init__(self, **kwargs):
         if 'data_dir' not in kwargs:
-            kwargs['data_dir'] = 'data/mnist/inputs'
+            kwargs['data_dir'] = 'data/mnist/input'
 
         super(MNIST, self).__init__(**kwargs)
 

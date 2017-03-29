@@ -26,15 +26,14 @@ class MNISTSlic(DataSet):
                  locale=False,
                  stddev=1,
                  levels=4,
-                 num_partitions=8,
                  **kwargs):
         if 'data_dir' not in kwargs:
             kwargs['data_dir'] = 'data/mnist/input/slic'
 
         super(MNISTSlic, self).__init__(**kwargs)
 
-        mnist = MNIST()
-
+    def _generate_data(self, mnist, num_segments, compactness, max_iterations,
+                       sigma, connectivity, locale, stddev, levels):
         adjs_dist = []
         adjs_rad = []
         features = []
@@ -66,8 +65,8 @@ class MNISTSlic(DataSet):
                              for j in xrange(levels + 1)]))
 
             if i % 10 == 0 or i == num_examples - 1:
-                sys.stdout.write('\r>> Generate graphs {:.2f}%'.format(100 * (
-                    i + 1) / num_examples))
+                sys.stdout.write('\r>> Generating graphs {:.2f}%'.format(
+                    100 * (i + 1) / num_examples))
                 sys.stdout.flush()
 
         print()
@@ -85,8 +84,8 @@ class MNISTSlic(DataSet):
             train_data.append({'features': feature, 'adjacencies': adjs})
 
             if i % 10 == 0 or i == num_examples - 1:
-                sys.stdout.write('\r>> Normalize graphs {:.2f}%'.format(100 * (
-                    i + 1) / num_examples))
+                sys.stdout.write('\r>> Normalizing graphs {:.2f}%'.format(
+                    100 * (i + 1) / num_examples))
                 sys.stdout.flush()
 
         print('\nFinished!')
