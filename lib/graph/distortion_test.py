@@ -4,10 +4,30 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .distortion import perm_adj, perm_features, perm_batch_of_features
+from .distortion import (pad_adj, pad_features, perm_adj, perm_features,
+                         perm_batch_of_features)
 
 
 class DistortionTest(TestCase):
+    def test_pad_adj(self):
+        adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        adj = sp.coo_matrix(adj)
+
+        expected = [[0, 1, 0, 0], [1, 0, 2, 0], [0, 2, 0, 0], [0, 0, 0, 0]]
+        assert_equal(pad_adj(adj, (4, 4)).toarray(), expected)
+
+        expected = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        assert_equal(pad_adj(adj, (3, 3)).toarray(), expected)
+
+    def test_pad_features(self):
+        features = np.array([[0, 1], [2, 3], [4, 5]])
+
+        expected = [[0, 1], [2, 3], [4, 5], [0, 0], [0, 0]]
+        assert_equal(pad_features(features, 5), expected)
+
+        expected = [[0, 1], [2, 3], [4, 5]]
+        assert_equal(pad_features(features, 3), expected)
+
     def test_perm_adj(self):
         adj = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
         adj = sp.coo_matrix(adj)

@@ -8,11 +8,23 @@ class DataSet(object):
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
 
-    def next_train_batch(self, batch_size):
+    @property
+    def num_train_examples(self):
         raise NotImplementedError
 
-    def next_validation_batch(self, batch_size):
+    @property
+    def num_validation_examples(self):
         raise NotImplementedError
 
-    def next_test_batch(self, batch_size):
+    @property
+    def num_test_examples(self):
+        raise NotImplementedError
+
+    def next_train_batch(self, batch_size, shuffle=True):
+        raise NotImplementedError
+
+    def next_validation_batch(self, batch_size, shuffle=True):
+        raise NotImplementedError
+
+    def next_test_batch(self, batch_size, shuffle=False):
         raise NotImplementedError

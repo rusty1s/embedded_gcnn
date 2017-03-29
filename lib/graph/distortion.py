@@ -4,6 +4,22 @@ import numpy as np
 import scipy.sparse as sp
 
 
+def pad_adj(adj, shape):
+    height, width = adj.shape
+    assert height <= shape[0] and width <= shape[1]
+
+    adj = adj.tocoo()
+    return sp.coo_matrix((adj.data, (adj.row, adj.col)), shape)
+
+
+def pad_features(features, size):
+    assert features.shape[0] <= size
+
+    features_new = np.zeros((size, features.shape[1]), features.dtype)
+    features_new[:features.shape[0], ...] = features
+    return features_new
+
+
 def perm_adj(adj, perm=None):
     if perm is None:
         perm = np.random.permutation(np.arange(adj.shape[0]))

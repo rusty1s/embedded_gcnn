@@ -27,10 +27,17 @@ class MNISTSlic(DataSet):
                  stddev=1,
                  levels=4,
                  **kwargs):
+
         if 'data_dir' not in kwargs:
             kwargs['data_dir'] = 'data/mnist/input/slic'
 
         super(MNISTSlic, self).__init__(**kwargs)
+
+        self.mnist = MNIST()
+
+        # self._generate_data(self.mnist, num_segments, compactness,
+        #                     max_iterations, sigma, connectivity, locale,
+        #                     stddev, levels)
 
     def _generate_data(self, mnist, num_segments, compactness, max_iterations,
                        sigma, connectivity, locale, stddev, levels):
@@ -43,7 +50,7 @@ class MNISTSlic(DataSet):
 
         for i in xrange(num_examples):
             image = mnist.data.train.images[i]
-            image = np.reshape(image, (mnist.height, mnist.width))
+            image = np.squeeze(image, axis=2)
 
             segmentation = slic(image, num_segments, compactness,
                                 max_iterations, sigma)
