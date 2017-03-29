@@ -13,11 +13,13 @@ class FixedMeanPool(Layer):
         multiple = isinstance(inputs, list)
 
         if multiple:
+            x = tf.zeros((inputs[0].get_shape()[1].value), inputs[0].dtype)
             batch_size = len(inputs)
             outputs = []
             for i in xrange(batch_size):
                 outputs.append(tf.reduce_mean(inputs[i], axis=0))
-            return tf.stack(outputs)
+            x = x + tf.stack(outputs)
+            return x
         else:
             if len(list(inputs.get_shape())) == 4:
                 inputs = tf.reshape(inputs, [

@@ -38,49 +38,50 @@ class PartitionedGCNN(Layer):
             self._log_vars()
 
     def _call(self, inputs):
-        # # multiple = isinstance(inputs, list)
-        # num_partitions = self.vars['weights'].get_shape()[0].value
-        # # in_channels = self.vars['weights'].get_shape()[1].value
-        # # out_channels = self.vars['weights'].get_shape()[2].value
-        # batch_size = inputs.get_shape()[0].value
+        multiple = isinstance(inputs, list)
 
-        # outputs = list()
+        if multiple:
+            batch_size = len(inputs)
+            num_partitions = self.vars['weights'].get_shape()[0].value
 
-        # for i in xrange(batch_size):
-        #     output = 0
-        #     for j in xrange(num_partitions):
-        #         x = tf.sparse_tensor_dense_matmul(self.adjs[i][j], inputs[i])
-        #         x = tf.matmul(x, self.vars['weights'][j])
-        #         output += x
+            outputs = list()
 
-        #     if self.bias:
-        #         output = tf.nn.bias_add(output, self.vars['bias'])
+            for i in xrange(batch_size):
+                output = 0
+                for j in xrange(num_partitions):
+                    x = tf.sparse_tensor_dense_matmul(self.adjs[i][j],
+                                                      inputs[i])
+                    x = tf.matmul(x, self.vars['weights'][j])
+                    output += x
 
-        #     outputs.append(output)
+                if self.bias:
+                    output = tf.nn.bias_add(output, self.vars['bias'])
 
-        # return outputs
+                outputs.append(output)
 
-        n = inputs.get_shape()[1].value
-        in_channels = inputs.get_shape()[2].value
-        out_channels = self.vars['weights'].get_shape()[2].value
-        multiple = isinstance(self.adjs[0], (list, tuple))
+            return outputs
 
-        outputs = list()
-        for i in xrange(inputs.get_shape()[0].value):
-            adjs = self.adjs[i] if multiple else self.adjs
+        else:
+            n = inputs.get_shape()[1].value
+            in_channels = inputs.get_shape()[2].value
+            out_channels = self.vars['weights'].get_shape()[2].value
 
-            output = tf.zeros([n, out_channels], dtype=inputs.dtype)
-            for j in xrange(self.vars['weights'].get_shape()[0].value):
-                x = tf.zeros([n, in_channels], dtype=inputs.dtype)
-                x += tf.sparse_tensor_dense_matmul(adjs[j], inputs[i])
-                x = tf.matmul(x, self.vars['weights'][j])
-                output += x
+            outputs = list()
+            for i in xrange(inputs.get_shape()[0].value):
+                adjs = self.adjs[i] if multiple else self.adjs
 
-            outputs.append(output)
+                output = tf.zeros([n, out_channels], dtype=inputs.dtype)
+                for j in xrange(self.vars['weights'].get_shape()[0].value):
+                    x = tf.zeros([n, in_channels], dtype=inputs.dtype)
+                    x += tf.sparse_tensor_dense_matmul(adjs[j], inputs[i])
+                    x = tf.matmul(x, self.vars['weights'][j])
+                    output += x
 
-        outputs = tf.stack(outputs, axis=0)
+                outputs.append(output)
 
-        if self.bias:
-            outputs = tf.nn.bias_add(outputs, self.vars['bias'])
+            outputs = tf.stack(outputs, axis=0)
 
-        return self.act(outputs)
+            if self.bias:
+                outputs = tf.nn.bias_add(outputs, self.vars['bias'])
+
+            return self.act(outputs)

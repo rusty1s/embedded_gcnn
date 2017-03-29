@@ -9,7 +9,7 @@ from lib.datasets.mnist import MNIST
 from lib.model.model import Model
 from lib.layer.conv2d import Conv2d as Conv
 from lib.layer.max_pool2d import MaxPool2d as MaxPool
-from lib.layer.fixed_mean_pool import FixedMeanPool as FixedPool
+from lib.layer.fixed_mean_pool import FixedMeanPool as AveragePool
 from lib.layer.fc import FC
 
 flags = tf.app.flags
@@ -29,9 +29,7 @@ data = MNIST(data_dir=FLAGS.data_dir)
 
 placeholders = {
     'features':
-    tf.placeholder(tf.float32,
-                   [FLAGS.batch_size, data.height, data.width,
-                    data.channels], 'features'),
+    tf.placeholder(tf.float32, [FLAGS.batch_size, 28, 28, 1], 'features'),
     'labels':
     tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
     'dropout':
@@ -49,17 +47,24 @@ class MNISTModel(Model):
         pool_1 = MaxPool(size=2, stride=2, logging=self.logging)
         conv_2 = Conv(32, 64, size=5, stride=1, logging=self.logging)
         pool_2 = MaxPool(size=2, stride=2, logging=self.logging)
-        fixed_pool = FixedPool(logging=self.logging)
-        fc_1 = FC(64,
-                  1024,
-                  logging=self.logging)
-        fc_2 = FC(1024,
+        conv_3 = Conv(64, 128, size=5, stride=1, logging=self.logging)
+        pool_3 = MaxPool(size=2, stride=2, logging=self.logging)
+        conv_4 = Conv(128, 256, size=5, stride=1, logging=self.logging)
+        pool_4 = MaxPool(size=2, stride=2, logging=self.logging)
+        average_pool = AveragePool(logging=self.logging)
+        # fc_1 = FC(64,
+        #           1024,
+        #           logging=self.logging)
+        fc_2 = FC(256,
                   10,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   logging=self.logging)
 
-        self.layers = [conv_1, pool_1, conv_2, pool_2, fixed_pool, fc_1, fc_2]
+        self.layers = [
+            conv_1, pool_1, conv_2, pool_2, conv_3, pool_3, conv_4, pool_4,
+            average_pool, fc_2
+        ]
 
 
 model = MNISTModel(
@@ -92,8 +97,7 @@ for step in xrange(global_step, FLAGS.max_steps):
         # Evaluate on training and validation set.
         train_loss, train_acc, _ = evaluate(train_features, train_labels)
 
-        val_features, val_labels = data.next_validation_batch(
-            FLAGS.batch_size)
+        val_features, val_labels = data.next_validation_batch(FLAGS.batch_size)
         val_loss, val_acc, _ = evaluate(val_features, val_labels)
 
         # Print results.
