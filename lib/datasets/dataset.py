@@ -2,7 +2,7 @@ from __future__ import division
 
 import os
 import sys
-import cPickle
+import pickle
 
 import numpy as np
 
@@ -13,33 +13,33 @@ class Datasets(object):
             # Create directory.
             os.makedirs(preprocessing_dir)
 
-            # Load or create and save train data.
+            # Load or create/save train data.
             train_dir = os.path.join(preprocessing_dir, 'train.p')
             if os.path.exists(train_dir):
-                train._data = cPickle.load(open(train_dir, 'rb'))
+                train._data = pickle.load(open(train_dir, 'rb'))
             else:
                 train._data = self._preprocess_all_data(
                     train._data, self._train_preprocess, 'train')
-                cPickle.dump(train._data, open(train_dir, 'wb'))
+                pickle.dump(train._data, open(train_dir, 'wb'))
 
-            # Load or create and save validation data.
+            # Load or create/save validation data.
             validation_dir = os.path.join(preprocessing_dir, 'vaidation.p')
             if os.path.exists(validation_dir):
-                validation._data = cPickle.load(open(validation_dir, 'rb'))
+                validation._data = pickle.load(open(validation_dir, 'rb'))
             else:
                 validation._data = self._preprocess_all_data(
                     validation._data, self._validation_preprocess,
                     'validation')
-                cPickle.dump(validation._data, open(validation_dir, 'wb'))
+                pickle.dump(validation._data, open(validation_dir, 'wb'))
 
-            # Load or create and save test data.
+            # Load or create/save test data.
             test_dir = os.path.join(preprocessing_dir, 'test.p')
             if os.path.exists(test_dir):
-                test._data = cPickle.load(open(test_dir, 'rb'))
+                test._data = pickle.load(open(test_dir, 'rb'))
             else:
                 test._data = self._preprocess_all_data(
                     test._data, self._test_preprocess, 'test')
-                cPickle.dump(test._data, open(test_dir, 'wb'))
+                pickle.dump(test._data, open(test_dir, 'wb'))
 
         else:
             # Preprocess every time dataset is initialized.
@@ -103,7 +103,7 @@ class Dataset(object):
 
     def _random_shuffle_examples(self):
         perm = np.arange(self.num_examples)
-        np.shuffle(perm)
+        np.random.shuffle(perm)
         if isinstance(self._data, list):
             self._data = [self._data[i] for i in perm]
         else:
