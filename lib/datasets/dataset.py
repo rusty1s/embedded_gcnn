@@ -1,8 +1,10 @@
+from __future__ import print_function
 from __future__ import division
 
 import os
 import sys
 import pickle
+from six.moves import xrange
 
 import numpy as np
 
@@ -11,7 +13,8 @@ class Datasets(object):
     def __init__(self, train, validation, test, preprocessing_dir=None):
         if preprocessing_dir is not None:
             # Create directory.
-            os.makedirs(preprocessing_dir)
+            if not os.path.exists(preprocessing_dir):
+                os.makedirs(preprocessing_dir)
 
             # Load or create/save train data.
             train_dir = os.path.join(preprocessing_dir, 'train.p')
@@ -23,13 +26,12 @@ class Datasets(object):
                 pickle.dump(train._data, open(train_dir, 'wb'))
 
             # Load or create/save validation data.
-            validation_dir = os.path.join(preprocessing_dir, 'vaidation.p')
+            validation_dir = os.path.join(preprocessing_dir, 'validation.p')
             if os.path.exists(validation_dir):
                 validation._data = pickle.load(open(validation_dir, 'rb'))
             else:
                 validation._data = self._preprocess_all_data(
-                    validation._data, self._validation_preprocess,
-                    'validation')
+                    validation._data, self._eval_preprocess, 'validation')
                 pickle.dump(validation._data, open(validation_dir, 'wb'))
 
             # Load or create/save test data.
@@ -38,17 +40,17 @@ class Datasets(object):
                 test._data = pickle.load(open(test_dir, 'rb'))
             else:
                 test._data = self._preprocess_all_data(
-                    test._data, self._test_preprocess, 'test')
+                    test._data, self._eval_preprocess, 'test')
                 pickle.dump(test._data, open(test_dir, 'wb'))
 
         else:
             # Preprocess every time dataset is initialized.
-            train._data = self._preprocess_all_data(train._data,
-                                                    self._train_prerocess)
-            validation._data = self._preprocess_all_data(validation._data,
-                                                         self._eval_preprocess)
-            test._data = self._preprocess_all_data(test._data,
-                                                   self._eval_preprocess)
+            train._data = self._preprocess_all_data(
+                train._data, self._train_preprocess, 'train')
+            validation._data = self._preprocess_all_data(
+                validation._data, self._eval_preprocess, 'validation')
+            test._data = self._preprocess_all_data(
+                test._data, self._eval_preprocess, 'test')
 
         self.train = train
         self.validation = validation
@@ -63,12 +65,14 @@ class Datasets(object):
         size = len(data) if isinstance(data, list) else data.shape[0]
 
         def _preprocess_single_data(data, index):
-            sys.stdout.write('\r>> Preprocess {} dataset {:.2f}%'.format(
+            sys.stdout.write('\r>> Preprocessing {} dataset {:.2f}%'.format(
                 dataset, 100 * (index + 1) / size))
             sys.stdout.flush()
             return preprocess(data)
 
-        return [_preprocess_single_data(data[i], i) for i in data]
+        data = [_preprocess_single_data(data[i], i) for i in xrange(size)]
+        print()
+        return data
 
     def _preprocess(self, data):
         return data
