@@ -125,8 +125,8 @@ class DatasetTest(TestCase):
         assert_equal(datasets.test._labels, [0, 1, 0, 1, 0])
 
     def test_init_datasets_with_preprocessing(self):
-        if os.path.exists('/tmp/dataset_preprocessing'):
-            shutil.rmtree('/tmp/dataset_preprocessing')
+        if os.path.exists('dataset_preprocessing'):
+            shutil.rmtree('dataset_preprocessing')
 
         data = np.array([1, 2, 3, 4, 5])
         labels = np.array([0, 1, 0, 1, 0])
@@ -136,9 +136,9 @@ class DatasetTest(TestCase):
             dataset,
             dataset,
             preprocess=True,
-            data_dir='/tmp/dataset_preprocessing')
+            data_dir='dataset_preprocessing')
 
-        self.assertTrue(os.path.exists('/tmp/dataset_preprocessing'))
+        self.assertTrue(os.path.exists('dataset_preprocessing'))
 
         dataset = Dataset(None, labels)
         datasets = Datasets(
@@ -146,9 +146,9 @@ class DatasetTest(TestCase):
             dataset,
             dataset,
             preprocess=True,
-            data_dir='/tmp/dataset_preprocessing')
+            data_dir='dataset_preprocessing')
 
-        self.assertTrue(os.path.exists('/tmp/dataset_preprocessing'))
+        self.assertTrue(os.path.exists('dataset_preprocessing'))
         assert_equal(datasets.train._data, [1, 2, 3, 4, 5])
         assert_equal(datasets.train._labels, [0, 1, 0, 1, 0])
         assert_equal(datasets.validation._data, [1, 2, 3, 4, 5])
@@ -156,7 +156,7 @@ class DatasetTest(TestCase):
         assert_equal(datasets.test._data, [1, 2, 3, 4, 5])
         assert_equal(datasets.test._labels, [0, 1, 0, 1, 0])
 
-        if os.path.exists('/tmp/dataset_preprocessing'):
-            shutil.rmtree('/tmp/dataset_preprocessing')
+        if os.path.exists('dataset_preprocessing'):
+            shutil.rmtree('dataset_preprocessing')
 
-        self.assertFalse(os.path.exists('/tmp/dataset_preprocessing'))
+        self.assertFalse(os.path.exists('dataset_preprocessing'))
