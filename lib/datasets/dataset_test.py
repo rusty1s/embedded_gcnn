@@ -135,7 +135,8 @@ class DatasetTest(TestCase):
             dataset,
             dataset,
             dataset,
-            preprocessing_dir='/tmp/dataset_preprocessing')
+            preprocess=True,
+            data_dir='/tmp/dataset_preprocessing')
 
         self.assertTrue(os.path.exists('/tmp/dataset_preprocessing'))
 
@@ -144,7 +145,8 @@ class DatasetTest(TestCase):
             dataset,
             dataset,
             dataset,
-            preprocessing_dir='/tmp/dataset_preprocessing')
+            preprocess=True,
+            data_dir='/tmp/dataset_preprocessing')
 
         self.assertTrue(os.path.exists('/tmp/dataset_preprocessing'))
         assert_equal(datasets.train._data, [1, 2, 3, 4, 5])

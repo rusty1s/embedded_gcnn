@@ -10,14 +10,20 @@ import numpy as np
 
 
 class Datasets(object):
-    def __init__(self, train, validation, test, preprocessing_dir=None):
-        if preprocessing_dir is not None:
+    def __init__(self,
+                 train,
+                 validation,
+                 test,
+                 preprocess=False,
+                 data_dir=None):
+
+        if preprocess and data_dir is not None:
             # Create directory.
-            if not os.path.exists(preprocessing_dir):
-                os.makedirs(preprocessing_dir)
+            if not os.path.exists(data_dir):
+                os.makedirs(data_dir)
 
             # Load or create/save train data.
-            train_dir = os.path.join(preprocessing_dir, 'train.p')
+            train_dir = os.path.join(data_dir, 'train.p')
             if os.path.exists(train_dir):
                 train._data = pickle.load(open(train_dir, 'rb'))
             else:
@@ -26,7 +32,7 @@ class Datasets(object):
                 pickle.dump(train._data, open(train_dir, 'wb'))
 
             # Load or create/save validation data.
-            validation_dir = os.path.join(preprocessing_dir, 'validation.p')
+            validation_dir = os.path.join(data_dir, 'validation.p')
             if os.path.exists(validation_dir):
                 validation._data = pickle.load(open(validation_dir, 'rb'))
             else:
@@ -35,7 +41,7 @@ class Datasets(object):
                 pickle.dump(validation._data, open(validation_dir, 'wb'))
 
             # Load or create/save test data.
-            test_dir = os.path.join(preprocessing_dir, 'test.p')
+            test_dir = os.path.join(data_dir, 'test.p')
             if os.path.exists(test_dir):
                 test._data = pickle.load(open(test_dir, 'rb'))
             else:
@@ -43,7 +49,7 @@ class Datasets(object):
                     test._data, self._eval_preprocess, 'test')
                 pickle.dump(test._data, open(test_dir, 'wb'))
 
-        else:
+        elif preprocess:
             # Preprocess every time dataset is initialized.
             train._data = self._preprocess_all_data(
                 train._data, self._train_preprocess, 'train')
