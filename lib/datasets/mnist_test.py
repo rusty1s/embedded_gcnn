@@ -2,7 +2,7 @@ from unittest import TestCase
 import os
 import shutil
 
-from .mnist import MNIST
+# from .mnist import MNIST
 
 
 class MNISTTest(TestCase):
