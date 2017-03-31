@@ -14,5 +14,5 @@ class MNIST(Datasets):
 
         super(MNIST, self).__init__(train, validation, test, preprocess=True)
 
-    def _preprocess_all(self, images, preprocess, dataset):
+    def _preprocess_all_data(self, images, preprocess, dataset):
         return np.reshape(images, [-1, 28, 28, 1])

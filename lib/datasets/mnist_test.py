@@ -1,4 +1,5 @@
 from unittest import TestCase
+import os
 
 from .mnist import MNIST
 
@@ -6,6 +7,7 @@ from .mnist import MNIST
 class MNISTTest(TestCase):
     def test_read_dataset(self):
         mnist = MNIST('/tmp/mnist')
+        self.assertTrue(os.path.exists('/tmp/mnist'))
 
         self.assertEqual(mnist.train._data.shape, (55000, 28, 28, 1))
         self.assertEqual(mnist.train._labels.shape, (55000, ))

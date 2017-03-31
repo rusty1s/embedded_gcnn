@@ -27,7 +27,7 @@ class Datasets(object):
             if os.path.exists(train_dir):
                 train._data = pickle.load(open(train_dir, 'rb'))
             else:
-                train._data = self._preprocess_all_data(
+                train._data = self._preprocess_all(
                     train._data, self._train_preprocess, 'train')
                 pickle.dump(train._data, open(train_dir, 'wb'))
 
@@ -36,7 +36,7 @@ class Datasets(object):
             if os.path.exists(validation_dir):
                 validation._data = pickle.load(open(validation_dir, 'rb'))
             else:
-                validation._data = self._preprocess_all_data(
+                validation._data = self._preprocess_all(
                     validation._data, self._eval_preprocess, 'validation')
                 pickle.dump(validation._data, open(validation_dir, 'wb'))
 
@@ -45,18 +45,18 @@ class Datasets(object):
             if os.path.exists(test_dir):
                 test._data = pickle.load(open(test_dir, 'rb'))
             else:
-                test._data = self._preprocess_all_data(
+                test._data = self._preprocess_all(
                     test._data, self._eval_preprocess, 'test')
                 pickle.dump(test._data, open(test_dir, 'wb'))
 
         elif preprocess:
             # Preprocess every time dataset is initialized.
-            train._data = self._preprocess_all_data(
-                train._data, self._train_preprocess, 'train')
-            validation._data = self._preprocess_all_data(
+            train._data = self._preprocess_all(train._data,
+                                               self._train_preprocess, 'train')
+            validation._data = self._preprocess_all(
                 validation._data, self._eval_preprocess, 'validation')
-            test._data = self._preprocess_all_data(
-                test._data, self._eval_preprocess, 'test')
+            test._data = self._preprocess_all(test._data,
+                                              self._eval_preprocess, 'test')
 
         self.train = train
         self.validation = validation
@@ -67,7 +67,7 @@ class Datasets(object):
         self.validation._postprocess = self._eval_postprocess
         self.test._postprocess = self._eval_postprocess
 
-    def _preprocess_all_data(self, data, preprocess, dataset):
+    def _preprocess_all(self, data, preprocess, dataset):
         size = len(data) if isinstance(data, list) else data.shape[0]
 
         def _preprocess_single_data(data, index):
