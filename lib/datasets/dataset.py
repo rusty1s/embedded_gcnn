@@ -3,10 +3,14 @@ from __future__ import division
 
 import os
 import sys
-import pickle
 from six.moves import xrange
 
 import numpy as np
+
+try:
+    import cPickle as pickle
+except:
+    import pickle
 
 
 class Datasets(object):

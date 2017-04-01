@@ -5,7 +5,7 @@ import shutil
 import numpy as np
 from numpy.testing import assert_equal
 
-# from .dataset import Datasets, Dataset
+from .dataset import Datasets, Dataset
 
 
 class DatasetTest(TestCase):
