@@ -1,6 +1,6 @@
 from unittest import TestCase
-import os
-import shutil
+# import os
+# import shutil
 
 # from .mnist import MNIST
 
