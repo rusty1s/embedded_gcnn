@@ -16,3 +16,9 @@
 [code-climate-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn
 [code-climate-issues-image]: https://codeclimate.com/github/rusty1s/embedded_gcnn/badges/issue_count.svg
 [code-climate-issues-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn/issues
+
+## PascalVOC
+
+In order to run the `PascalVOC` dataset you need to [download the test data from THE VOC2012 challenge](http://host.robots.ox.ac.uk:8080/) separately.
+You need to create an account to do so.
+Then pass in the path to the `VOC2012` folder in the `test_dir` parameter of the `PascalVOC` constructor.

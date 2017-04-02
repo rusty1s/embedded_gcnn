@@ -4,7 +4,7 @@ import tensorflow as tf
 def cal_softmax_cross_entropy(outputs, labels):
     """Calculate softmax cross-entropy loss."""
 
-    loss_per_example = tf.nn.sparse_softmax_cross_entropy_with_logits(
+    loss_per_example = tf.nn.softmax_cross_entropy_with_logits(
         logits=outputs, labels=labels, name='loss_per_example')
     loss = tf.reduce_mean(loss_per_example, name='loss')
     tf.add_to_collection('losses', loss)
@@ -27,6 +27,7 @@ def cal_accuracy(outputs, labels):
         correct_prediction = tf.equal(predicted_labels, labels)
         correct_prediction = tf.cast(correct_prediction, tf.float32)
 
+        # TODO
         accuracy = tf.reduce_mean(correct_prediction)
 
     tf.summary.scalar('train_accuracy', accuracy)

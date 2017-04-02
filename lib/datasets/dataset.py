@@ -27,31 +27,34 @@ class Datasets(object):
                 os.makedirs(data_dir)
 
             # Load or create/save train data.
-            train_dir = os.path.join(data_dir, 'train.p')
-            if os.path.exists(train_dir):
-                train._data = pickle.load(open(train_dir, 'rb'))
+            train_file = os.path.join(data_dir, 'train.p')
+            if os.path.exists(train_file):
+                train._data = pickle.load(open(train_file, 'rb'))
             else:
                 train._data = self._preprocess_all(
                     train._data, self._train_preprocess, 'train')
-                pickle.dump(train._data, open(train_dir, 'wb'))
+                print('Resaving train dataset...')
+                pickle.dump(train._data, open(train_file, 'wb'))
 
             # Load or create/save validation data.
-            validation_dir = os.path.join(data_dir, 'validation.p')
-            if os.path.exists(validation_dir):
-                validation._data = pickle.load(open(validation_dir, 'rb'))
+            validation_file = os.path.join(data_dir, 'validation.p')
+            if os.path.exists(validation_file):
+                validation._data = pickle.load(open(validation_file, 'rb'))
             else:
                 validation._data = self._preprocess_all(
                     validation._data, self._eval_preprocess, 'validation')
-                pickle.dump(validation._data, open(validation_dir, 'wb'))
+                print('Resaving validation dataset...')
+                pickle.dump(validation._data, open(validation_file, 'wb'))
 
             # Load or create/save test data.
-            test_dir = os.path.join(data_dir, 'test.p')
-            if os.path.exists(test_dir):
-                test._data = pickle.load(open(test_dir, 'rb'))
+            test_file = os.path.join(data_dir, 'test.p')
+            if os.path.exists(test_file):
+                test._data = pickle.load(open(test_file, 'rb'))
             else:
                 test._data = self._preprocess_all(
                     test._data, self._eval_preprocess, 'test')
-                pickle.dump(test._data, open(test_dir, 'wb'))
+                print('Resaving test dataset...')
+                pickle.dump(test._data, open(test_file, 'wb'))
 
         elif preprocess:
             # Preprocess every time dataset is initialized.
@@ -70,6 +73,13 @@ class Datasets(object):
         self.train._postprocess = self._train_postprocess
         self.validation._postprocess = self._eval_postprocess
         self.test._postprocess = self._eval_postprocess
+
+    def label_name(self, label):
+        raise NotImplementedError
+
+    @property
+    def num_labels(self):
+        raise NotImplementedError
 
     def _preprocess_all(self, data, preprocess, dataset):
         size = len(data) if isinstance(data, list) else data.shape[0]

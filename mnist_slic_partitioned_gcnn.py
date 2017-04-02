@@ -1,12 +1,12 @@
 from __future__ import print_function
 from __future__ import division
 
-import time
 from six.moves import xrange
 
 import numpy as np
 import tensorflow as tf
 
+from lib.datasets.dataset import Datasets
 from lib.datasets.mnist import MNIST
 from lib.segmentation.algorithm import slic
 from lib.segmentation.adjacency import segmentation_adjacency
@@ -16,7 +16,7 @@ from lib.graph.embedding import partition_embedded_adj
 from lib.graph.embedded_coarsening import coarsen_embedded_adj
 from lib.graph.preprocess import preprocess_adj
 from lib.graph.sparse import sparse_to_tensor
-from lib.graph.distortion import perm_features, pad_adj, pad_features
+from lib.graph.distortion import perm_features
 from lib.model.model import Model
 from lib.layer.partitioned_gcnn import PartitionedGCNN as Conv
 from lib.layer.max_pool_gcnn import MaxPoolGCNN as MaxPool
@@ -51,85 +51,89 @@ flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
 flags.DEFINE_integer('batch_size', 64, 'How many inputs to process at once.')
 flags.DEFINE_integer('max_steps', 10000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
-flags.DEFINE_string('data_dir', 'data/mnist/input',
+flags.DEFINE_string('data_dir', 'data/mnist/slic/input',
                     'Directory for storing input data.')
-flags.DEFINE_string('log_dir', 'data/mnist/summaries/slic_partitioned_gcnn',
+flags.DEFINE_string('log_dir',
+                    'data/mnist/summaries/mnist_slic_partitioned_gcnn',
                     'Summaries log directory.')
 flags.DEFINE_integer('display_step', 5,
                      'How many steps to print logging after.')
 
-data = MNIST(data_dir=FLAGS.data_dir)
-n_pad = 160
 
+class MNISTSlic(Datasets):
+    def __init__(self):
+        mnist = MNIST(FLAGS.data_dir)
+        super(MNISTSlic, self).__init__(
+            mnist.train,
+            mnist.validation,
+            mnist.test,
+            preprocess=True,
+            data_dir=FLAGS.data_dir)
 
-def preprocess_image(image):
-    segmentation = slic(image, FLAGS.slic_num_segments, FLAGS.slic_compactness,
-                        FLAGS.slic_max_iterations, FLAGS.slic_sigma)
-    points, adj, mass = segmentation_adjacency(segmentation,
-                                               FLAGS.graph_connectivity)
+    def _preprocess(self, image):
+        segmentation = slic(image, FLAGS.slic_num_segments,
+                            FLAGS.slic_compactness, FLAGS.slic_max_iterations,
+                            FLAGS.slic_sigma)
+        points, adj, mass = segmentation_adjacency(segmentation,
+                                                   FLAGS.graph_connectivity)
 
-    adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
-        points,
-        mass,
-        adj,
-        levels=4,
-        locale=FLAGS.locale_normalization,
-        stddev=FLAGS.stddev,
-        rid=np.arange(mass.shape[0]))  # Iterate in order.
+        adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
+            points,
+            mass,
+            adj,
+            levels=4,
+            locale=FLAGS.locale_normalization,
+            stddev=FLAGS.stddev)
 
-    features = feature_extraction_minimal(segmentation, image)
-    features = perm_features(features, perm)
-    features = pad_features(features, n_pad)
+        features = feature_extraction_minimal(segmentation, image)
+        features = perm_features(features, perm)
 
-    for i in xrange(5):
-        n_new = n_pad // (2**i)
-        adjs_dist[i] = pad_adj(adjs_dist[i], (n_new, n_new))
-        adjs_rad[i] = pad_adj(adjs_rad[i], (n_new, n_new))
+        return {
+            'adjs_dist': adjs_dist,
+            'adjs_rad': adjs_rad,
+            'features': features
+        }
 
-    adjs_1 = partition_embedded_adj(
-        adjs_dist[0],
-        adjs_rad[0],
-        num_partitions=FLAGS.num_partitions,
-        offset=0.125 * np.pi)
-    adjs_2 = partition_embedded_adj(
-        adjs_dist[1],
-        adjs_rad[1],
-        num_partitions=FLAGS.num_partitions,
-        offset=0.125 * np.pi)
-    adjs_3 = partition_embedded_adj(
-        adjs_dist[2],
-        adjs_rad[2],
-        num_partitions=FLAGS.num_partitions,
-        offset=0.125 * np.pi)
-    adjs_4 = partition_embedded_adj(
-        adjs_dist[3],
-        adjs_rad[3],
-        num_partitions=FLAGS.num_partitions,
-        offset=0.125 * np.pi)
+    def _postprocess(self, data_batch):
+        data_batch_new = []
+        for i in xrange(len(data_batch)):
+            data = data_batch[i]
 
-    adjs_1 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_1]
-    adjs_2 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_2]
-    adjs_3 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_3]
-    adjs_4 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_4]
+            adjs_1 = partition_embedded_adj(
+                data['adjs_dist'][0],
+                data['adjs_rad'][0],
+                num_partitions=FLAGS.num_partitions,
+                offset=0.125 * np.pi)
+            adjs_2 = partition_embedded_adj(
+                data['adjs_dist'][1],
+                data['adjs_rad'][1],
+                num_partitions=FLAGS.num_partitions,
+                offset=0.125 * np.pi)
+            adjs_3 = partition_embedded_adj(
+                data['adjs_dist'][2],
+                data['adjs_rad'][2],
+                num_partitions=FLAGS.num_partitions,
+                offset=0.125 * np.pi)
+            adjs_4 = partition_embedded_adj(
+                data['adjs_dist'][3],
+                data['adjs_rad'][3],
+                num_partitions=FLAGS.num_partitions,
+                offset=0.125 * np.pi)
 
-    return adjs_1, adjs_2, adjs_3, adjs_4, features
+            adjs_1 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_1]
+            adjs_2 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_2]
+            adjs_3 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_3]
+            adjs_4 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_4]
 
+            data_batch_new.append({
+                '1': adjs_1,
+                '2': adjs_2,
+                '3': adjs_3,
+                '4': adjs_4,
+                'features': data['features']
+            })
 
-def preprocess_images(images):
-    all_adjs_1 = []
-    all_adjs_2 = []
-    all_adjs_3 = []
-    all_adjs_4 = []
-    all_features = []
-    for i in xrange(images.shape[0]):
-        adjs_1, adjs_2, adjs_3, adjs_4, features = preprocess_image(images[i])
-        all_adjs_1.append(adjs_1)
-        all_adjs_2.append(adjs_2)
-        all_adjs_3.append(adjs_3)
-        all_adjs_4.append(adjs_4)
-        all_features.append(features)
-
-    return all_adjs_1, all_adjs_2, all_adjs_3, all_adjs_4, all_features
+        return data_batch_new
 
 
 placeholders = {
@@ -165,9 +169,9 @@ placeholders = {
 }
 
 
-class MNIST(Model):
+class MNISTModel(Model):
     def __init__(self, **kwargs):
-        super(MNIST, self).__init__(**kwargs)
+        super(MNISTModel, self).__init__(**kwargs)
         self.build()
 
     def _build(self):
@@ -216,40 +220,39 @@ class MNIST(Model):
         ]
 
 
-model = MNIST(
+data = MNISTSlic()
+model = MNISTModel(
     placeholders=placeholders,
     learning_rate=FLAGS.learning_rate,
     log_dir=FLAGS.log_dir)
 global_step = model.initialize()
 
 
-def evaluate(images, labels):
-    adjs_1, adjs_2, adjs_3, adjs_4, features = preprocess_images(images)
-
+def evaluate(data_batch, labels_batch):
     feed_dict = {
-        placeholders['labels']: labels,
+        placeholders['labels']: labels_batch,
         placeholders['dropout']: 0.0,
     }
 
     feed_dict.update({
-        placeholders['features'][i]: features[i]
+        placeholders['features'][i]: data_batch[i]['features']
         for i in xrange(FLAGS.batch_size)
     })
 
     feed_dict.update({
-        placeholders['adjacency_1'][i][j]: adjs_1[i][j]
+        placeholders['adjacency_1'][i][j]: data_batch[i]['1'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
     feed_dict.update({
-        placeholders['adjacency_2'][i][j]: adjs_2[i][j]
+        placeholders['adjacency_2'][i][j]: data_batch[i]['2'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
     feed_dict.update({
-        placeholders['adjacency_3'][i][j]: adjs_3[i][j]
+        placeholders['adjacency_3'][i][j]: data_batch[i]['3'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
     feed_dict.update({
-        placeholders['adjacency_4'][i][j]: adjs_4[i][j]
+        placeholders['adjacency_4'][i][j]: data_batch[i]['4'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
 
@@ -257,35 +260,32 @@ def evaluate(images, labels):
 
 
 for step in xrange(global_step, FLAGS.max_steps):
-    t_start = time.process_time()
-    images, labels = data.next_train_batch(FLAGS.batch_size)
-    adjs_1, adjs_2, adjs_3, adjs_4, features = preprocess_images(images)
-    preprocess_duration = time.process_time() - t_start
+    data_batch, labels_batch = data.train.next_batch(FLAGS.batch_size)
 
     feed_dict = {
-        placeholders['labels']: labels,
+        placeholders['labels']: labels_batch,
         placeholders['dropout']: FLAGS.dropout,
     }
 
     feed_dict.update({
-        placeholders['features'][i]: features[i]
+        placeholders['features'][i]: data_batch[i]['features']
         for i in xrange(FLAGS.batch_size)
     })
 
     feed_dict.update({
-        placeholders['adjacency_1'][i][j]: adjs_1[i][j]
+        placeholders['adjacency_1'][i][j]: data_batch[i]['1'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
     feed_dict.update({
-        placeholders['adjacency_2'][i][j]: adjs_2[i][j]
+        placeholders['adjacency_2'][i][j]: data_batch[i]['2'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
     feed_dict.update({
-        placeholders['adjacency_3'][i][j]: adjs_3[i][j]
+        placeholders['adjacency_3'][i][j]: data_batch[i]['3'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
     feed_dict.update({
-        placeholders['adjacency_4'][i][j]: adjs_4[i][j]
+        placeholders['adjacency_4'][i][j]: data_batch[i]['4'][j]
         for i in xrange(FLAGS.batch_size) for j in xrange(FLAGS.num_partitions)
     })
 
@@ -293,10 +293,10 @@ for step in xrange(global_step, FLAGS.max_steps):
 
     if step % FLAGS.display_step == 0:
         # Evaluate on training and validation set.
-        train_loss, train_acc, _ = evaluate(images, labels)
+        train_loss, train_acc, _ = evaluate(data_batch, labels_batch)
 
-        images, labels = data.next_validation_batch(FLAGS.batch_size)
-        val_loss, val_acc, _ = evaluate(images, labels)
+        data_batch, labels_batch = data.validation.next_batch(FLAGS.batch_size)
+        val_loss, val_acc, _ = evaluate(data_batch, labels_batch)
 
         # Print results.
         print(', '.join([
@@ -304,7 +304,6 @@ for step in xrange(global_step, FLAGS.max_steps):
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
             'time={:.2f}s'.format(duration),
-            'preprocess time={:.2f}s'.format(preprocess_duration),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
@@ -312,15 +311,14 @@ for step in xrange(global_step, FLAGS.max_steps):
 print('Optimization finished!')
 
 # Evaluate on test set.
-num_iterations = data.num_test_examples // FLAGS.batch_size
+num_iterations = data.test.num_examples // FLAGS.batch_size
 test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
-    images, labels = data.next_test_batch(FLAGS.batch_size)
-    test_single_loss, test_single_acc, test_single_duration = evaluate(images,
-                                                                       labels)
-    test_loss += test_single_loss
-    test_acc += test_single_acc
-    test_duration += test_single_duration
+    data_batch, labels_batch = data.test.next_batch(FLAGS.batch_size)
+    test_l, test_a, test_d = evaluate(data_batch, labels_batch)
+    test_loss += test_l
+    test_acc += test_a
+    test_duration += test_d
 
 print('Test set results: cost={:.5f}, accuracy={:.5f}, time={:.2f}s'.format(
     test_loss / num_iterations, test_acc / num_iterations, test_duration))
