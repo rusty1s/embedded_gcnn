@@ -41,13 +41,13 @@ class Cifar10(Datasets):
         train_data = np.stack(train_data, axis=0)
         train_data = np.reshape(train_data, (-1, HEIGHT * WIDTH * DEPTH))
         train_labels = np.stack(train_labels, axis=0)
-        train_labels = np.reshape(train_labels, (-1))
+        train_labels = np.reshape(train_labels, (-1, self.num_labels))
 
         train_data = train_data[validation_size:]
         train_labels = train_labels[validation_size:]
         train = Dataset(train_data, train_labels)
 
-        # Generate a slice of validation data from trainings data.
+        # Generate a slice of validation data from training data.
         validation_data = train_data[:validation_size]
         validation_labels = train_labels[:validation_size]
         validation = Dataset(validation_data, validation_labels)

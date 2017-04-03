@@ -58,7 +58,7 @@ def partition_embedded_adj(adj_dist, adj_rad, num_partitions, offset=0.0):
     offset = offset % interval
     max_rad = offset
 
-    for i in xrange(num_partitions+1):
+    for i in xrange(num_partitions + 1):
         if i < num_partitions:
             adj = sp.coo_matrix((n, n), dtype=adj_dist.dtype)
             adjs.append(adj)

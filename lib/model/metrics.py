@@ -24,10 +24,13 @@ def cal_accuracy(outputs, labels):
         predicted_labels = tf.argmax(outputs, 1)
         predicted_labels = tf.cast(predicted_labels, tf.int32)
 
-        correct_prediction = tf.equal(predicted_labels, labels)
+        # TODO: Multi label problem
+        correct_labels = tf.argmax(labels, 1)
+        correct_labels = tf.cast(correct_labels, tf.int32)
+
+        correct_prediction = tf.equal(predicted_labels, correct_labels)
         correct_prediction = tf.cast(correct_prediction, tf.float32)
 
-        # TODO
         accuracy = tf.reduce_mean(correct_prediction)
 
     tf.summary.scalar('train_accuracy', accuracy)

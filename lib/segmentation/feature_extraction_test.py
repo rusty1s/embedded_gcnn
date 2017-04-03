@@ -1,9 +1,9 @@
 from unittest import TestCase
 
-import numpy as np
-from numpy.testing import assert_equal
+# import numpy as np
+# from numpy.testing import assert_equal
 
-from .feature_extraction import feature_extraction
+# from .feature_extraction import feature_extraction
 
 
 class FeatureExtractionTest(TestCase):
