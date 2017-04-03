@@ -19,7 +19,7 @@ class MNIST(Datasets):
         super(MNIST, self).__init__(train, validation, test, preprocess=True)
 
     def label_name(self, label):
-        return str(label)
+        return np.where(label == 1)[0].tolist()
 
     @property
     def num_labels(self):

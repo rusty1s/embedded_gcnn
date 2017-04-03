@@ -59,7 +59,7 @@ class Cifar10(Datasets):
         super(Cifar10, self).__init__(train, validation, test, preprocess=True)
 
     def label_name(self, label):
-        return LABELS[label]
+        return [LABELS[i] for i in np.where(label == 1)[0]]
 
     @property
     def num_labels(self):
@@ -75,8 +75,8 @@ class Cifar10(Datasets):
             open(os.path.join(data_dir, name), 'rb'), encoding='latin1')
 
         labels = np.array(batch['labels'], np.uint8)
-        index_offset = np.arange(labels.shape[0] * self.num_labels)
+        index_offset = np.arange(labels.shape[0]) * self.num_labels
         labels_one_hot = np.zeros((labels.shape[0], self.num_labels), np.uint8)
-        labels_one_hot.flat[index_offset + labels.ravel()] = 1
+        labels_one_hot.flat[index_offset + labels] = 1
 
         return batch['data'], labels_one_hot

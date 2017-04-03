@@ -51,7 +51,7 @@ class PascalVOC(Datasets):
         super(PascalVOC, self).__init__(train, validation, test)
 
     def label_name(self, label):
-        return LABELS[label]
+        return [LABELS[i] for i in np.where(label == 1)[0]]
 
     @property
     def num_labels(self):
