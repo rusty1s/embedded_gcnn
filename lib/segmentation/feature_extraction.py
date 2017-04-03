@@ -5,6 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 NUM_FEATURES_MINIMAL = 4
+NUM_FEATURES = 79
 
 
 def feature_extraction_minimal(segmentation, image):
@@ -32,7 +33,6 @@ def feature_extraction(segmentation, image):
     intensity_image = color.rgb2gray(image)
     props = regionprops(segmentation, intensity_image)
 
-    NUM_FEATURES = 85
     features = np.zeros((len(props), NUM_FEATURES), dtype=np.float32)
 
     for i, prop in enumerate(props):
@@ -83,8 +83,8 @@ def feature_extraction(segmentation, image):
         feature.extend(moments_central)  # bis index 55
         feature.extend(moments_hu)  # bis index 63
         feature.extend(weighted_moments)  # bis index 79
-        feature.extend([mean_color_r, mean_color_g, mean_color_b])
-        feature.extend([diff_color_r, diff_color_g, diff_color_b])
+        # feature.extend([mean_color_r, mean_color_g, mean_color_b])
+        # feature.extend([diff_color_r, diff_color_g, diff_color_b])
 
         assert len(feature) == NUM_FEATURES
         features[i] = np.array(feature)
