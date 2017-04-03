@@ -63,12 +63,12 @@ def feature_extraction(segmentation, image):
 
         sliced_image = image[min_row:max_row, min_col:max_col]
         sliced_image = sliced_image[prop['image']]
-        mean_color_r = sliced_image[..., 0].mean()
-        mean_color_g = sliced_image[..., 1].mean()
-        mean_color_b = sliced_image[..., 2].mean()
-        diff_color_r = sliced_image[..., 0].max() - sliced_image[..., 0].min()
-        diff_color_g = sliced_image[..., 1].max() - sliced_image[..., 1].min()
-        diff_color_b = sliced_image[..., 2].max() - sliced_image[..., 2].min()
+        # mean_color_r = sliced_image[..., 0].mean()
+        # mean_color_g = sliced_image[..., 1].mean()
+        # mean_color_b = sliced_image[..., 2].mean()
+        # diff_color_r = sliced_image[..., 0].max() - sliced_image[..., 0].min()
+        # diff_color_g = sliced_image[..., 1].max() - sliced_image[..., 1].min()
+        # diff_color_b = sliced_image[..., 2].max() - sliced_image[..., 2].min()
 
         feature = [
             area, bbox_height, bbox_width, bbox_area, convex_area,
