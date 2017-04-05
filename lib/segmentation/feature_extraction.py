@@ -9,12 +9,8 @@ NUM_FEATURES = 16
 
 
 def form_feature_extraction(segmentation, image):
-    # We need to increment the segmentation, because labels with value 0 are
-    # ignored when calling `regionprops`.
-    segmentation += 1
-
     intensity_image = color.rgb2gray(image)
-    props = regionprops(segmentation, intensity_image)
+    props = regionprops(segmentation + 1, intensity_image)
 
     features = np.zeros((len(props), NUM_FORM_FEATURES), dtype=np.float32)
 
@@ -64,8 +60,7 @@ def form_feature_extraction(segmentation, image):
 
 
 def feature_extraction(segmentation, image):
-    segmentation += 1
-    props = regionprops(segmentation)
+    props = regionprops(segmentation + 1)
     features = np.zeros((len(props), NUM_FEATURES), dtype=np.float32)
 
     for i, prop in enumerate(props):
