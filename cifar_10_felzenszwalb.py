@@ -101,10 +101,10 @@ class Cifar10Felzenszwalb(Datasets):
             num_partitions=FLAGS.num_partitions,
             offset=0.125 * np.pi)
 
-        adjs_1 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_1]
-        adjs_2 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_2]
-        adjs_3 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_3]
-        adjs_4 = [sparse_to_tensor(preprocess_adj(adj)) for adj in adjs_4]
+        adjs_1 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_1]
+        adjs_2 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_2]
+        adjs_3 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_3]
+        adjs_4 = [sparse_to_tensor(preprocess_adj(a)) for a in adjs_4]
 
         return {
             'adjs_1': adjs_1,
