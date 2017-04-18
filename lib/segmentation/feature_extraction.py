@@ -29,7 +29,7 @@ def form_feature_extraction(segmentation, image):
         minor_axis_length = prop['minor_axis_length']
         orientation = prop['orientation']
         perimeter = prop['perimeter']
-        solidity = prop['solidity']  # 14 values
+        solidity = prop['solidity']
         inertia_tensor = prop['inertia_tensor'].flatten()  # 4 values
         inertia_tensor_eigvals = prop['inertia_tensor_eigvals']  # 2 values
         local_centroid = prop['local_centroid']  # 2 values
@@ -43,14 +43,14 @@ def form_feature_extraction(segmentation, image):
             eccentricity, equivalent_diameter, extent, filled_area,
             major_axis_length, minor_axis_length, orientation, perimeter,
             solidity
-        ]  # bis index 13
-        feature.extend(inertia_tensor)  # bis index 17
-        feature.extend(inertia_tensor_eigvals)  # bis index 19
-        feature.extend(local_centroid)  # bis index 21
-        feature.extend(moments)  # bis index 37
-        feature.extend(moments_central)  # bis index 53
-        feature.extend(moments_hu)  # bis index 60
-        feature.extend(weighted_moments)  # bis index 76
+        ]  # 14 values => [0, 13]
+        feature.extend(inertia_tensor)  # 4 values => [14, 17]
+        feature.extend(inertia_tensor_eigvals)  # 2 values => [18, 19]
+        feature.extend(local_centroid)  # 2 values => [20, 21]
+        feature.extend(moments)  # 16 values => [22, 37]
+        feature.extend(moments_central)  # 16 values => [38, 53]
+        feature.extend(moments_hu)  # 7 values => [54, 60]
+        feature.extend(weighted_moments)  # 16 values => [61, 77]
 
         assert len(feature) == NUM_FORM_FEATURES
         features[i] = np.array(feature)
