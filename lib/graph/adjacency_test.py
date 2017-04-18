@@ -55,6 +55,17 @@ class GraphTest(tf.test.TestCase):
         perm = filter_highly_connected_nodes(adj, capacity=2)
         assert_equal(perm, [1, 4])
 
+        # Test different weights.
+        adj = [[0, 2, 3, 4, 5], [2, 0, 1, 0, 0], [3, 1, 0, 1, 0],
+               [4, 0, 1, 0, 1], [5, 0, 0, 1, 0]]
+        adj = sp.coo_matrix(adj)
+
+        perm = filter_highly_connected_nodes(adj, capacity=3)
+        assert_equal(perm, [1, 2, 3, 4])
+
+        perm = filter_highly_connected_nodes(adj, capacity=2)
+        assert_equal(perm, [1, 4])
+
     def test_grid_adj_connectivity_4(self):
         adj = grid_adj((3, 2), connectivity=4)
 

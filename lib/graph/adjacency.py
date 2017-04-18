@@ -32,7 +32,9 @@ def invert_adj(m, stddev=1):
 def filter_highly_connected_nodes(adj, capacity):
     """Filter nodes with a number of outgoing edges greater than capacity."""
 
-    return np.where(adj.sum(axis=1) <= capacity)[0]
+    adj = adj.tocoo()
+    _, num_nodes = np.unique(adj.row, return_counts=True)
+    return np.where(num_nodes <= capacity)[0]
 
 
 def grid_adj(shape, connectivity=4, dtype=np.float32):
