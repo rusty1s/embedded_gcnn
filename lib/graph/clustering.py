@@ -6,7 +6,6 @@ import scipy.sparse as sp
 
 def normalized_cut(adj, rid=None):
     if rid is None:
-        np.random.seed()
         rid = np.random.permutation(np.arange(adj.shape[0]))
 
     n = adj.shape[0]

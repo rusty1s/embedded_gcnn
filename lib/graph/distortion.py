@@ -4,31 +4,20 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def pad_adj(adj, shape):
-    height, width = adj.shape
-    assert height <= shape[0] and width <= shape[1]
-
-    adj = adj.tocoo()
-    return sp.coo_matrix((adj.data, (adj.row, adj.col)), shape)
-
-
-def pad_features(features, size):
-    assert features.shape[0] <= size
-
-    features_new = np.zeros((size, features.shape[1]), features.dtype)
-    features_new[:features.shape[0], ...] = features
-    return features_new
-
-
-def perm_adj(adj, perm=None):
-    if perm is None:
-        perm = np.random.permutation(np.arange(adj.shape[0]))
-
-    n = adj.shape[0]
-    n_new = perm.shape[0]
-    assert n_new >= n, 'Invalid shapes'
+def perm_adj(adj, perm):
+    """Permute an adjacency matrix given a permutation. The permutation can be
+    greater or smaller than the number of nodes removing nodes or adding fake
+    nodes."""
 
     adj = adj.tocoo(copy=True)
+
+    # Append nodes that should get removed in the process to the end of the
+    # permutation.
+    nodes_to_remove = np.setdiff1d(np.arange(adj.shape[0]), perm)
+    perm_new = np.concatenate((perm, nodes_to_remove), axis=0)
+
+    n = adj.shape[0]
+    n_new = perm_new.shape[0]
 
     # Extend adjacency to contain isolated nodes.
     if n_new > n:
@@ -37,40 +26,40 @@ def perm_adj(adj, perm=None):
         adj = sp.vstack([adj, rows])
         adj = sp.hstack([adj, cols])
 
-    sorted_perm = np.argsort(perm)
-    adj.row = np.array(sorted_perm)[adj.row]
-    adj.col = np.array(sorted_perm)[adj.col]
-    return adj
+    sorted_perm = np.argsort(perm_new)
+    adj.row = sorted_perm[adj.row]
+    adj.col = sorted_perm[adj.col]
+
+    # Slice matrix to final shape.
+    n_new = perm.shape[0]
+    return adj.tocsr()[0:n_new, :].tocsc()[:, 0:n_new].tocoo()
 
 
-def perm_features(features, perm=None):
-    if perm is None:
-        perm = np.random.permutation(np.arange(features.shape[0]))
+def perm_features(features, perm):
+    """Permute a feature matrix given a permutation. The permutation can be
+    greater or smaller than the number of nodes removing nodes or adding fake
+    nodes."""
 
     n, k = features.shape
     n_new = perm.shape[0]
-    assert n_new >= n, 'Invalid shapes'
 
     # Features of none existing nodes should only contain zeros.
     features_new = np.zeros((n_new, k), features.dtype)
+
     for i in xrange(n_new):
         tid = perm[i]
-        if tid < n:
-            features_new[i] = features[tid]
+        features_new[i] = features[tid] if tid < n else 0
 
     return features_new
 
 
-def perm_batch_of_features(batch, perm=None):
-    if perm is None:
-        perm = np.random.permutation(np.arange(batch.shape[1]))
+def pad_adj(adj, size):
+    """Pad an adjacency matrix by appending zeros."""
 
-    batch_size, _, k = batch.shape
-    n_new = perm.shape[0]
+    return perm_adj(adj, np.arange(size))
 
-    # Features of none existing nodes should only contain zeros.
-    batch_new = np.zeros((batch_size, n_new, k), batch.dtype)
-    for i in xrange(batch_size):
-        batch_new[i] = perm_features(batch[i], perm)
 
-    return batch_new
+def pad_features(features, size):
+    """Pad a feature matrix by appending zeros."""
+
+    return perm_features(features, np.arange(size))

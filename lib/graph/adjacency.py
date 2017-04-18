@@ -8,6 +8,7 @@ import scipy.sparse as sp
 
 def normalize_adj(adj, locale=False):
     """Normalize adjacency matrix to interval [0, 1]."""
+
     if not locale:
         return (1 / adj.max()) * adj
     else:
@@ -22,10 +23,16 @@ def invert_adj(m, stddev=1):
 
     if sp.issparse(m):
         m = m.copy()
-        m.data = np.exp(-m.data / (2 * stddev * stddev))
+        m.data = np.exp(-m.data / (2 * stddev ** 2))
         return m
     else:
-        return np.exp(-m / (2 * stddev * stddev))
+        return np.exp(-m / (2 * stddev ** 2))
+
+
+def filter_highly_connected_nodes(adj, capacity):
+    """Filter nodes with a number of outgoing edges greater than capacity."""
+
+    return np.where(adj.sum(axis=1) <= capacity)[0]
 
 
 def grid_adj(shape, connectivity=4, dtype=np.float32):
@@ -47,7 +54,8 @@ def grid_adj(shape, connectivity=4, dtype=np.float32):
 
 
 def _grid_neighbors(v, height, width):
-    """Return whether the node has a top, bottom, left and right neighbor."""
+    """Return whether the node has a top, right, bottom and right neighbor."""
+
     top = v >= width
     bottom = v < (height - 1) * width
     left = v % width
@@ -58,6 +66,7 @@ def _grid_neighbors(v, height, width):
 
 def _grid_adj_4(adj, height, width):
     """Add edges to vertical/horizontal nodes on grid adjacency."""
+
     for v in xrange(height * width):
         top, right, bottom, left = _grid_neighbors(v, height, width)
 
@@ -75,6 +84,7 @@ def _grid_adj_4(adj, height, width):
 
 def _grid_adj_8(adj, height, width):
     """Add edges to diagonal nodes on grid adjacency."""
+
     for v in xrange(height * width):
         top, right, bottom, left = _grid_neighbors(v, height, width)
 
