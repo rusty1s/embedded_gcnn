@@ -4,14 +4,11 @@ from numpy import pi as PI
 from numpy.testing import assert_almost_equal as assert_almost
 import scipy.sparse as sp
 
-from .embedded_gcnn import base, conv
+from .embedded_gcnn import base, conv, EmbeddedGCNN
 from ..graph.sparse import sparse_to_tensor
 
 
 class EmbeddedGCNNTest(tf.test.TestCase):
-    def test_init(self):
-        pass
-
     def test_base_K2_P2(self):
         adj_rad = [[
             0, 0.25 * PI, 0.5 * PI, 0.75 * PI, PI, 1.25 * PI, 1.5 * PI,
@@ -114,10 +111,43 @@ class EmbeddedGCNNTest(tf.test.TestCase):
         expected_4 = 7 * 0.5 + 8 * 0.5
         expected_4 += 1 * 0.5 * (3 * 0.8 + 4 * 0.2)
         expected_4 += 1 * 0.5 * (3 * 0.4 + 4 * 0.6)
-        expected_4 += 2 * 0.5 * (5 * 0.4 + 6 * 0.6)
         expected_4 += 2 * 0.5 * (5 * 0.7 + 6 * 0.3)
+        expected_4 += 2 * 0.5 * (5 * 0.4 + 6 * 0.6)
 
         expected = [[expected_1], [expected_2], [expected_3], [expected_4]]
 
         with self.test_session():
             assert_almost(output.eval(), expected, 6)
+
+    def test_init(self):
+        layer = EmbeddedGCNN(
+            1,
+            2,
+            adjs_dist=None,
+            adjs_rad=None,
+            local_controllability=2,
+            sampling_points=8)
+        self.assertEqual(layer.name, 'embeddedgcnn_1')
+        self.assertEqual(layer.adjs_dist, None)
+        self.assertEqual(layer.adjs_rad, None)
+        self.assertEqual(layer.K, 2)
+        self.assertEqual(layer.P, 8)
+        self.assertIn('weights', layer.vars)
+        self.assertEqual(layer.vars['weights'].get_shape(), [9, 1, 2])
+        self.assertIn('bias', layer.vars)
+        self.assertEqual(layer.vars['bias'].get_shape(), [2])
+
+        layer = EmbeddedGCNN(
+            3,
+            6,
+            adjs_dist=None,
+            adjs_rad=None,
+            local_controllability=1,
+            sampling_points=4,
+            bias=False)
+        self.assertEqual(layer.name, 'embeddedgcnn_2')
+        self.assertEqual(layer.K, 1)
+        self.assertEqual(layer.P, 4)
+        self.assertIn('weights', layer.vars)
+        self.assertEqual(layer.vars['weights'].get_shape(), [5, 3, 6])
+        self.assertNotIn('bias', layer.vars)

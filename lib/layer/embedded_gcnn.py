@@ -16,9 +16,10 @@ def base(adj_rad, K, P, p):
 
     elif K == 2:
         shape = adj_rad.dense_shape
-        zero = tf.SparseTensor(
+        dtype = tf.as_dtype(adj_rad.values.dtype)
+        zero = tf.SparseTensorValue(
             tf.constant(0, dtype=tf.int64, shape=[0, 2]),
-            tf.constant(0, dtype=adj_rad.dtype, shape=[0]), shape)
+            tf.constant(0, dtype, shape=[0]), shape)
 
         c = P / (2 * PI)  # Don't recalculate coefficient every time.
         values = adj_rad.values
