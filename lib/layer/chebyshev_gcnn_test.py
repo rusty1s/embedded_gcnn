@@ -1,59 +1,39 @@
 import numpy as np
+import scipy.sparse as sp
 import tensorflow as tf
 
 from .chebyshev_gcnn import ChebyshevGCNN
+from ..graph.sparse import sparse_to_tensor
 
 
 class ChebyshevGCNNTest(tf.test.TestCase):
     def test_init(self):
-        lap = tf.constant(1)
-
-        layer = ChebyshevGCNN(1, 2, lap, max_degree=3)
+        layer = ChebyshevGCNN(1, 2, laps=None, degree=3)
         self.assertEqual(layer.name, 'chebyshevgcnn_1')
-        self.assertEqual(layer.laps, lap)
-        self.assertEqual(layer.act, tf.nn.relu)
-        self.assertEqual(layer.bias, True)
-        self.assertEqual(layer.logging, False)
+        self.assertEqual(layer.laps, None)
         self.assertIn('weights', layer.vars)
         self.assertEqual(layer.vars['weights'].get_shape(), [4, 1, 2])
         self.assertIn('bias', layer.vars)
         self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
-        layer = ChebyshevGCNN(
-            3, 4, lap, max_degree=5, bias=False, logging=True)
+        layer = ChebyshevGCNN(3, 4, laps=None, degree=5, bias=False)
         self.assertEqual(layer.name, 'chebyshevgcnn_2')
-        self.assertEqual(layer.laps, lap)
-        self.assertEqual(layer.act, tf.nn.relu)
-        self.assertEqual(layer.bias, False)
-        self.assertEqual(layer.logging, True)
+        self.assertEqual(layer.laps, None)
         self.assertIn('weights', layer.vars)
         self.assertEqual(layer.vars['weights'].get_shape(), [6, 3, 4])
         self.assertNotIn('bias', layer.vars)
 
-    def test_bias_constant(self):
-        lap = tf.constant(1)
+    def test_call(self):
+        lap = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        lap = sp.coo_matrix(lap, dtype=np.float32)
+        lap = sparse_to_tensor(lap)
 
-        layer1 = ChebyshevGCNN(2, 3, lap, max_degree=3, name='bias_1')
-        layer2 = ChebyshevGCNN(
-            2, 3, lap, max_degree=3, bias_constant=1.0, name='bias_2')
-
-        with self.test_session() as sess:
-            sess.run(tf.global_variables_initializer())
-
-            self.assertAllEqual(layer1.vars['bias'].eval(),
-                                np.array([0.1, 0.1, 0.1], dtype=np.float32))
-            self.assertAllEqual(layer2.vars['bias'].eval(),
-                                np.array([1.0, 1.0, 1.0], dtype=np.float32))
-
-    def test_call_with_single_lap(self):
-        lap = tf.SparseTensor([[0, 1], [1, 0], [1, 2], [2, 1]],
-                              [1.0, 1.0, 2.0, 2.0], [3, 3])
-
-        layer = ChebyshevGCNN(2, 3, lap, max_degree=3, name='call_single')
+        layer = ChebyshevGCNN(
+            2, 3, laps=[lap, lap], degree=3, name='call_single')
         input_1 = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
         input_2 = [[7.0, 8.0], [9.0, 10.0], [11.0, 12.0]]
 
-        inputs = tf.constant([input_1, input_2])  # batch_size = 2
+        inputs = tf.constant([input_1, input_2])
 
         outputs = layer(inputs)
 

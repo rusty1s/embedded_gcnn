@@ -18,13 +18,13 @@ class GraphTest(tf.test.TestCase):
 
         assert_equal(normalize_adj(adj).toarray(), expected)
 
-    def test_normalize_adj_locale(self):
+    def test_normalize_adj_local(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj)
 
         expected = [[0, 0.75, 0], [0.75, 0, 1], [0, 1, 0]]
 
-        assert_equal(normalize_adj(adj, locale=True).toarray(), expected)
+        assert_equal(normalize_adj(adj, local=True).toarray(), expected)
 
     def test_invert_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]

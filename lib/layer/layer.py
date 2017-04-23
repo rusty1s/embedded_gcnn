@@ -24,14 +24,12 @@ class Layer(object):
 
     def __call__(self, inputs):
         with tf.name_scope(self.name):
-            multiple = isinstance(inputs, list)
-
-            if not multiple and self.logging:
+            if self.logging:
                 tf.summary.histogram('{}/inputs'.format(inputs), inputs)
 
             outputs = self._call(inputs)
 
-            if not multiple and self.logging:
+            if self.logging:
                 tf.summary.histogram('{}/outputs'.format(outputs), outputs)
 
             return outputs

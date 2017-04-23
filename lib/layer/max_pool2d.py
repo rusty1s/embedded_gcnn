@@ -8,12 +8,9 @@ class MaxPool2d(Layer):
 
         super(MaxPool2d, self).__init__(**kwargs)
 
-        self.size = size
-        self.stride = stride
+        self.size = [1, size, size, 1]
+        self.stride = [1, stride, stride, 1]
 
     def _call(self, inputs):
         return tf.nn.max_pool(
-            inputs,
-            ksize=[1, self.size, self.size, 1],
-            strides=[1, self.stride, self.stride, 1],
-            padding='SAME')
+            inputs, ksize=self.size, strides=self.stride, padding='SAME')
