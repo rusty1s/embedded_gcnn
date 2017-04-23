@@ -16,13 +16,6 @@ class ChebyshevGCNNTest(tf.test.TestCase):
         self.assertIn('bias', layer.vars)
         self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
-        layer = ChebyshevGCNN(3, 4, laps=None, degree=5, bias=False)
-        self.assertEqual(layer.name, 'chebyshevgcnn_2')
-        self.assertEqual(layer.laps, None)
-        self.assertIn('weights', layer.vars)
-        self.assertEqual(layer.vars['weights'].get_shape(), [6, 3, 4])
-        self.assertNotIn('bias', layer.vars)
-
     def test_call(self):
         lap = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         lap = sp.coo_matrix(lap, dtype=np.float32)
