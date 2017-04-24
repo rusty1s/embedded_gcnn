@@ -32,4 +32,4 @@ class MaxPool(Layer):
                 padding='SAME')
 
         else:
-            raise NotImplementedError
+            raise AssertionError

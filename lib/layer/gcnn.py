@@ -14,8 +14,7 @@ def conv(features, adj, weights):
     adj = normalize_adj(adj)
 
     output = tf.sparse_tensor_dense_matmul(adj, features)
-    output = tf.matmul(output, weights)
-    return output
+    return tf.matmul(output, weights)
 
 
 class GCNN(VarLayer):
@@ -28,7 +27,7 @@ class GCNN(VarLayer):
             bias_shape=[out_channels])
 
     def _call(self, inputs):
-        batch_size = inputs.get_shape[0].value
+        batch_size = inputs.get_shape()[0].value
         outputs = []
 
         for i in xrange(batch_size):

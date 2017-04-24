@@ -29,3 +29,11 @@ class AveragePoolTest(tf.test.TestCase):
 
         with self.test_session():
             self.assertAllEqual(layer(inputs).eval(), expected)
+
+    def test_call_other(self):
+        layer = AveragePool(name='call_other')
+        inputs = [[1, 2], [3, 4]]
+        inputs = tf.constant(inputs)
+
+        with self.assertRaises(AssertionError):
+            layer(inputs)

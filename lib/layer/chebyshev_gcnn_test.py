@@ -1,33 +1,55 @@
-import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 
-from .chebyshev_gcnn import ChebyshevGCNN
-from ..graph.sparse import sparse_to_tensor
+from .chebyshev_gcnn import conv, ChebyshevGCNN
+from ..tf.convert import sparse_to_tensor
+from ..tf.laplacian import laplacian, rescale_lap
 
 
 class ChebyshevGCNNTest(tf.test.TestCase):
+    def test_conv(self):
+        adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        adj = sp.coo_matrix(adj)
+        adj = sparse_to_tensor(adj)
+        lap = laplacian(adj)
+        lap = rescale_lap(lap)
+
+        features = [[1, 2], [3, 4], [5, 6]]
+        features = tf.constant(features, dtype=tf.float32)
+
+        weights = [[[0.3], [0.7]], [[0.4], [0.6]], [[0.8], [0.2]]]
+        weights = tf.constant(weights, dtype=tf.float32)
+
+        Tx_0 = features
+        expected = tf.matmul(Tx_0, weights[0])
+        Tx_1 = tf.sparse_tensor_dense_matmul(lap, features)
+        expected = tf.add(tf.matmul(Tx_1, weights[1]), expected)
+        Tx_2 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_1) - Tx_0
+        expected = tf.add(tf.matmul(Tx_2, weights[2]), expected)
+
+        with self.test_session():
+            self.assertAllEqual(
+                conv(features, adj, weights).eval(), expected.eval())
+
     def test_init(self):
-        layer = ChebyshevGCNN(1, 2, laps=None, degree=3)
+        layer = ChebyshevGCNN(1, 2, adjs=None, degree=3)
         self.assertEqual(layer.name, 'chebyshevgcnn_1')
-        self.assertEqual(layer.laps, None)
-        self.assertIn('weights', layer.vars)
+        self.assertIsNone(layer.adjs)
         self.assertEqual(layer.vars['weights'].get_shape(), [4, 1, 2])
-        self.assertIn('bias', layer.vars)
         self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
     def test_call(self):
-        lap = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        lap = sp.coo_matrix(lap, dtype=np.float32)
-        lap = sparse_to_tensor(lap)
+        adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        adj = sp.coo_matrix(adj)
+        adj = sparse_to_tensor(adj)
+        lap = laplacian(adj)
+        lap = rescale_lap(lap)
 
-        layer = ChebyshevGCNN(
-            2, 3, laps=[lap, lap], degree=3, name='call_single')
-        input_1 = [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
-        input_2 = [[7.0, 8.0], [9.0, 10.0], [11.0, 12.0]]
+        layer = ChebyshevGCNN(2, 3, adjs=[adj, adj], degree=3, name='call')
 
-        inputs = tf.constant([input_1, input_2])
-
+        input_1 = [[1, 2], [3, 4], [5, 6]]
+        input_2 = [[7, 8], [9, 10], [11, 12]]
+        inputs = tf.constant([input_1, input_2], dtype=tf.float32)
         outputs = layer(inputs)
 
         Tx_1_0 = inputs[0]

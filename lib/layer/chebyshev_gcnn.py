@@ -22,7 +22,7 @@ def conv(features, adj, weights):
 
     for k in xrange(2, K + 1):
         Tx_2 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_1) - Tx_0
-        output += tf.matmul(Tx_2, k)
+        output += tf.matmul(Tx_2, weights[k])
 
         Tx_0, Tx_1 = Tx_1, Tx_2
 

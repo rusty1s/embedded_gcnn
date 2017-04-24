@@ -55,7 +55,7 @@ class EmbeddedGCNN(VarLayer):
             **kwargs)
 
     def _call(self, inputs):
-        batch_size = inputs.get_shape[0].value
+        batch_size = inputs.get_shape()[0].value
         outputs = []
 
         for i in xrange(batch_size):

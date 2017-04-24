@@ -21,4 +21,4 @@ class AveragePool(Layer):
             return tf.reduce_mean(outputs, axis=1)
 
         else:
-            raise NotImplementedError
+            raise AssertionError

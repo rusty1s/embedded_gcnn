@@ -126,3 +126,14 @@ class BsplineTest(tf.test.TestCase):
             assert_almost(p6.eval(), [[0, 0, 0, 0, 0, 0, 0, 1, 0]], 6)
             p7 = tf.sparse_tensor_to_dense(base(adj_rad, K=2, P=8, p=7))
             assert_almost(p7.eval(), [[0, 0, 0, 0, 0, 0, 0, 0, 1]], 6)
+
+    def test_base_other(self):
+        adj_rad = [[
+            0, 0.25 * PI, 0.5 * PI, 0.75 * PI, PI, 1.25 * PI, 1.5 * PI,
+            1.75 * PI, 2 * PI
+        ]]
+        adj_rad = sp.coo_matrix(adj_rad, dtype=np.float32)
+        adj_rad = sparse_to_tensor(adj_rad)
+
+        with self.assertRaises(NotImplementedError):
+            base(adj_rad, K=3, P=2, p=0)

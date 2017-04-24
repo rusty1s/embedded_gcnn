@@ -11,7 +11,6 @@ class MaxPool2DTest(tf.test.TestCase):
         self.assertEqual(layer.stride, 1)
 
         layer = MaxPool(size=2)
-        self.assertEqual(layer.name, 'maxpool_2')
         self.assertEqual(layer.size, 2)
         self.assertEqual(layer.stride, 2)
 
@@ -36,3 +35,11 @@ class MaxPool2DTest(tf.test.TestCase):
 
         with self.test_session():
             self.assertAllEqual(layer(inputs).eval(), expected)
+
+    def test_call_other(self):
+        layer = MaxPool(size=2, name='call_rank4')
+        inputs = [[1, 2], [3, 4]]
+        inputs = tf.constant(inputs)
+
+        with self.assertRaises(AssertionError):
+            layer(inputs)
