@@ -3,7 +3,7 @@ import tensorflow as tf
 
 
 def sparse_to_tensor(value):
-    """Convert a scipy sparse matrix to a tensorflow sparse tensor value."""
+    """Convert a scipy sparse matrix to a tensorflow SparseTensorValue."""
 
     value = value.tocoo()
     row = np.reshape(value.row, (-1, 1))

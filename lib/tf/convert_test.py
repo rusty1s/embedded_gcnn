@@ -1,7 +1,7 @@
 import scipy.sparse as sp
 import tensorflow as tf
 
-from .sparse import sparse_to_tensor
+from .convert import sparse_to_tensor
 
 
 class SparseTest(tf.test.TestCase):

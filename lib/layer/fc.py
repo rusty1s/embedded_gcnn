@@ -4,21 +4,22 @@ from .var_layer import VarLayer
 
 
 class FC(VarLayer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 dropout=0.0,
-                 **kwargs):
-
-        super(FC, self).__init__(**kwargs)
-
-        self.in_channels = in_channels
+    def __init__(self, in_channels, out_channels, dropout=None, **kwargs):
         self.dropout = dropout
 
-    def _call(self, inputs):
-        outputs = tf.reshape(inputs, [-1, self.in_channels])
+        super(FC, self).__init__(
+            **kwargs,
+            weight_shape=[in_channels, out_channels],
+            bias_shape=[out_channels])
 
-        outputs = tf.nn.dropout(outputs, 1 - self.dropout)
+    def _call(self, inputs):
+        in_channels = self.vars['weights'].get_shape()[0].value
+
+        outputs = tf.reshape(inputs, [-1, in_channels])
+
+        if self.dropout is not None:
+            outputs = tf.nn.dropout(outputs, 1 - self.dropout)
+
         outputs = tf.matmul(outputs, self.vars['weights'])
 
         if self.bias:

@@ -3,10 +3,15 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
+from ..tf.math import sparse_identity, sparse_subtract
 
 
 def conv(features, lap, weights):
     K = weights.get_shape()[0].value - 1
+    N = features.get_shape()[0].value
+
+    # Rescale normalized laplacian.
+    lap = sparse_subtract(lap, sparse_identity(N, lap.dtype))
 
     Tx_0 = features
     output = tf.matmul(Tx_0, weights[0])

@@ -2,53 +2,30 @@ from six.moves import xrange
 
 import tensorflow as tf
 
-from .layer import Layer
-from .inits import weight_variable, bias_variable
+from .var_layer import VarLayer
 
 
-class GCNN(Layer):
-    def __init__(self,
-                 in_channels,
-                 out_channels,
-                 adjs,
-                 weight_stddev=0.1,
-                 weight_decay=None,
-                 bias=True,
-                 bias_constant=0.1,
-                 act=tf.nn.relu,
-                 **kwargs):
+def conv(features, adj, weights):
+    output = tf.sparse_tensor_dense_matmul(adj, features)
+    output = tf.matmul(output, weights)
+    return output
 
-        super(GCNN, self).__init__(**kwargs)
 
+class GCNN(VarLayer):
+    def __init__(self, in_channels, out_channels, adjs, **kwargs):
         self.adjs = adjs
-        self.bias = bias
-        self.act = act
 
-        with tf.variable_scope('{}_vars'.format(self.name)):
-            self.vars['weights'] = weight_variable(
-                [in_channels, out_channels], '{}_weights'.format(self.name),
-                weight_stddev, weight_decay)
-
-            if self.bias:
-                self.vars['bias'] = bias_variable(
-                    [out_channels], '{}_bias'.format(self.name), bias_constant)
-
-        if self.logging:
-            self._log_vars()
+        super(GCNN, self).__init__(
+            **kwargs,
+            weight_shape=[in_channels, out_channels],
+            bias_shape=[out_channels])
 
     def _call(self, inputs):
-        n = inputs.get_shape()[1].value
-        in_channels = inputs.get_shape()[2].value
-        multiple = isinstance(self.adjs, (list, tuple))
+        batch_size = inputs.get_shape[0].value
+        outputs = []
 
-        outputs = list()
-        for i in xrange(inputs.get_shape()[0].value):
-            adj = self.adjs[i] if multiple else self.adjs
-
-            output = tf.zeros([n, in_channels], dtype=inputs.dtype)
-            output += tf.sparse_tensor_dense_matmul(adj, inputs[i])
-            output = tf.matmul(output, self.vars['weights'])
-            outputs.append(output)
+        for i in xrange(batch_size):
+            outputs.append(conv(inputs[i], self.adjs[i], self.vars['weights']))
 
         outputs = tf.stack(outputs, axis=0)
 
