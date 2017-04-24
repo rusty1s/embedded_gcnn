@@ -3,9 +3,16 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
+from ..tf.adjacency import normalize_adj
+from ..tf.math import sparse_identity
 
 
 def conv(features, adj, weights):
+    N = adj.dense_shape[0]
+
+    adj = tf.sparse_add(adj, sparse_identity(N, adj.values.dtype))
+    adj = normalize_adj(adj)
+
     output = tf.sparse_tensor_dense_matmul(adj, features)
     output = tf.matmul(output, weights)
     return output

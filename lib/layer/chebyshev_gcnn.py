@@ -3,15 +3,15 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf.math import sparse_identity, sparse_subtract
+from ..tf.laplacian import laplacian, rescale_lap
 
 
-def conv(features, lap, weights):
+def conv(features, adj, weights):
     K = weights.get_shape()[0].value - 1
-    N = features.get_shape()[0].value
 
-    # Rescale normalized laplacian.
-    lap = sparse_subtract(lap, sparse_identity(N, lap.dtype))
+    # Create and rescale normalized laplacian.
+    lap = laplacian(adj)
+    lap = rescale_lap(lap)
 
     Tx_0 = features
     output = tf.matmul(Tx_0, weights[0])
@@ -30,10 +30,10 @@ def conv(features, lap, weights):
 
 
 class ChebyshevGCNN(VarLayer):
-    def __init__(self, in_channels, out_channels, laps, degree,
+    def __init__(self, in_channels, out_channels, adjs, degree,
                  **kwargs):
 
-        self.laps = laps
+        self.adjs = adjs
 
         super(ChebyshevGCNN, self).__init__(
             weight_shape=[degree + 1, in_channels, out_channels],
@@ -45,7 +45,7 @@ class ChebyshevGCNN(VarLayer):
         outputs = []
 
         for i in xrange(batch_size):
-            outputs.append(conv(inputs[i], self.laps[i], self.vars['weights']))
+            outputs.append(conv(inputs[i], self.adjs[i], self.vars['weights']))
 
         outputs = tf.stack(outputs, axis=0)
 
