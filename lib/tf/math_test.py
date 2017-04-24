@@ -1,7 +1,8 @@
 import scipy.sparse as sp
 import tensorflow as tf
 
-from .math import sparse_identity, sparse_scalar_multiply, sparse_subtract
+from .math import (sparse_identity, sparse_scalar_multiply, sparse_subtract,
+                   sparse_tensor_diag_matmul)
 from .convert import sparse_to_tensor
 
 
@@ -40,3 +41,25 @@ class MathTest(tf.test.TestCase):
 
         with self.test_session():
             self.assertAllEqual(c.eval(), expected)
+
+    def test_sparse_tensor_diag_matmul(self):
+        a = [[2, 3, 0], [1, 0, 2], [0, 3, 0]]
+        a = sp.coo_matrix(a)
+        a = sparse_to_tensor(a)
+
+        diag = [2, 0.5, 3]
+        diag = tf.constant(diag)
+
+        b = sparse_tensor_diag_matmul(a, diag)
+        b = tf.sparse_tensor_to_dense(b)
+        expected = [[4, 6, 0], [0.5, 0, 1], [0, 9, 0]]
+
+        with self.test_session():
+            self.assertAllEqual(b.eval(), expected)
+
+        b = sparse_tensor_diag_matmul(a, diag, transpose=True)
+        b = tf.sparse_tensor_to_dense(b)
+        expected = [[4, 1.5, 0], [2, 0, 6], [0, 1.5, 0]]
+
+        with self.test_session():
+            self.assertAllEqual(b.eval(), expected)

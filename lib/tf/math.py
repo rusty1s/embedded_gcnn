@@ -1,3 +1,4 @@
+import numpy as np
 import tensorflow as tf
 
 
@@ -19,4 +20,12 @@ def sparse_subtract(a, b):
 
 
 def sparse_tensor_diag_matmul(a, diag, transpose=False):
-    raise NotImplementedError
+    def _py_func(indices, values, diag):
+        diag = diag[indices[:, 1:2]] if transpose else diag[indices[:, 0:1]]
+        diag = np.reshape(diag, (-1))
+        return np.multiply(values, diag).astype(diag.dtype)
+
+    values = tf.py_func(
+        _py_func, [a.indices, a.values, diag], Tout=diag.dtype, stateful=False)
+
+    return tf.SparseTensor(a.indices, values, a.dense_shape)
