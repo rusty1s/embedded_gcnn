@@ -8,9 +8,9 @@ class FC(VarLayer):
         self.dropout = dropout
 
         super(FC, self).__init__(
-            **kwargs,
             weight_shape=[in_channels, out_channels],
-            bias_shape=[out_channels])
+            bias_shape=[out_channels],
+            **kwargs)
 
     def _call(self, inputs):
         in_channels = self.vars['weights'].get_shape()[0].value
