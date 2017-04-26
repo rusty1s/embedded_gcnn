@@ -22,9 +22,9 @@ class GCNN(VarLayer):
         self.adjs = adjs
 
         super(GCNN, self).__init__(
-            **kwargs,
             weight_shape=[in_channels, out_channels],
-            bias_shape=[out_channels])
+            bias_shape=[out_channels],
+            **kwargs)
 
     def _call(self, inputs):
         batch_size = inputs.get_shape()[0].value
