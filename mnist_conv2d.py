@@ -8,20 +8,18 @@ import tensorflow as tf
 from lib.datasets.mnist import MNIST
 from lib.model.model import Model
 from lib.layer.conv2d import Conv2d as Conv
-from lib.layer.max_pool2d import MaxPool2d as MaxPool
-from lib.layer.fixed_mean_pool import FixedMeanPool as AveragePool
+from lib.layer.max_pool import MaxPool
+from lib.layer.average_pool import AveragePool
 from lib.layer.fc import FC
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
-flags.DEFINE_integer('batch_size', 64, 'How many inputs to process at once.')
+flags.DEFINE_integer('batch_size', 128, 'How many inputs to process at once.')
 flags.DEFINE_integer('max_steps', 10000, 'Number of steps to train.')
 flags.DEFINE_float('dropout', 0.5, 'Dropout rate (1 - keep probability).')
-flags.DEFINE_string('data_dir', 'data/mnist/input',
+flags.DEFINE_string('data_dir', 'data/mnist',
                     'Directory for storing input data.')
-flags.DEFINE_string('log_dir', 'data/mnist/summaries/conv2d',
-                    'Summaries log directory.')
 flags.DEFINE_integer('display_step', 10,
                      'How many steps to print logging after.')
 
@@ -31,7 +29,7 @@ placeholders = {
     'features':
     tf.placeholder(tf.float32, [FLAGS.batch_size, 28, 28, 1], 'features'),
     'labels':
-    tf.placeholder(tf.int32, [FLAGS.batch_size], 'labels'),
+    tf.placeholder(tf.int32, [FLAGS.batch_size, 10], 'labels'),
     'dropout':
     tf.placeholder(tf.float32, [], 'dropout'),
 }
@@ -66,8 +64,7 @@ class MNISTModel(Model):
 
 model = MNISTModel(
     placeholders=placeholders,
-    learning_rate=FLAGS.learning_rate,
-    log_dir=FLAGS.log_dir)
+    learning_rate=FLAGS.learning_rate)
 global_step = model.initialize()
 
 
@@ -81,7 +78,7 @@ def evaluate(features, labels):
 
 
 for step in xrange(global_step, FLAGS.max_steps):
-    train_features, train_labels = data.next_train_batch(FLAGS.batch_size)
+    train_features, train_labels = data.train.next_batch(FLAGS.batch_size)
     train_feed_dict = {
         placeholders['features']: train_features,
         placeholders['labels']: train_labels,
@@ -94,7 +91,7 @@ for step in xrange(global_step, FLAGS.max_steps):
         # Evaluate on training and validation set.
         train_loss, train_acc, _ = evaluate(train_features, train_labels)
 
-        val_features, val_labels = data.next_validation_batch(FLAGS.batch_size)
+        val_features, val_labels = data.validation.next_batch(FLAGS.batch_size)
         val_loss, val_acc, _ = evaluate(val_features, val_labels)
 
         # Print results.
@@ -113,7 +110,7 @@ print('Optimization finished!')
 num_iterations = data.num_test_examples // FLAGS.batch_size
 test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
-    test_features, test_labels = data.next_test_batch(FLAGS.batch_size)
+    test_features, test_labels = data.test.next_batch(FLAGS.batch_size, False)
     test_single_loss, test_single_acc, test_single_duration = evaluate(
         test_features, test_labels)
     test_loss += test_single_loss

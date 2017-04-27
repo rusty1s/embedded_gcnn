@@ -12,11 +12,6 @@ from skimage.io import imread
 from .dataset import Datasets, Dataset
 from .download import maybe_download_and_extract
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
-
 
 URL = 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/'\
       'VOCtrainval_11-May-2012.tar'
@@ -29,10 +24,9 @@ LABELS = [
 
 
 class PascalVOC(Datasets):
-    def __init__(self, train_dir, test_dir, validation_size=1500):
-        data_dir = train_dir
-        maybe_download_and_extract(URL, train_dir)
-        train_dir = os.path.join(train_dir, 'VOCdevkit', 'VOC2012')
+    def __init__(self, data_dir, validation_size=1500):
+        maybe_download_and_extract(URL, data_dir)
+        train_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
 
         train_save_dir = os.path.join(data_dir, 'python', 'train')
         train_images, train_labels = self._load_dataset(
@@ -40,7 +34,7 @@ class PascalVOC(Datasets):
 
         test_save_dir = os.path.join(data_dir, 'python', 'test')
         test_images, test_labels = self._load_dataset(
-            test_dir, test_save_dir, 20, 'test')
+            data_dir, test_save_dir, 20, 'test')
 
         train = Dataset(train_images[validation_size:],
                         train_labels[validation_size:])

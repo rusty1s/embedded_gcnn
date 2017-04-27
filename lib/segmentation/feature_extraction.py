@@ -9,8 +9,12 @@ NUM_FEATURES = 16
 
 
 def form_feature_extraction(segmentation, image):
-    intensity_image = color.rgb2gray(image)
-    props = regionprops(segmentation + 1, intensity_image)
+    if image.shape[2] == 3:
+        image = color.rgb2gray(image)
+    else:
+        image = np.reshape(image, (image.shape[0], image.shape[1]))
+
+    props = regionprops(segmentation + 1, image)
 
     features = np.zeros((len(props), NUM_FORM_FEATURES), dtype=np.float32)
 
@@ -82,6 +86,27 @@ def feature_extraction(segmentation, image):
         features[i][13] = sliced_image[..., 0].mean()
         features[i][14] = sliced_image[..., 1].mean()
         features[i][15] = sliced_image[..., 2].mean()
+
+    # Scale linear to [0, 1].
+    return MinMaxScaler().fit_transform(features)
+
+
+def mnist_slic_feature_extraction(segmentation, image):
+    props = regionprops(segmentation + 1)
+    features = np.zeros((len(props), 6), dtype=np.float32)
+
+    for i, prop in enumerate(props):
+        # 14, 20, 46, 58, 59
+        features[i][0] = prop['inertia_tensor'].flatten()[0]  # Id: 14
+        features[i][1] = prop['local_centroid'][0]  # Id: 20
+        features[i][2] = prop['moments_central'].flatten()[6]  # Id: 46
+        features[i][3:5] = prop['moments_hu'].flatten()[4:6]  # Id: 58-59
+
+        # Mean color.
+        min_row, min_col, max_row, max_col = prop['bbox']
+        sliced_image = image[min_row:max_row, min_col:max_col]
+        sliced_image = sliced_image[prop['image']]
+        features[i][5] = sliced_image[..., 0].mean()
 
     # Scale linear to [0, 1].
     return MinMaxScaler().fit_transform(features)

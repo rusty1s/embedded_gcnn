@@ -1,3 +1,5 @@
+from six.moves import xrange
+
 import tensorflow as tf
 
 from .layer import Layer
@@ -11,25 +13,18 @@ class MaxPool(Layer):
         super(MaxPool, self).__init__(**kwargs)
 
     def _call(self, inputs):
-        rank = len(inputs.get_shape())
+        batch_size = len(inputs)
 
-        if rank == 3:
-            # Use 1D Pooling.
-            outputs = tf.expand_dims(inputs, axis=3)
-            outputs = tf.nn.max_pool(
-                outputs,
+        outputs = []
+        for i in xrange(batch_size):
+            output = tf.expand_dims(inputs[i], axis=0)
+            output = tf.expand_dims(output, axis=3)
+            output = tf.nn.max_pool(
+                output,
                 ksize=[1, self.size, 1, 1],
                 strides=[1, self.stride, 1, 1],
                 padding='SAME')
-            return tf.squeeze(outputs, axis=3)
+            output = tf.squeeze(output, axis=[0, 3])
+            outputs.append(output)
 
-        elif rank == 4:
-            # Use 2D Pooling.
-            return tf.nn.max_pool(
-                inputs,
-                ksize=[1, self.size, self.size, 1],
-                strides=[1, self.stride, self.stride, 1],
-                padding='SAME')
-
-        else:
-            raise AssertionError
+        return outputs

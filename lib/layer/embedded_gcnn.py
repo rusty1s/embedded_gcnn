@@ -6,7 +6,7 @@ from .var_layer import VarLayer
 from ..tf.bspline import base
 
 
-def conv(features, adj_dist, adj_rad, weights, K):
+def conv(features, adj_dist, adj_rad, K, weights):
     P = weights.get_shape()[0].value - 1
 
     output = tf.matmul(features, weights[P])
@@ -55,17 +55,17 @@ class EmbeddedGCNN(VarLayer):
             **kwargs)
 
     def _call(self, inputs):
-        batch_size = inputs.get_shape()[0].value
+        batch_size = len(inputs)
         outputs = []
 
         for i in xrange(batch_size):
-            outputs.append(
-                conv(inputs[i], self.adjs_dist[i], self.adjs_rad[i], self.K,
-                     self.P, self.vars['weights']))
+            output = conv(inputs[i], self.adjs_dist[i], self.adjs_rad[i],
+                          self.K, self.vars['weights'])
 
-        outputs = tf.stack(outputs, axis=0)
+            if self.bias:
+                output = tf.nn.bias_add(output, self.vars['bias'])
 
-        if self.bias:
-            outputs = tf.nn.bias_add(outputs, self.vars['bias'])
+            output = self.act(output)
+            outputs.append(output)
 
-        return self.act(outputs)
+        return outputs
