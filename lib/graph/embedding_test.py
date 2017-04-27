@@ -4,7 +4,8 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 import scipy.sparse as sp
 
-from .embedding import grid_points, points_to_embedded, partition_embedded_adj
+from .embedding import (grid_points, points_to_embedded_adj,
+                        partition_embedded_adj)
 from .adjacency import grid_adj
 
 
@@ -17,7 +18,7 @@ class EmbeddingTest(TestCase):
         points = np.array([[2, 2], [2, 3], [3, 2], [2, 1], [1, 2]])
         adj = sp.coo_matrix([[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
                              [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]])
-        adj_dist, adj_rad = points_to_embedded(points, adj)
+        adj_dist, adj_rad = points_to_embedded_adj(points, adj)
 
         expected_dist = [[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
                          [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]]
@@ -37,7 +38,7 @@ class EmbeddingTest(TestCase):
              [1, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0],
              [1, 0, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0, 0],
              [1, 0, 0, 0, 0, 0, 0, 0, 0]])
-        adj_dist, adj_rad = points_to_embedded(points, adj)
+        adj_dist, adj_rad = points_to_embedded_adj(points, adj)
 
         expected_dist = [
             [0, 1, 2, 1, 2, 1, 2, 1, 2], [1, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -64,7 +65,7 @@ class EmbeddingTest(TestCase):
     def test_partition_embedded_adj_connectivity_4(self):
         points = grid_points((3, 2))
         adj = grid_adj((3, 2), connectivity=4)
-        adj_dist, adj_rad = points_to_embedded(points, adj)
+        adj_dist, adj_rad = points_to_embedded_adj(points, adj)
 
         adjs = partition_embedded_adj(
             adj_dist, adj_rad, num_partitions=4, offset=0.25 * np.pi)
@@ -93,7 +94,7 @@ class EmbeddingTest(TestCase):
     def test_partition_embedded_adj_connectivity_8(self):
         points = grid_points((3, 2))
         adj = grid_adj((3, 2), connectivity=8)
-        adj_dist, adj_rad = points_to_embedded(points, adj)
+        adj_dist, adj_rad = points_to_embedded_adj(points, adj)
 
         adjs = partition_embedded_adj(
             adj_dist, adj_rad, num_partitions=4, offset=0.375 * np.pi)

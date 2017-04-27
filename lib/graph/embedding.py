@@ -17,7 +17,7 @@ def grid_points(shape, dtype=np.float32):
     return z
 
 
-def points_to_embedded(points, adj, dtype=np.float32):
+def points_to_embedded_adj(points, adj, dtype=np.float32):
     """Builds an embedded adjacency matrix based on points of nodes."""
 
     # Initialize helper variables.

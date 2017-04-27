@@ -8,12 +8,12 @@ from .convert import sparse_to_tensor
 
 class MathTest(tf.test.TestCase):
     def test_sparse_identity(self):
-        I = sparse_identity(3)
-        I = tf.sparse_tensor_to_dense(I)
+        identity = sparse_identity(3)
+        identity = tf.sparse_tensor_to_dense(identity)
         expected = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
 
         with self.test_session():
-            self.assertAllEqual(I.eval(), expected)
+            self.assertAllEqual(identity.eval(), expected)
 
     def test_sparse_scalar_multiply(self):
         a = [[0, 2, 3], [0, 1, 0]]

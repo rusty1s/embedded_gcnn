@@ -7,7 +7,7 @@ import numpy as np
 from .clustering import normalized_cut
 from .coarsening import compute_perms, _coarsen_clustered_adj
 from .distortion import perm_adj
-from .embedding import points_to_embedded
+from .embedding import points_to_embedded_adj
 from .adjacency import normalize_adj, invert_adj
 
 
@@ -37,7 +37,7 @@ def _coarsen_embedded_adj(points,
                           locale=False,
                           stddev=1,
                           rid=None):
-    adj_dist, adj_rad = points_to_embedded(points, adj)
+    adj_dist, adj_rad = points_to_embedded_adj(points, adj)
     adj_dist = invert_adj(normalize_adj(adj_dist, locale), stddev)
 
     adjs_dist = [adj_dist]
@@ -53,7 +53,7 @@ def _coarsen_embedded_adj(points,
                                                             points, mass, adj)
 
         # Compute to distance/radian adjacency.
-        adj_dist, adj_rad = points_to_embedded(points, adj)
+        adj_dist, adj_rad = points_to_embedded_adj(points, adj)
         adj_dist = invert_adj(normalize_adj(adj_dist, locale), stddev)
         adjs_dist.append(adj_dist)
         adjs_rad.append(adj_rad)

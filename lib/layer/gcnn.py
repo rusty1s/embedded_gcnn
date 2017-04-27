@@ -8,9 +8,9 @@ from ..tf.math import sparse_identity
 
 
 def conv(features, adj, weights):
-    N = adj.dense_shape[0]
+    n = adj.dense_shape[0]
 
-    adj = tf.sparse_add(adj, sparse_identity(N, adj.values.dtype))
+    adj = tf.sparse_add(adj, sparse_identity(n, adj.values.dtype))
     adj = normalize_adj(adj)
 
     output = tf.sparse_tensor_dense_matmul(adj, features)

@@ -7,13 +7,13 @@ from .adjacency import normalize_adj
 def laplacian(adj, dtype=tf.float32):
     adj_norm = normalize_adj(adj, dtype)
 
-    N = adj.dense_shape[0]
-    I = sparse_identity(N, dtype)
+    n = adj.dense_shape[0]
+    identity = sparse_identity(n, dtype)
 
-    return sparse_subtract(I, adj_norm)
+    return sparse_subtract(identity, adj_norm)
 
 
 def rescale_lap(lap):
-    N = lap.dense_shape[0]
-    I = sparse_identity(N, lap.values.dtype)
-    return sparse_subtract(lap, I)
+    n = lap.dense_shape[0]
+    identity = sparse_identity(n, lap.values.dtype)
+    return sparse_subtract(lap, identity)
