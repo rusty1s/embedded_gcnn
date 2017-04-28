@@ -24,6 +24,7 @@ class InitsTest(tf.test.TestCase):
 
             self.assertEqual(weights.name, 'weights_2:0')
             self.assertAllEqual(weights.eval(), expected)
+            self.assertEqual(tf.get_collection('losses'), [])
 
     def test_weight_variable_with_decay(self):
         weights = weight_variable([2, 3], name='weights', decay=0.01)

@@ -77,6 +77,10 @@ class DatasetTest(TestCase):
         assert_equal(np.sort(images), [1, 2, 3, 4, 5])
         assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
 
+        images, labels = dataset.next_batch(5, shuffle=True)
+        assert_equal(np.sort(images), [1, 2, 3, 4, 5])
+        assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
+
     def test_next_batch_shuffle_list(self):
         images = [1, 2, 3, 4, 5]
         labels = np.array([0, 1, 0, 1, 0])
@@ -93,6 +97,10 @@ class DatasetTest(TestCase):
         images = batch_1[0] + batch_2[0]
         labels = np.concatenate((batch_1[1], batch_2[1]), axis=0)
 
+        self.assertEqual(sorted(images), [1, 2, 3, 4, 5])
+        assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
+
+        images, labels = dataset.next_batch(5, shuffle=True)
         self.assertEqual(sorted(images), [1, 2, 3, 4, 5])
         assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
 
