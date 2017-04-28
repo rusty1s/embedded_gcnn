@@ -10,7 +10,7 @@ from .adjacency import (normalize_adj, invert_adj,
 
 
 class GraphTest(tf.test.TestCase):
-    def test_normalize_adj_global(self):
+    def test_normalize_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj)
 
@@ -18,13 +18,14 @@ class GraphTest(tf.test.TestCase):
 
         assert_equal(normalize_adj(adj).toarray(), expected)
 
-    def test_normalize_adj_local(self):
+    def test_normalize_adj_scale_invariant(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj)
 
         expected = [[0, 0.75, 0], [0.75, 0, 1], [0, 1, 0]]
 
-        assert_equal(normalize_adj(adj, local=True).toarray(), expected)
+        assert_equal(
+            normalize_adj(adj, scale_invariance=True).toarray(), expected)
 
     def test_invert_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]

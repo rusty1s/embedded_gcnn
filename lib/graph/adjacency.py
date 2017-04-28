@@ -6,10 +6,10 @@ import numpy as np
 import scipy.sparse as sp
 
 
-def normalize_adj(adj, local=False):
+def normalize_adj(adj, scale_invariance=False):
     """Normalize adjacency matrix to interval [0, 1]."""
 
-    if not local:
+    if not scale_invariance:
         return (1 / adj.max()) * adj
     else:
         max_row = 1 / adj.max(axis=1).toarray().flatten()

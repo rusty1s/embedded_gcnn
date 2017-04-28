@@ -15,12 +15,12 @@ def coarsen_embedded_adj(points,
                          mass,
                          adj,
                          levels,
-                         locale=False,
+                         scale_invariance=False,
                          stddev=1,
                          rid=None):
     # Coarse graph a defined number of levels deep.
     adjs_dist, adjs_rad, cluster_maps = _coarsen_embedded_adj(
-        points, mass, adj, levels, locale, stddev, rid)
+        points, mass, adj, levels, scale_invariance, stddev, rid)
 
     # Permutate adjacencies to a binary tree for an efficient O(n) pooling.
     perms = compute_perms(cluster_maps)
@@ -34,11 +34,11 @@ def _coarsen_embedded_adj(points,
                           mass,
                           adj,
                           levels,
-                          locale=False,
+                          scale_invariance=False,
                           stddev=1,
                           rid=None):
     adj_dist, adj_rad = points_to_embedded_adj(points, adj)
-    adj_dist = invert_adj(normalize_adj(adj_dist, locale), stddev)
+    adj_dist = invert_adj(normalize_adj(adj_dist, scale_invariance), stddev)
 
     adjs_dist = [adj_dist]
     adjs_rad = [adj_rad]
@@ -54,7 +54,8 @@ def _coarsen_embedded_adj(points,
 
         # Compute to distance/radian adjacency.
         adj_dist, adj_rad = points_to_embedded_adj(points, adj)
-        adj_dist = invert_adj(normalize_adj(adj_dist, locale), stddev)
+        adj_dist = invert_adj(
+            normalize_adj(adj_dist, scale_invariance), stddev)
         adjs_dist.append(adj_dist)
         adjs_rad.append(adj_rad)
 

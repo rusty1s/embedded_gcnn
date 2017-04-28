@@ -1,10 +1,12 @@
 from __future__ import print_function
 from __future__ import division
 
+import time
 from six.moves import xrange
 
 from lib.datasets.mnist import MNIST
-from lib.model.placeholder import embedded_placeholders, feed_dict
+from lib.model.embedded_placeholder import (embedded_placeholders,
+                                            embedded_feed_dict)
 from lib.segmentation.algorithm import slic_fixed
 from lib.segmentation.feature_extraction import mnist_slic_feature_extraction
 from lib.pipeline.preprocess import batch_pipeline
@@ -15,7 +17,7 @@ from lib.layer.max_pool import MaxPool
 from lib.layer.average_pool import AveragePool
 from lib.layer.fc import FC
 
-LEARNING_RATE = 0.1
+LEARNING_RATE = 0.001
 BATCH_SIZE = 64
 MAX_STEPS = 10000
 DROPOUT = 0.5
@@ -75,11 +77,11 @@ segmentation_algorithm = slic_fixed(
 feature_extraction_algorithm = mnist_slic_feature_extraction
 
 
-def preprocess(placeholders, images, labels, dropout):
+def preprocess(placeholders, images, labels):
     features, adjs_dist, adjs_rad = batch_pipeline(
         images, segmentation_algorithm, feature_extraction_algorithm, LEVELS)
-    return feed_dict(placeholders, features, labels, adjs_dist, adjs_rad,
-                     dropout)
+    return embedded_feed_dict(placeholders, features, labels, adjs_dist,
+                              adjs_rad)
 
 
 data = MNIST(DATA_DIR)
@@ -89,10 +91,13 @@ model = MNISTModel(placeholders=placeholders, learning_rate=LEARNING_RATE)
 global_step = model.initialize()
 
 for step in xrange(global_step, MAX_STEPS):
+    t_preprocess = time.process_time()
     images, labels = data.train.next_batch(BATCH_SIZE)
-    train_feed_dict = preprocess(placeholders, images, labels, DROPOUT)
+    train_feed_dict = preprocess(placeholders, images, labels)
+    train_feed_dict.update({placeholders['dropout']: DROPOUT})
+    t_preprocess = time.process_time() - t_preprocess
 
-    duration = model.train(train_feed_dict, step)
+    t_train = model.train(train_feed_dict, step)
 
     if step % DISPLAY_STEP == 0:
         # Evaluate on training and validation set.
@@ -108,7 +113,7 @@ for step in xrange(global_step, MAX_STEPS):
             'Step: {}'.format(step),
             'train_loss={:.5f}'.format(train_loss),
             'train_acc={:.5f}'.format(train_acc),
-            'time={:.2f}s'.format(duration),
+            'time={:.2f}s + {:.2f}s'.format(t_preprocess, t_train),
             'val_loss={:.5f}'.format(val_loss),
             'val_acc={:.5f}'.format(val_acc),
         ]))
