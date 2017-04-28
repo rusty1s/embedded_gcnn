@@ -33,8 +33,13 @@ def embedded_placeholders(batch_size, levels, num_features, num_labels):
     return placeholders
 
 
-def embedded_feed_dict(placeholders, features, labels, adjs_dist, adjs_rad,
-              dropout=0.0):
+def embedded_feed_dict(placeholders,
+                       features,
+                       labels,
+                       adjs_dist,  # [batch_size, levels]
+                       adjs_rad,   # [batch_size, levels]
+                       dropout=0.0):
+
     feed_dict = {
         placeholders['labels']: labels,
         placeholders['dropout']: dropout,

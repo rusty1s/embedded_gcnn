@@ -1,14 +1,13 @@
-# def test_bias_constant(self):
-#     lap = tf.constant(1)
+import tensorflow as tf
 
-#     layer1 = ChebyshevGCNN(2, 3, lap, degree=3, name='bias_1')
-#     layer2 = ChebyshevGCNN(
-#         2, 3, lap, degree=3, bias_constant=1.0, name='bias_2')
+from .var_layer import VarLayer
 
-#     with self.test_session() as sess:
-#         sess.run(tf.global_variables_initializer())
 
-#         self.assertAllEqual(layer1.vars['bias'].eval(),
-#                             np.array([0.1, 0.1, 0.1], dtype=np.float32))
-#         self.assertAllEqual(layer2.vars['bias'].eval(),
-#                             np.array([1.0, 1.0, 1.0], dtype=np.float32))
+class VarLayerTest(tf.test.TestCase):
+    def test_init(self):
+        layer = VarLayer(weight_shape=[1, 2], bias_shape=[2])
+        self.assertEqual(layer.name, 'varlayer_1')
+        self.assertTrue(layer.bias)
+        self.assertEqual(layer.act, tf.nn.relu)
+        self.assertEqual(layer.vars['weights'].get_shape(), [1, 2])
+        self.assertEqual(layer.vars['bias'].get_shape(), [2])

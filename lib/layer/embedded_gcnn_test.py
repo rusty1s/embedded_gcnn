@@ -74,5 +74,86 @@ class EmbeddedGCNNTest(tf.test.TestCase):
         self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
     def test_call(self):
-        pass
-        # raise NotImplementedError
+        adj_dist = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
+        adj_dist = sp.coo_matrix(adj_dist, dtype=np.float32)
+        adj_dist = sparse_to_tensor(adj_dist)
+
+        adj_rad = [[0, 0.25 * PI, 0.75 * PI, 0], [1.25 * PI, 0, 0, 0.25 * PI],
+                   [1.75 * PI, 0, 0, 0.25 * PI], [0, 1.75 * PI, 1.25 * PI, 0]]
+        adj_rad = sp.coo_matrix(adj_rad, dtype=np.float32)
+        adj_rad = sparse_to_tensor(adj_rad)
+
+        layer = EmbeddedGCNN(
+            2,
+            3, [adj_dist, adj_dist], [adj_rad, adj_rad],
+            local_controllability=1,
+            sampling_points=4,
+            name='call')
+
+        input_1 = [[1, 2], [3, 4], [5, 6], [7, 8]]
+        input_1 = tf.constant(input_1, dtype=tf.float32)
+        input_2 = [[9, 10], [11, 12], [13, 14], [15, 16]]
+        input_2 = tf.constant(input_2, dtype=tf.float32)
+        inputs = [input_1, input_2]
+        outputs = layer(inputs)
+
+        expected_1 = conv(
+            input_1, adj_dist, adj_rad, layer.vars['weights'], K=1)
+        expected_1 = tf.nn.bias_add(expected_1, layer.vars['bias'])
+        expected_1 = tf.nn.relu(expected_1)
+
+        expected_2 = conv(
+            input_2, adj_dist, adj_rad, layer.vars['weights'], K=1)
+        expected_2 = tf.nn.bias_add(expected_2, layer.vars['bias'])
+        expected_2 = tf.nn.relu(expected_2)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertEqual(len(outputs), 2)
+            self.assertEqual(outputs[0].eval().shape, (4, 3))
+            self.assertEqual(outputs[1].eval().shape, (4, 3))
+            self.assertAllEqual(outputs[0].eval(), expected_1.eval())
+            self.assertAllEqual(outputs[1].eval(), expected_2.eval())
+
+    def test_call_without_bias(self):
+        adj_dist = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
+        adj_dist = sp.coo_matrix(adj_dist, dtype=np.float32)
+        adj_dist = sparse_to_tensor(adj_dist)
+
+        adj_rad = [[0, 0.25 * PI, 0.75 * PI, 0], [1.25 * PI, 0, 0, 0.25 * PI],
+                   [1.75 * PI, 0, 0, 0.25 * PI], [0, 1.75 * PI, 1.25 * PI, 0]]
+        adj_rad = sp.coo_matrix(adj_rad, dtype=np.float32)
+        adj_rad = sparse_to_tensor(adj_rad)
+
+        layer = EmbeddedGCNN(
+            2,
+            3, [adj_dist, adj_dist], [adj_rad, adj_rad],
+            local_controllability=1,
+            sampling_points=4,
+            bias=False,
+            name='call_without_bias')
+
+        input_1 = [[1, 2], [3, 4], [5, 6], [7, 8]]
+        input_1 = tf.constant(input_1, dtype=tf.float32)
+        input_2 = [[9, 10], [11, 12], [13, 14], [15, 16]]
+        input_2 = tf.constant(input_2, dtype=tf.float32)
+        inputs = [input_1, input_2]
+        outputs = layer(inputs)
+
+        expected_1 = conv(
+            input_1, adj_dist, adj_rad, layer.vars['weights'], K=1)
+        expected_1 = tf.nn.relu(expected_1)
+
+        expected_2 = conv(
+            input_2, adj_dist, adj_rad, layer.vars['weights'], K=1)
+        expected_2 = tf.nn.relu(expected_2)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertEqual(len(outputs), 2)
+            self.assertEqual(outputs[0].eval().shape, (4, 3))
+            self.assertEqual(outputs[1].eval().shape, (4, 3))
+            self.assertAllEqual(outputs[0].eval(), expected_1.eval())
+            self.assertAllEqual(outputs[1].eval(), expected_2.eval())

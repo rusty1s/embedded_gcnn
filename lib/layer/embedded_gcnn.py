@@ -6,7 +6,7 @@ from .var_layer import VarLayer
 from ..tf.bspline import base
 
 
-def conv(features, adj_dist, adj_rad, K, weights):
+def conv(features, adj_dist, adj_rad, weights, K=2):
     P = weights.get_shape()[0].value - 1
 
     output = tf.matmul(features, weights[P])
@@ -42,8 +42,6 @@ class EmbeddedGCNN(VarLayer):
                  sampling_points=8,
                  **kwargs):
 
-        assert local_controllability in [1, 2]
-
         self.adjs_dist = adjs_dist
         self.adjs_rad = adjs_rad
         self.K = local_controllability
@@ -60,7 +58,7 @@ class EmbeddedGCNN(VarLayer):
 
         for i in xrange(batch_size):
             output = conv(inputs[i], self.adjs_dist[i], self.adjs_rad[i],
-                          self.K, self.vars['weights'])
+                          self.vars['weights'], self.K)
 
             if self.bias:
                 output = tf.nn.bias_add(output, self.vars['bias'])

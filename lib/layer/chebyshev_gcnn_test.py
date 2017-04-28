@@ -1,3 +1,4 @@
+import numpy as np
 import scipy.sparse as sp
 import tensorflow as tf
 
@@ -7,9 +8,9 @@ from ..tf.laplacian import laplacian, rescale_lap
 
 
 class ChebyshevGCNNTest(tf.test.TestCase):
-    def test_conv(self):
+    def test_conv_K2(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(adj)
+        adj = sp.coo_matrix(adj, dtype=np.float32)
         adj = sparse_to_tensor(adj)
         lap = laplacian(adj)
         lap = rescale_lap(lap)
@@ -40,49 +41,61 @@ class ChebyshevGCNNTest(tf.test.TestCase):
 
     def test_call(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(adj)
+        adj = sp.coo_matrix(adj, dtype=np.float32)
         adj = sparse_to_tensor(adj)
-        lap = laplacian(adj)
-        lap = rescale_lap(lap)
 
-        layer = ChebyshevGCNN(2, 3, adjs=[adj, adj], degree=3, name='call')
+        layer = ChebyshevGCNN(2, 3, [adj, adj], degree=3, name='call')
 
         input_1 = [[1, 2], [3, 4], [5, 6]]
+        input_1 = tf.constant(input_1, dtype=tf.float32)
         input_2 = [[7, 8], [9, 10], [11, 12]]
-        inputs = tf.constant([input_1, input_2], dtype=tf.float32)
+        input_2 = tf.constant(input_2, dtype=tf.float32)
+        inputs = [input_1, input_2]
         outputs = layer(inputs)
 
-        Tx_1_0 = inputs[0]
-        output_1 = tf.matmul(Tx_1_0, layer.vars['weights'][0])
-        Tx_1_1 = tf.sparse_tensor_dense_matmul(lap, inputs[0])
-        output_1 = tf.add(
-            tf.matmul(Tx_1_1, layer.vars['weights'][1]), output_1)
-        Tx_1_2 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_1_1) - Tx_1_0
-        output_1 = tf.add(
-            tf.matmul(Tx_1_2, layer.vars['weights'][2]), output_1)
-        Tx_1_3 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_1_2) - Tx_1_1
-        output_1 = tf.add(
-            tf.matmul(Tx_1_3, layer.vars['weights'][3]), output_1)
-        output_1 = tf.nn.bias_add(output_1, layer.vars['bias'])
-        output_1 = tf.nn.relu(output_1)
+        expected_1 = conv(input_1, adj, layer.vars['weights'])
+        expected_1 = tf.nn.bias_add(expected_1, layer.vars['bias'])
+        expected_1 = tf.nn.relu(expected_1)
 
-        Tx_2_0 = inputs[1]
-        output_2 = tf.matmul(Tx_2_0, layer.vars['weights'][0])
-        Tx_2_1 = tf.sparse_tensor_dense_matmul(lap, inputs[1])
-        output_2 = tf.add(
-            tf.matmul(Tx_2_1, layer.vars['weights'][1]), output_2)
-        Tx_2_2 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_2_1) - Tx_2_0
-        output_2 = tf.add(
-            tf.matmul(Tx_2_2, layer.vars['weights'][2]), output_2)
-        Tx_2_3 = 2 * tf.sparse_tensor_dense_matmul(lap, Tx_2_2) - Tx_2_1
-        output_2 = tf.add(
-            tf.matmul(Tx_2_3, layer.vars['weights'][3]), output_2)
-        output_2 = tf.nn.bias_add(output_2, layer.vars['bias'])
-        output_2 = tf.nn.relu(output_2)
+        expected_2 = conv(input_2, adj, layer.vars['weights'])
+        expected_2 = tf.nn.bias_add(expected_2, layer.vars['bias'])
+        expected_2 = tf.nn.relu(expected_2)
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
 
-            self.assertAllEqual(outputs.eval().shape, [2, 3, 3])
-            self.assertAllEqual(outputs[0].eval(), output_1.eval())
-            self.assertAllEqual(outputs[1].eval(), output_2.eval())
+            self.assertEqual(len(outputs), 2)
+            self.assertEqual(outputs[0].eval().shape, (3, 3))
+            self.assertEqual(outputs[1].eval().shape, (3, 3))
+            self.assertAllEqual(outputs[0].eval(), expected_1.eval())
+
+    def test_call_without_bias(self):
+        adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        adj = sp.coo_matrix(adj, dtype=np.float32)
+        adj = sparse_to_tensor(adj)
+
+        layer = ChebyshevGCNN(
+            2, 3, [adj, adj], degree=3, bias=False, name='call_without_bias')
+
+        input_1 = [[1, 2], [3, 4], [5, 6]]
+        input_1 = tf.constant(input_1, dtype=tf.float32)
+        input_2 = [[7, 8], [9, 10], [11, 12]]
+        input_2 = tf.constant(input_2, dtype=tf.float32)
+        inputs = [input_1, input_2]
+        outputs = layer(inputs)
+
+        expected_1 = conv(input_1, adj, layer.vars['weights'])
+        expected_1 = tf.nn.relu(expected_1)
+
+        expected_2 = conv(input_2, adj, layer.vars['weights'])
+        expected_2 = tf.nn.relu(expected_2)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertEqual(len(outputs), 2)
+            self.assertEqual(outputs[0].eval().shape, (3, 3))
+            self.assertEqual(outputs[1].eval().shape, (3, 3))
+            self.assertAllEqual(outputs[0].eval(), expected_1.eval())
+            self.assertAllEqual(outputs[1].eval(), expected_2.eval())
+            self.assertAllEqual(outputs[1].eval(), expected_2.eval())

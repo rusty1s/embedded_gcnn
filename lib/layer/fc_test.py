@@ -17,22 +17,41 @@ class FCTest(tf.test.TestCase):
 
     def test_call(self):
         layer = FC(3, 5, name='call')
-        inputs = tf.constant([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        inputs = tf.constant([[1, 2, 3], [4, 5, 6]], dtype=tf.float32)
+        outputs = layer(inputs)
+
+        expected = tf.matmul(inputs, layer.vars['weights'])
+        expected = tf.nn.bias_add(expected, layer.vars['bias'])
+        expected = tf.nn.relu(expected)
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
 
-            self.assertAllEqual(
-                layer(inputs).eval(),
-                tf.nn.relu(
-                    tf.nn.bias_add(
-                        tf.matmul(inputs, layer.vars['weights']), layer.vars[
-                            'bias'])).eval())
+            self.assertAllEqual(outputs.eval().shape, (2, 5))
+            self.assertAllEqual(outputs.eval(), expected.eval())
+
+    def test_call_without_bias(self):
+        layer = FC(3, 5, bias=False, name='call_without_bias')
+        inputs = tf.constant([[1, 2, 3], [4, 5, 6]], dtype=tf.float32)
+        outputs = layer(inputs)
+
+        expected = tf.matmul(inputs, layer.vars['weights'])
+        expected = tf.nn.relu(expected)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertAllEqual(outputs.eval().shape, (2, 5))
+            self.assertAllEqual(outputs.eval(), expected.eval())
 
     def test_call_with_dropout(self):
         layer = FC(3, 5, dropout=0.5, name='call_with_dropout')
-        inputs = tf.constant([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+        inputs = tf.constant([[1, 2, 3], [4, 5, 6]], dtype=tf.float32)
+        outputs = layer(inputs)
 
         with self.test_session() as sess:
             sess.run(tf.global_variables_initializer())
-            layer(inputs).eval()  # Dropout is random and not testable.
+
+            # Dropout is random and therefore not testable, so we just ran it
+            # and ensure that the computation succeeds.
+            self.assertEqual(outputs.eval().shape, (2, 5))

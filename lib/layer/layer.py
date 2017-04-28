@@ -20,7 +20,6 @@ class Layer(object):
 
         self.name = name
         self.logging = logging
-        self.vars = {}
 
     def __call__(self, inputs):
         with tf.name_scope(self.name):
@@ -32,12 +31,7 @@ class Layer(object):
             if self.logging:
                 tf.summary.histogram('{}/outputs'.format(outputs), outputs)
 
-            return outputs
+        return outputs
 
     def _call(self, inputs):
         raise NotImplementedError
-
-    def _log_vars(self):
-        for var in self.vars:
-            tf.summary.histogram('{}/vars/{}'.format(self.name, var),
-                                 self.vars[var])

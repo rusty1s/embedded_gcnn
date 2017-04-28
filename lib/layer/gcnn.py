@@ -27,15 +27,16 @@ class GCNN(VarLayer):
             **kwargs)
 
     def _call(self, inputs):
-        batch_size = inputs.get_shape()[0].value
+        batch_size = len(inputs)
         outputs = []
 
         for i in xrange(batch_size):
-            outputs.append(conv(inputs[i], self.adjs[i], self.vars['weights']))
+            output = conv(inputs[i], self.adjs[i], self.vars['weights'])
 
-        outputs = tf.stack(outputs, axis=0)
+            if self.bias:
+                output = tf.nn.bias_add(output, self.vars['bias'])
 
-        if self.bias:
-            outputs = tf.nn.bias_add(outputs, self.vars['bias'])
+            output = self.act(output)
+            outputs.append(output)
 
-        return self.act(outputs)
+        return outputs
