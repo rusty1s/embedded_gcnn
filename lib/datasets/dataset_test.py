@@ -1,6 +1,4 @@
 from unittest import TestCase
-import os
-import shutil
 
 import numpy as np
 from numpy.testing import assert_equal
