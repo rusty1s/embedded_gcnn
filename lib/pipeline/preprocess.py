@@ -6,13 +6,13 @@ from ..graph.distortion import perm_features
 from ..tf.convert import sparse_to_tensor
 
 
-def pipeline(image,
-             segmentation_algorithm,
-             feature_extraction_algorithm,
-             levels,
-             scale_invariance=False,
-             stddev=1,
-             connectivity=2):
+def preprocess(image,
+               segmentation_algorithm,
+               feature_extraction_algorithm,
+               levels,
+               scale_invariance=False,
+               stddev=1,
+               connectivity=2):
 
     segmentation = segmentation_algorithm(image)
 
@@ -30,24 +30,14 @@ def pipeline(image,
     return features, adjs_dist, adjs_rad
 
 
-def batch_pipeline(images,
-                   segmentation_algorithm,
-                   feature_extraction_algorithm,
-                   levels,
-                   scale_invariance=False,
-                   stddev=1,
-                   connectivity=2):
-
-    features = []
-    adjs_dist = []
-    adjs_rad = []
-
-    for i in xrange(images.shape[0]):
-        f, dist, rad = pipeline(images[i], segmentation_algorithm,
-                                feature_extraction_algorithm, levels,
-                                scale_invariance, stddev, connectivity)
-        features.append(f)
-        adjs_dist.append(dist)
-        adjs_rad.append(rad)
-
-    return features, adjs_dist, adjs_rad
+def preprocess_fixed(segmentation_algorithm,
+                     feature_extraction_algorithm,
+                     levels,
+                     scale_invariance=False,
+                     stddev=1,
+                     connectivity=2):
+    def _preprocess(image):
+        return preprocess(image, segmentation_algorithm,
+                          feature_extraction_algorithm, levels,
+                          scale_invariance, stddev, connectivity)
+    return _preprocess

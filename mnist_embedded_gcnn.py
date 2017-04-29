@@ -5,11 +5,12 @@ import time
 from six.moves import xrange
 
 from lib.datasets.mnist import MNIST
-from lib.model.embedded_placeholder import (embedded_placeholders,
-                                            embedded_feed_dict)
+from lib.datasets.queue import PreprocessQueue
 from lib.segmentation.algorithm import slic_fixed
 from lib.segmentation.feature_extraction import mnist_slic_feature_extraction
-from lib.pipeline.preprocess import batch_pipeline
+from lib.pipeline.preprocess import preprocess_fixed
+from lib.model.embedded_placeholder import (embedded_placeholders,
+                                            embedded_feed_dict)
 
 from lib.model.model import Model
 from lib.layer.embedded_gcnn import EmbeddedGCNN as Conv
@@ -17,12 +18,12 @@ from lib.layer.max_pool import MaxPool
 from lib.layer.average_pool import AveragePool
 from lib.layer.fc import FC
 
-LEARNING_RATE = 0.001
+LEARNING_RATE = 0.1
 BATCH_SIZE = 64
-MAX_STEPS = 10000
+MAX_STEPS = 2000
 DROPOUT = 0.5
 DATA_DIR = 'data/mnist'
-DISPLAY_STEP = 1
+DISPLAY_STEP = 10
 
 LEVELS = 4
 NUM_FEATURES = 6
@@ -72,19 +73,24 @@ class MNISTModel(Model):
         ]
 
 
+data = MNIST(DATA_DIR)
 segmentation_algorithm = slic_fixed(
     num_segments=100, compactness=2, max_iterations=10, sigma=0)
 feature_extraction_algorithm = mnist_slic_feature_extraction
-
-
-def preprocess(placeholders, images, labels):
-    features, adjs_dist, adjs_rad = batch_pipeline(
-        images, segmentation_algorithm, feature_extraction_algorithm, LEVELS)
-    return embedded_feed_dict(placeholders, features, labels, adjs_dist,
-                              adjs_rad)
-
-
-data = MNIST(DATA_DIR)
+preprocess_algorithm = preprocess_fixed(
+    segmentation_algorithm, feature_extraction_algorithm, levels=4)
+train_queue = PreprocessQueue(
+    data.train,
+    preprocess_algorithm,
+    batch_size=BATCH_SIZE,
+    capacity=500,
+    shuffle=True)
+validation_queue = PreprocessQueue(
+    data.validation,
+    preprocess_algorithm,
+    batch_size=BATCH_SIZE,
+    capacity=500,
+    shuffle=True)
 placeholders = embedded_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
                                      data.num_labels)
 model = MNISTModel(placeholders=placeholders, learning_rate=LEARNING_RATE)
@@ -92,9 +98,8 @@ global_step = model.initialize()
 
 for step in xrange(global_step, MAX_STEPS):
     t_preprocess = time.process_time()
-    images, labels = data.train.next_batch(BATCH_SIZE)
-    train_feed_dict = preprocess(placeholders, images, labels)
-    train_feed_dict.update({placeholders['dropout']: DROPOUT})
+    batch = train_queue.dequeue()
+    train_feed_dict = embedded_feed_dict(placeholders, batch, dropout=0.5)
     t_preprocess = time.process_time() - t_preprocess
 
     t_train = model.train(train_feed_dict, step)
@@ -104,9 +109,9 @@ for step in xrange(global_step, MAX_STEPS):
         train_feed_dict.update({placeholders['dropout']: 0})
         train_loss, train_acc, _ = model.evaluate(train_feed_dict)
 
-        images, labels = data.validation.next_batch(BATCH_SIZE)
-        val_feed_dict = preprocess(placeholders, images, labels, 0)
-        val_loss, val_acc, _ = model.evaluate(val_feed_dict)
+        batch = validation_queue.dequeue()
+        validation_feed_dict = embedded_feed_dict(placeholders, batch)
+        val_loss, val_acc, _ = model.evaluate(validation_feed_dict)
 
         # Print results.
         print(', '.join([
@@ -118,14 +123,24 @@ for step in xrange(global_step, MAX_STEPS):
             'val_acc={:.5f}'.format(val_acc),
         ]))
 
+train_queue.close()
+validation_queue.close()
+
 print('Optimization finished!')
 
+test_queue = PreprocessQueue(
+    data.test,
+    preprocess_algorithm,
+    batch_size=BATCH_SIZE,
+    capacity=500,
+    shuffle=False)
+
 # Evaluate on test set.
-num_iterations = data.num_test_examples // BATCH_SIZE
+num_iterations = data.test.num_examples // BATCH_SIZE
 test_loss, test_acc, test_duration = (0, 0, 0)
 for i in xrange(num_iterations):
-    images, labels = data.test.next_batch(BATCH_SIZE)
-    test_feed_dict = preprocess(placeholders, images, labels, 0)
+    batch = test_queue.dequeue()
+    test_feed_dict = embedded_feed_dict(placeholders, batch)
     test_single_loss, test_single_acc, test_single_duration = model.evaluate(
         test_feed_dict)
     test_loss += test_single_loss
@@ -134,3 +149,5 @@ for i in xrange(num_iterations):
 
 print('Test set results: cost={:.5f}, accuracy={:.5f}, time={:.2f}s'.format(
     test_loss / num_iterations, test_acc / num_iterations, test_duration))
+
+test_queue.close()
