@@ -48,3 +48,14 @@ def normalized_cut(adj, rid=None):
             clustercount += 1
 
     return cluster_map
+
+
+def cut_new(adj, rid=None):
+    # TODO
+    if rid is None:
+        rid = np.random.permutation(np.arange(adj.shape[0]))
+
+    n = adj.shape[0]
+    cluster_map = np.zeros(n, np.int32) - 1
+
+    return cluster_map

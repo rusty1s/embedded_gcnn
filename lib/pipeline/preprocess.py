@@ -1,5 +1,3 @@
-from six.moves import xrange
-
 from ..segmentation.adjacency import segmentation_adjacency
 from ..graph.embedded_coarsening import coarsen_embedded_adj
 from ..graph.distortion import perm_features
@@ -11,12 +9,11 @@ def preprocess(image,
                feature_extraction_algorithm,
                levels,
                scale_invariance=False,
-               stddev=1,
-               connectivity=2):
+               stddev=1):
 
     segmentation = segmentation_algorithm(image)
 
-    points, adj, mass = segmentation_adjacency(segmentation, connectivity)
+    adj, points, mass = segmentation_adjacency(segmentation)
 
     adjs_dist, adjs_rad, perm = coarsen_embedded_adj(points, mass, adj, levels,
                                                      scale_invariance, stddev)
@@ -34,10 +31,10 @@ def preprocess_fixed(segmentation_algorithm,
                      feature_extraction_algorithm,
                      levels,
                      scale_invariance=False,
-                     stddev=1,
-                     connectivity=2):
+                     stddev=1):
     def _preprocess(image):
         return preprocess(image, segmentation_algorithm,
                           feature_extraction_algorithm, levels,
-                          scale_invariance, stddev, connectivity)
+                          scale_invariance, stddev)
+
     return _preprocess

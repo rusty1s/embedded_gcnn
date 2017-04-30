@@ -3,3 +3,4 @@ scipy>=0.18.1
 tensorflow>=1.0.0
 scikit-image>=0.12.3
 networkx>=1.11
+numpy_groupies>=0.9.6

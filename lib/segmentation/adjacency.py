@@ -1,20 +1,38 @@
-from six.moves import xrange
-
 import numpy as np
-import networkx as nx
-from skimage.future.graph import RAG
-from skimage.measure import regionprops
+import numpy_groupies as npg
+import scipy.sparse as sp
 
 
-def segmentation_adjacency(segmentation, connectivity=2, dtype=np.float32):
-    graph = RAG(segmentation, connectivity)
-    adj = nx.to_scipy_sparse_matrix(
-        graph, dtype=dtype, weight=None, format='coo')
+def segmentation_adjacency(segmentation):
+    # Get centroids.
+    idx = np.indices(segmentation.shape)
+    ys = npg.aggregate(segmentation.flatten(), idx[0].flatten(), func='mean')
+    ys = np.reshape(ys, (-1, 1))
+    xs = npg.aggregate(segmentation.flatten(), idx[1].flatten(), func='mean')
+    xs = np.reshape(xs, (-1, 1))
+    points = np.concatenate((ys, xs), axis=1)
 
-    props = regionprops(segmentation + 1)
-    n = len(props)
-    points = np.array(
-        [np.flip(props[i]['centroid'], axis=0) for i in xrange(n)], dtype)
-    mass = np.array([props[i]['area'] for i in xrange(n)], dtype)
+    # Get mass.
+    nums, mass = np.unique(segmentation, return_counts=True)
+    n = nums.shape[0]
 
-    return points, adj, mass
+    # Get adjacency (https://goo.gl/y1xFMq).
+    # TODO make better
+    tmp = np.zeros((n+1, n+1), np.bool)
+    a, b = segmentation[:-1, :], segmentation[1:, :]
+    tmp[a[a != b], b[a != b]] = True
+
+    a, b = segmentation[:, :-1], segmentation[:, 1:]
+    tmp[a[a != b], b[a != b]] = True
+
+    result = tmp | tmp.T
+    result = result.astype(np.uint8)
+
+    rowlist = [np.flatnonzero(row) for row in result[:-1]]
+    row = np.concatenate(rowlist, axis=0)
+    collist = [np.full((rowlist[i].shape[0]), i) for i in range(len(rowlist))]
+    col = np.concatenate(collist, axis=0)
+    data = np.ones_like(row, dtype=np.uint8)
+    adj = sp.coo_matrix((data, (row, col)), (n, n))
+
+    return adj, points, mass

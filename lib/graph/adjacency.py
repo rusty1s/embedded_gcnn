@@ -1,102 +1,66 @@
 from __future__ import division
 
-from six.moves import xrange
-
 import numpy as np
 import scipy.sparse as sp
+import numpy_groupies as npg
 
 
-def normalize_adj(adj, scale_invariance=False):
+def points_to_adj(adj, points, scale_invariance=False, stddev=1):
+    adj_dist, adj_rad = points_to_l2_adj(adj, points)
+    adj_dist = zero_one_scale_adj(adj_dist, scale_invariance)
+    adj_dist = invert_adj(adj_dist, stddev)
+    return adj_dist, adj_rad
+
+
+def zero_one_scale_adj(adj, scale_invariance=False):
     """Normalize adjacency matrix to interval [0, 1]."""
 
     if not scale_invariance:
-        return (1 / adj.max()) * adj
+        data = adj.data
+        adj.data = (1 / data.max()) * data
     else:
-        max_row = 1 / adj.max(axis=1).toarray().flatten()
-        diag = sp.diags(max_row)
-        adj = adj.dot(diag)
+        rows = adj.row
+        data = adj.data
+        multiplicator = 1 / npg.aggregate(rows, data, func='max')
+        multiplicator = multiplicator[rows]
+        adj.data = data * multiplicator
         return (adj + adj.transpose()) / 2
 
+    return adj
 
-def invert_adj(m, stddev=1):
+
+def invert_adj(adj, stddev=1):
     """Return (inverted) gaussian kernel representation."""
 
-    if sp.issparse(m):
-        m = m.copy()
-        m.data = np.exp(-m.data / (2 * stddev ** 2))
-        return m
-    else:
-        return np.exp(-m / (2 * stddev ** 2))
-
-
-def filter_highly_connected_nodes(adj, capacity):
-    """Filter nodes with a number of outgoing edges greater than capacity."""
-
-    adj = adj.tocoo()
-    _, num_nodes = np.unique(adj.row, return_counts=True)
-    return np.where(num_nodes <= capacity)[0]
-
-
-def grid_adj(shape, connectivity=4, dtype=np.float32):
-    """Return adjacency matrix of a regular grid."""
-
-    assert connectivity == 4 or connectivity == 8,\
-        'Invalid connectivity {}'.format(connectivity)
-
-    height, width = shape
-    n = height * width
-    adj = sp.lil_matrix((n, n), dtype=dtype)
-
-    adj = _grid_adj_4(adj, height, width)
-
-    if connectivity == 8:
-        adj = _grid_adj_8(adj, height, width)
-
-    return adj.tocoo()
-
-
-def _grid_neighbors(v, height, width):
-    """Return whether the node has a top, right, bottom and right neighbor."""
-
-    top = v >= width
-    bottom = v < (height - 1) * width
-    left = v % width
-    right = v % width < width - 1
-
-    return top, right, bottom, left
-
-
-def _grid_adj_4(adj, height, width):
-    """Add edges to vertical/horizontal nodes on grid adjacency."""
-
-    for v in xrange(height * width):
-        top, right, bottom, left = _grid_neighbors(v, height, width)
-
-        if top:
-            adj[v, v - width] = 1
-        if right:
-            adj[v, v + 1] = 1
-        if bottom:
-            adj[v, v + width] = 1
-        if left:
-            adj[v, v - 1] = 1
-
+    denominator = - 2 * stddev * stddev
+    adj.data = np.exp(adj.data / denominator)
     return adj
 
 
-def _grid_adj_8(adj, height, width):
-    """Add edges to diagonal nodes on grid adjacency."""
+def points_to_l2_adj(adj, points):
+    """Builds an embedded adjacency matrix based on points of nodes."""
 
-    for v in xrange(height * width):
-        top, right, bottom, left = _grid_neighbors(v, height, width)
+    ys = points[:, :1].flatten()
+    xs = points[:, 1:].flatten()
 
-        if top and right:
-            adj[v, v - width + 1] = 2
-        if bottom and right:
-            adj[v, v + width + 1] = 2
-        if bottom and left:
-            adj[v, v + width - 1] = 2
-        if top and left:
-            adj[v, v - width - 1] = 2
+    rows = adj.row
+    rows_ys = ys[rows]
+    rows_xs = xs[rows]
 
-    return adj
+    cols = adj.col
+    cols_ys = ys[cols]
+    cols_xs = xs[cols]
+
+    vector_y = cols_ys - rows_ys
+    vector_x = cols_xs - rows_xs
+
+    dists = vector_y * vector_y + vector_x * vector_x
+    rads = np.arctan2(vector_y, vector_x)
+    # Adjust radians to lie in ]0, 2π].
+    rads = np.where(rads > 0, rads, rads + 2 * np.pi)
+
+    n = adj.shape[0]
+    adj_dist = sp.coo_matrix((dists, (rows, cols)), (n, n))
+    adj_rad = sp.coo_matrix((rads, (rows, cols)), (n, n))
+
+    return adj_dist, adj_rad
