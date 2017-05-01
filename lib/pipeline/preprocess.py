@@ -1,22 +1,21 @@
-from ..segmentation.adjacency import segmentation_adjacency
-from ..graph.embedded_coarsening import coarsen_embedded_adj
-from ..graph.distortion import perm_features
-from ..tf.convert import sparse_to_tensor
+from ..segmentation import segmentation_adjacency
+from ..graph import coarsen_adj, perm_features
+from ..tf import sparse_to_tensor
 
 
-def preprocess(image,
-               segmentation_algorithm,
-               feature_extraction_algorithm,
-               levels,
-               scale_invariance=False,
-               stddev=1):
+def preprocess_pipeline(image,
+                        segmentation_algorithm,
+                        feature_extraction_algorithm,
+                        levels,
+                        scale_invariance=False,
+                        stddev=1):
 
     segmentation = segmentation_algorithm(image)
 
     adj, points, mass = segmentation_adjacency(segmentation)
 
-    adjs_dist, adjs_rad, perm = coarsen_embedded_adj(points, mass, adj, levels,
-                                                     scale_invariance, stddev)
+    adjs_dist, adjs_rad, perm = coarsen_adj(adj, points, mass, levels,
+                                            scale_invariance, stddev)
 
     features = feature_extraction_algorithm(segmentation, image)
     features = perm_features(features, perm)
@@ -27,14 +26,14 @@ def preprocess(image,
     return features, adjs_dist, adjs_rad
 
 
-def preprocess_fixed(segmentation_algorithm,
-                     feature_extraction_algorithm,
-                     levels,
-                     scale_invariance=False,
-                     stddev=1):
+def preprocess_pipeline_fixed(segmentation_algorithm,
+                              feature_extraction_algorithm,
+                              levels,
+                              scale_invariance=False,
+                              stddev=1):
     def _preprocess(image):
-        return preprocess(image, segmentation_algorithm,
-                          feature_extraction_algorithm, levels,
-                          scale_invariance, stddev)
+        return preprocess_pipeline(image, segmentation_algorithm,
+                                   feature_extraction_algorithm, levels,
+                                   scale_invariance, stddev)
 
     return _preprocess

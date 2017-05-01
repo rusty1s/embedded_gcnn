@@ -24,13 +24,3 @@ def perm_features(features, perm):
     zeros = np.zeros((num_fake_nodes, k), features.dtype)
     features = np.concatenate((features, zeros), axis=0)
     return features[perm]
-
-
-def filter_adj(adj, nodes):
-    # TODO
-    raise NotImplementedError
-
-
-def filter_features(features, nodes):
-    # TODO
-    raise NotImplementedError

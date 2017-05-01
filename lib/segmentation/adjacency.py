@@ -7,8 +7,8 @@ def segmentation_adjacency(segmentation):
     # Get centroids.
     idx = np.indices(segmentation.shape)
     ys = npg.aggregate(segmentation.flatten(), idx[0].flatten(), func='mean')
-    ys = np.reshape(ys, (-1, 1))
     xs = npg.aggregate(segmentation.flatten(), idx[1].flatten(), func='mean')
+    ys = np.reshape(ys, (-1, 1))
     xs = np.reshape(xs, (-1, 1))
     points = np.concatenate((ys, xs), axis=1)
 

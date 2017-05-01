@@ -3,7 +3,7 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf.laplacian import laplacian, rescale_lap
+from ..tf import laplacian, rescale_lap
 
 
 def conv(features, adj, weights):

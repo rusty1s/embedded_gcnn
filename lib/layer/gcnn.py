@@ -3,8 +3,7 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf.adjacency import normalize_adj
-from ..tf.math import sparse_identity
+from ..tf import sparse_identity, normalize_adj
 
 
 def conv(features, adj, weights):

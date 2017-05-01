@@ -4,7 +4,7 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .distortion import perm_adj, perm_features  # filter_adj, filter_features
+from .distortion import perm_adj, perm_features
 
 
 class DistortionTest(TestCase):

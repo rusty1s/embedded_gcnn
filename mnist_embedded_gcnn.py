@@ -6,17 +6,13 @@ from six.moves import xrange
 
 from lib.datasets.mnist import MNIST
 from lib.datasets.queue import PreprocessQueue
-from lib.segmentation.algorithm import slic_fixed
-from lib.segmentation.feature_extraction import mnist_slic_feature_extraction
-from lib.pipeline.preprocess import preprocess_fixed
+from lib.segmentation import slic_fixed, mnist_slic_feature_extraction
+from lib.pipeline import preprocess_pipeline_fixed
 from lib.model.embedded_placeholder import (embedded_placeholders,
                                             embedded_feed_dict)
 
 from lib.model.model import Model
-from lib.layer.embedded_gcnn import EmbeddedGCNN as Conv
-from lib.layer.max_pool import MaxPool
-from lib.layer.average_pool import AveragePool
-from lib.layer.fc import FC
+from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
 LEARNING_RATE = 0.1
 BATCH_SIZE = 64
@@ -77,7 +73,7 @@ data = MNIST(DATA_DIR)
 segmentation_algorithm = slic_fixed(
     num_segments=100, compactness=2, max_iterations=10, sigma=0)
 feature_extraction_algorithm = mnist_slic_feature_extraction
-preprocess_algorithm = preprocess_fixed(
+preprocess_algorithm = preprocess_pipeline_fixed(
     segmentation_algorithm, feature_extraction_algorithm, levels=4)
 train_queue = PreprocessQueue(
     data.train,

@@ -3,7 +3,7 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf.bspline import base
+from ..tf import base
 
 
 def conv(features, adj_dist, adj_rad, weights, K=2):

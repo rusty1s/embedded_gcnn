@@ -1,31 +1,32 @@
 from __future__ import division
 
-import tensorflow as tf
+from unittest import TestCase
+
 import numpy as np
-from numpy.testing import assert_equal, assert_almost_equal
+from numpy import pi as PI
+from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .adjacency import (normalize_adj, invert_adj,
-                        filter_highly_connected_nodes, grid_adj)
+from .adjacency import (zero_one_scale_adj, invert_adj, points_to_l2_adj,
+                        points_to_adj)
 
 
-class GraphTest(tf.test.TestCase):
-    def test_normalize_adj(self):
+class GraphTest(TestCase):
+    def test_zero_one_scale_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj)
 
         expected = [[0, 0.5, 0], [0.5, 0, 1], [0, 1, 0]]
 
-        assert_equal(normalize_adj(adj).toarray(), expected)
+        assert_equal(zero_one_scale_adj(adj).toarray(), expected)
 
-    def test_normalize_adj_scale_invariant(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj)
 
         expected = [[0, 0.75, 0], [0.75, 0, 1], [0, 1, 0]]
 
         assert_equal(
-            normalize_adj(adj, scale_invariance=True).toarray(), expected)
+            zero_one_scale_adj(adj, scale_invariance=True).toarray(), expected)
 
     def test_invert_adj(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
@@ -35,50 +36,47 @@ class GraphTest(tf.test.TestCase):
                     [np.exp(-1 / 2), 0, np.exp(-2 / 2)],
                     [0, np.exp(-2 / 2), 0]]
 
-        assert_almost_equal(invert_adj(adj, stddev=1).toarray(), expected)
+        assert_equal(invert_adj(adj, stddev=1).toarray(), expected)
+
+        adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
+        adj = sp.coo_matrix(adj)
 
         expected = [[0, np.exp(-1 / 8), 0],
                     [np.exp(-1 / 8), 0, np.exp(-2 / 8)],
                     [0, np.exp(-2 / 8), 0]]
 
-        assert_almost_equal(invert_adj(adj, stddev=2).toarray(), expected)
+        assert_equal(invert_adj(adj, stddev=2).toarray(), expected)
 
-        assert_equal(invert_adj(2, stddev=1), np.exp(-1))
+    def test_points_to_l2_adj(self):
+        points = np.array([[2, 2], [2, 4], [3, 2], [2, 1], [1, 2]])
+        adj = sp.coo_matrix([[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]])
+        adj_dist, adj_rad = points_to_l2_adj(adj, points)
 
-    def test_filter_highly_connected_nodes(self):
-        adj = [[0, 1, 1, 1, 1], [1, 0, 1, 0, 0], [1, 1, 0, 1, 0],
-               [1, 0, 1, 0, 1], [1, 0, 0, 1, 0]]
-        adj = sp.coo_matrix(adj)
+        expected_dist = [[0, 4, 1, 1, 1], [4, 0, 0, 0, 0], [1, 0, 0, 0, 0],
+                         [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]]
+        expected_rad = [[0, 0.5 * PI, PI, 1.5 * PI, 2 * PI],
+                        [1.5 * PI, 0, 0, 0, 0], [2 * PI, 0, 0, 0, 0],
+                        [0.5 * PI, 0, 0, 0, 0], [PI, 0, 0, 0, 0]]
 
-        perm = filter_highly_connected_nodes(adj, capacity=3)
-        assert_equal(perm, [1, 2, 3, 4])
+        assert_equal(adj_dist.toarray(), expected_dist)
+        assert_equal(adj_rad.toarray(), expected_rad)
 
-        perm = filter_highly_connected_nodes(adj, capacity=2)
-        assert_equal(perm, [1, 4])
+    def test_points_to_adj(self):
+        points = np.array([[2, 2], [2, 4], [3, 2], [2, 1], [1, 2]])
+        adj = sp.coo_matrix([[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]])
+        adj_dist, adj_rad = points_to_adj(adj, points, stddev=2)
 
-        # Test different weights.
-        adj = [[0, 2, 3, 4, 5], [2, 0, 1, 0, 0], [3, 1, 0, 1, 0],
-               [4, 0, 1, 0, 1], [5, 0, 0, 1, 0]]
-        adj = sp.coo_matrix(adj)
+        expected_dist = [[
+            0, np.exp(-1 / 8), np.exp(-0.25 / 8), np.exp(-0.25 / 8),
+            np.exp(-0.25 / 8)
+        ], [np.exp(-1 / 8), 0, 0, 0, 0], [np.exp(-0.25 / 8), 0, 0, 0, 0],
+                         [np.exp(-0.25 / 8), 0, 0, 0, 0],
+                         [np.exp(-0.25 / 8), 0, 0, 0, 0]]
+        expected_rad = [[0, 0.5 * PI, PI, 1.5 * PI, 2 * PI],
+                        [1.5 * PI, 0, 0, 0, 0], [2 * PI, 0, 0, 0, 0],
+                        [0.5 * PI, 0, 0, 0, 0], [PI, 0, 0, 0, 0]]
 
-        perm = filter_highly_connected_nodes(adj, capacity=3)
-        assert_equal(perm, [1, 2, 3, 4])
-
-        perm = filter_highly_connected_nodes(adj, capacity=2)
-        assert_equal(perm, [1, 4])
-
-    def test_grid_adj_connectivity_4(self):
-        adj = grid_adj((3, 2), connectivity=4)
-
-        expected = [[0, 1, 1, 0, 0, 0], [1, 0, 0, 1, 0, 0], [1, 0, 0, 1, 1, 0],
-                    [0, 1, 1, 0, 0, 1], [0, 0, 1, 0, 0, 1], [0, 0, 0, 1, 1, 0]]
-
-        assert_equal(adj.toarray(), expected)
-
-    def test_grid_adj_connectivity_8(self):
-        adj = grid_adj((3, 2), connectivity=8)
-
-        expected = [[0, 1, 1, 2, 0, 0], [1, 0, 2, 1, 0, 0], [1, 2, 0, 1, 1, 2],
-                    [2, 1, 1, 0, 2, 1], [0, 0, 1, 2, 0, 1], [0, 0, 2, 1, 1, 0]]
-
-        assert_equal(adj.toarray(), expected)
+        assert_equal(adj_dist.toarray(), expected_dist)
+        assert_equal(adj_rad.toarray(), expected_rad)

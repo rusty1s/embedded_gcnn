@@ -1,116 +1,96 @@
+from __future__ import division
+
 from unittest import TestCase
 
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_equal, assert_almost_equal
 import scipy.sparse as sp
 
-from .coarsening import coarsen_adj, _coarsen_clustered_adj, compute_perms
+from .embedded_coarsening import (_coarsen_clustered_embedded_adj,
+                                  coarsen_embedded_adj)
+from .adjacency import normalize_adj, invert_adj
 
 
-class CoarseningTest(TestCase):
-    def test_coarsen_clustered_adj(self):
-        adj = [[0, 2, 1, 0], [2, 0, 0, 1], [1, 0, 0, 2], [0, 1, 2, 0]]
+class EmbeddedCoarseningCopyTest(TestCase):
+    def test_coarsen_clustered_embedded_adj(self):
+        points = np.array([[1, 1], [3, 2], [3, 0], [4, 1], [8, 3]], np.float32)
+        mass = np.array([1, 1, 1, 1, 1], np.float32)
+        adj = [[0, 1, 1, 0, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0],
+               [0, 1, 1, 0, 1], [0, 0, 0, 1, 0]]
         adj = sp.coo_matrix(adj)
-        cluster_map = np.array([0, 0, 1, 1])
+        cluster_map = np.array([0, 1, 0, 1, 2])
 
-        expected_adj = [[0, 2], [2, 0]]
-        adj_new = _coarsen_clustered_adj(cluster_map, adj)
+        points_new, mass_new, adj_new = _coarsen_clustered_embedded_adj(
+            cluster_map, points, mass, adj)
+
+        expected_points = [[2, 0.5], [3.5, 1.5], [8, 3]]
+        expected_mass = [2, 2, 1]
+        expected_adj = [[0, 1, 0], [1, 0, 1], [0, 1, 0]]
+
+        assert_equal(points_new, expected_points)
+        assert_equal(mass_new, expected_mass)
         assert_equal(adj_new.toarray(), expected_adj)
 
-        cluster_map = np.array([0, 1, 0, 1])
+        mass = np.array([2, 1, 1, 2, 4], np.float32)
+        cluster_map = np.array([1, 1, 2, 0, 0])
 
-        expected_adj = [[0, 4], [4, 0]]
-        adj_new = _coarsen_clustered_adj(cluster_map, adj)
+        points_new, mass_new, adj_new = _coarsen_clustered_embedded_adj(
+            cluster_map, points, mass, adj)
+
+        expected_points = [[40 / 6, 14 / 6], [5 / 3, 4 / 3], [3, 0]]
+        expected_mass = [6, 3, 1]
+        expected_adj = [[0, 1, 1], [1, 0, 1], [1, 1, 0]]
+
+        assert_almost_equal(points_new, expected_points, decimal=6)
+        assert_equal(mass_new, expected_mass)
         assert_equal(adj_new.toarray(), expected_adj)
 
-        adj = [[0, 3, 0, 2, 0], [3, 0, 2, 0, 0], [0, 2, 0, 3, 0],
-               [2, 0, 3, 0, 1], [0, 0, 0, 1, 0]]
+    def test_coarsen_embedded_adj(self):
+        points = np.array([[1, 1], [3, 2], [3, 0], [4, 1], [8, 3]], np.float32)
+        adj = [[0, 1, 1, 0, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0],
+               [0, 1, 1, 0, 1], [0, 0, 0, 1, 0]]
         adj = sp.coo_matrix(adj)
-        cluster_map = np.array([0, 0, 1, 1, 2])
-
-        expected_adj = [[0, 4, 0], [4, 0, 1], [0, 1, 0]]
-        adj_new = _coarsen_clustered_adj(cluster_map, adj)
-        assert_equal(adj_new.toarray(), expected_adj)
-
-        cluster_map = np.array([2, 1, 1, 0, 0])
-
-        expected_adj = [[0, 3, 2], [3, 0, 3], [2, 3, 0]]
-        adj_new = _coarsen_clustered_adj(cluster_map, adj)
-        assert_equal(adj_new.toarray(), expected_adj)
-
-    def test_compute_perms(self):
-        cluster_map_1 = np.array([4, 1, 1, 2, 2, 3, 0, 0, 3])
-        cluster_map_2 = np.array([2, 1, 0, 1, 0])
-        cluster_maps = [cluster_map_1, cluster_map_2]
-
-        perms = compute_perms(cluster_maps)
-
-        assert_equal(len(perms), 3)
-        assert_equal(perms[2], [0, 1, 2])
-        assert_equal(perms[1], [2, 4, 1, 3, 0, 5])
-        assert_equal(perms[0], [3, 4, 0, 9, 1, 2, 5, 8, 6, 7, 10, 11])
-
-        cluster_map_1 = np.array([0, 0, 1, 1, 2])
-        cluster_map_2 = np.array([1, 0, 0])
-        cluster_maps = [cluster_map_1, cluster_map_2]
-
-        perms = compute_perms(cluster_maps)
-
-        assert_equal(len(perms), 3)
-        assert_equal(perms[2], [0, 1])
-        assert_equal(perms[1], [1, 2, 0, 3])
-        assert_equal(perms[0], [2, 3, 4, 5, 0, 1, 6, 7])
-
-    def test_coarsen_adj(self):
-        adj = [[0, 3, 0, 2, 0], [3, 0, 2, 0, 0], [0, 2, 0, 3, 0],
-               [2, 0, 3, 0, 1], [0, 0, 0, 1, 0]]
-        adj = sp.coo_matrix(adj)
+        mass = np.array([1, 1, 1, 1, 1], np.float32)
+        stddev = 1
         rid = np.array([0, 1, 2, 3, 4])
 
-        adjs, perm = coarsen_adj(adj, levels=1, rid=rid)
+        adjs_dist, adjs_rad, perm = coarsen_embedded_adj(
+            points, mass, adj, levels=1, stddev=stddev, rid=rid)
 
         assert_equal(perm, [0, 1, 2, 3, 4, 5])
-        assert_equal(len(adjs), 2)
-        assert_equal(adjs[0].shape, (6, 6))
-        assert_equal(adjs[1].shape, (3, 3))
+        assert_equal(len(adjs_dist), 2)
+        assert_equal(adjs_dist[0].shape, (6, 6))
+        assert_equal(adjs_dist[1].shape, (3, 3))
+        assert_equal(len(adjs_rad), 2)
+        assert_equal(adjs_rad[0].shape, (6, 6))
+        assert_equal(adjs_rad[1].shape, (3, 3))
 
-        expected_1 = [[0, 3, 0, 2, 0, 0], [3, 0, 2, 0, 0, 0],
-                      [0, 2, 0, 3, 0, 0], [2, 0, 3, 0, 1, 0],
-                      [0, 0, 0, 1, 0, 0], [0, 0, 0, 0, 0, 0]]
-        assert_equal(adjs[0].toarray(), expected_1)
+        expected_dist_1 = [[0, 5, 5, 0, 0, 0], [5, 0, 0, 2, 0, 0],
+                           [5, 0, 0, 2, 0, 0], [0, 2, 2, 0, 20, 0],
+                           [0, 0, 0, 20, 0, 0], [0, 0, 0, 0, 0, 0]]
+        expected_dist_1 = invert_adj(
+            normalize_adj(sp.coo_matrix(expected_dist_1)),
+            stddev=stddev).toarray()
+        assert_almost_equal(adjs_dist[0].toarray(), expected_dist_1)
 
-        expected_2 = [[0, 4, 0], [4, 0, 1], [0, 1, 0]]
-        assert_equal(adjs[1].toarray(), expected_2)
+        expected_dist_2 = [[0, 3.25, 0], [3.25, 0, 26.5], [0, 26.5, 0]]
+        expected_dist_2 = invert_adj(
+            normalize_adj(sp.coo_matrix(expected_dist_2)),
+            stddev=stddev).toarray()
+        assert_almost_equal(adjs_dist[1].toarray(), expected_dist_2)
 
-        adjs, perm = coarsen_adj(adj, levels=2, rid=rid)
-        # After the first level, the rid swaps to [2, 0, 1] and thus we get
-        # parents [0, 0, 1, 1, 2] and [1, 0, 0].
+        expected_rad_1 = [
+            [0, np.arctan2(2, 1), np.arctan2(2, -1), 0, 0, 0],
+            [np.arctan2(2, 1) + np.pi, 0, 0, 0.75 * np.pi, 0, 0],
+            [np.arctan2(2, -1) + np.pi, 0, 0, 0.25 * np.pi, 0, 0], [
+                0, 1.75 * np.pi, 1.25 * np.pi, 0, np.arctan2(4, 2), 0
+            ], [0, 0, 0, np.arctan2(4, 2) + np.pi, 0, 0], [0, 0, 0, 0, 0, 0]
+        ]
+        assert_almost_equal(adjs_rad[0].toarray(), expected_rad_1, decimal=6)
 
-        assert_equal(perm, [2, 3, 4, 5, 0, 1, 6, 7])
-        assert_equal(len(adjs), 3)
-        assert_equal(adjs[0].shape, (8, 8))
-        assert_equal(adjs[1].shape, (4, 4))
-        assert_equal(adjs[2].shape, (2, 2))
-
-        expected_1 = [[0, 3, 0, 0, 0, 2, 0, 0], [3, 0, 1, 0, 2, 0, 0, 0],
-                      [0, 1, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0],
-                      [0, 2, 0, 0, 0, 3, 0, 0], [2, 0, 0, 0, 3, 0, 0, 0],
-                      [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]]
-
-        assert_equal(adjs[0].toarray(), expected_1)
-
-        expected_2 = [[0, 1, 4, 0], [1, 0, 0, 0], [4, 0, 0, 0], [0, 0, 0, 0]]
-        assert_equal(adjs[1].toarray(), expected_2)
-
-        expected_3 = [[0, 4], [4, 0]]
-        assert_equal(adjs[2].toarray(), expected_3)
-
-        # Test random permutation.
-        adjs, perm = coarsen_adj(adj, levels=2)
-        assert_equal(len(adjs), 3)
-        assert_equal(adjs[0].shape, (8, 8))
-        assert_equal(adjs[1].shape, (4, 4))
-        assert_equal(adjs[2].shape, (2, 2))
-
-        assert_equal(perm.shape, [8])
-        assert_equal(np.max(perm), 7)
+        expected_rad_2 = [
+            [0, np.arctan2(1.5, -1), 0],
+            [np.arctan2(1.5, -1) + np.pi, 0, np.arctan2(4.5, 2.5)],
+            [0, np.arctan2(4.5, 2.5) + np.pi, 0]
+        ]
+        assert_almost_equal(adjs_rad[1].toarray(), expected_rad_2, decimal=6)

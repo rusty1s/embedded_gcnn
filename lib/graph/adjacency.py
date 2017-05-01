@@ -5,13 +5,6 @@ import scipy.sparse as sp
 import numpy_groupies as npg
 
 
-def points_to_adj(adj, points, scale_invariance=False, stddev=1):
-    adj_dist, adj_rad = points_to_l2_adj(adj, points)
-    adj_dist = zero_one_scale_adj(adj_dist, scale_invariance)
-    adj_dist = invert_adj(adj_dist, stddev)
-    return adj_dist, adj_rad
-
-
 def zero_one_scale_adj(adj, scale_invariance=False):
     """Normalize adjacency matrix to interval [0, 1]."""
 
@@ -38,7 +31,7 @@ def invert_adj(adj, stddev=1):
 
 
 def points_to_l2_adj(adj, points):
-    """Builds an embedded adjacency matrix based on points of nodes."""
+    """Builds an embedded adjacency matrix based on points (y, x) of nodes."""
 
     ys = points[:, :1].flatten()
     xs = points[:, 1:].flatten()
@@ -51,16 +44,23 @@ def points_to_l2_adj(adj, points):
     cols_ys = ys[cols]
     cols_xs = xs[cols]
 
-    vector_y = cols_ys - rows_ys
+    vector_y = rows_ys - cols_ys
     vector_x = cols_xs - rows_xs
 
     dists = vector_y * vector_y + vector_x * vector_x
-    rads = np.arctan2(vector_y, vector_x)
-    # Adjust radians to lie in ]0, 2π].
+    rads = np.arctan2(vector_x, vector_y)
+    # Adjust radians to lay in ]0, 2π].
     rads = np.where(rads > 0, rads, rads + 2 * np.pi)
 
     n = adj.shape[0]
     adj_dist = sp.coo_matrix((dists, (rows, cols)), (n, n))
     adj_rad = sp.coo_matrix((rads, (rows, cols)), (n, n))
 
+    return adj_dist, adj_rad
+
+
+def points_to_adj(adj, points, scale_invariance=False, stddev=1):
+    adj_dist, adj_rad = points_to_l2_adj(adj, points)
+    adj_dist = zero_one_scale_adj(adj_dist, scale_invariance)
+    adj_dist = invert_adj(adj_dist, stddev)
     return adj_dist, adj_rad
