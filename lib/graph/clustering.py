@@ -56,12 +56,6 @@ def normalized_cut(adj, rid=None):
 
 
 def cut_new(adj, rid=None):
-    # TODO
-    # Was muss ich tun? Wie kann ich das vektorisieren?
-    # Wir durchlaufen alle Knoten in rid und suchen den nächsten Nachbarn
-    # Sort by rid
-    # Fin
-
     if rid is None:
         rid = np.random.permutation(np.arange(adj.shape[0]))
 
