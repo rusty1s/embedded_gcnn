@@ -118,6 +118,4 @@ class Model(object):
         return time.time() - t
 
     def evaluate(self, feed_dict):
-        t = time.time()
-        loss, acc = self.sess.run([self._loss, self._accuracy], feed_dict)
-        return loss, acc, time.time() - t
+        return self.sess.run([self._loss, self._accuracy], feed_dict)

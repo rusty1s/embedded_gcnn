@@ -1,3 +1,15 @@
+# record_iterator = tf.python_io.tf_record_iterator('test.tfrecords')
+# print(record_iterator)
+# for string_record in record_iterator:
+#     example = tf.train.Example()
+#     example.ParseFromString(string_record)
+#     features = example.features.feature['features'].bytes_list.value[0]
+#     features = np.fromstring(features, dtype=np.float32)
+#     features = np.reshape(features, (-1, 3))
+#     print(features.shape)
+# print(dist)
+
+
 # from __future__ import division
 # from __future__ import print_function
 
@@ -9,7 +21,7 @@
 # import numpy as np
 # from skimage.io import imread
 
-# from .dataset import Datasets, Dataset
+from .dataset import Datasets
 # from .download import maybe_download_and_extract
 
 
@@ -23,7 +35,8 @@
 # ]
 
 
-# class PascalVOC(Datasets):
+class PascalVOC(Datasets):
+    pass
 #     def __init__(self, data_dir, validation_size=1500):
 #         maybe_download_and_extract(URL, data_dir)
 #         train_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')

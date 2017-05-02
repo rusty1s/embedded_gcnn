@@ -4,11 +4,11 @@ import numpy as np
 import tensorflow as tf
 
 
-def placeholders(batch_size,
-                 levels,
-                 num_features,
-                 num_labels,
-                 has_radians=False):
+def generate_placeholders(batch_size,
+                          levels,
+                          num_features,
+                          num_labels,
+                          has_radians):
 
     placeholders = {
         'features': [
@@ -44,7 +44,7 @@ def placeholders(batch_size,
     return placeholders
 
 
-def feed_dict(placeholders, batch, dropout=0.0):
+def feed_dict_with_batch(placeholders, batch, dropout=0.0):
     batch_size = len(batch)
     has_radians = len(batch[0]) == 4
     levels = len(batch[0][1]) - 1

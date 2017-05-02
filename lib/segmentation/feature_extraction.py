@@ -91,6 +91,9 @@ def feature_extraction(segmentation, image):
     return MinMaxScaler().fit_transform(features)
 
 
+NUM_MNIST_SLIC_FEATURES = 6
+
+
 def mnist_slic_feature_extraction(segmentation, image):
     props = regionprops(segmentation + 1)
     features = np.zeros((len(props), 6), dtype=np.float32)
