@@ -12,7 +12,7 @@ from .adjacency import points_to_adj
 from .distortion import perm_adj
 
 
-class CoarseningCopyTest(TestCase):
+class CoarseningTest(TestCase):
     def test_compute_perms(self):
         cluster_maps = [
             np.array([4, 1, 1, 2, 2, 3, 0, 0, 3]), np.array([2, 1, 0, 1, 0])
