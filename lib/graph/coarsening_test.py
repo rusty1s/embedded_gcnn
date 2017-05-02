@@ -4,8 +4,10 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .coarsening import (_coarsen_adj, _coarsen_clustered_adj, _compute_perms)
+from .coarsening import (coarsen_adj, _coarsen_adj, _coarsen_clustered_adj,
+                         _compute_perms)
 from .adjacency import points_to_adj
+from .distortion import perm_adj
 
 
 class CoarseningCopyTest(TestCase):
@@ -86,7 +88,6 @@ class CoarseningCopyTest(TestCase):
                                               stddev)
         assert_equal(adjs_dist[0].toarray(), adj_dist_0.toarray())
         assert_equal(adjs_rad[0].toarray(), adj_rad_0.toarray())
-        print(adj_rad_0.toarray())
 
         assert_equal(cluster_maps[0], [0, 1, 0, 1, 2])
 
@@ -113,5 +114,57 @@ class CoarseningCopyTest(TestCase):
         assert_equal(adjs_rad[2].toarray(), adj_rad_2.toarray())
 
     def test_coarsen_adj(self):
-        # TODO
-        pass
+        adj = [[0, 1, 1, 0, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0],
+               [0, 1, 1, 0, 1], [0, 0, 0, 1, 0]]
+        adj = sp.coo_matrix(adj)
+        points = np.array([[1, 1], [3, 2], [3, 0], [4, 1], [8, 3]])
+        mass = np.array([4, 2, 2, 2, 8])
+        levels = 2
+        stddev = 1
+        scale_invariance = False
+        rid = np.array([2, 0, 1, 4, 3])
+
+        adjs_dist, adjs_rad, perm = coarsen_adj(
+            adj, points, mass, levels, scale_invariance, stddev, rid)
+
+        assert_equal(len(adjs_dist), 3)
+        assert_equal(len(adjs_rad), 3)
+
+        perm_2 = np.array([0, 1])
+        perm_1 = np.array([1, 2, 0, 3])
+        perm_0 = np.array([1, 3, 4, 5, 0, 2, 6, 7])
+
+        assert_equal(perm, perm_0)
+
+        adj_dist_0, adj_rad_0 = points_to_adj(adj, points, scale_invariance,
+                                              stddev)
+        adj_dist_0 = perm_adj(adj_dist_0, perm_0)
+        adj_rad_0 = perm_adj(adj_rad_0, perm_0)
+
+        assert_equal(adjs_dist[0].toarray(), adj_dist_0.toarray())
+        assert_equal(adjs_rad[0].toarray(), adj_rad_0.toarray())
+
+        adj = sp.coo_matrix([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
+        points = np.array([[10 / 6, 4 / 6], [3.5, 1.5], [8, 3]])
+        mass = np.array([6, 4, 8])
+
+        adj_dist_1, adj_rad_1 = points_to_adj(adj, points, scale_invariance,
+                                              stddev)
+        adj_dist_1 = perm_adj(adj_dist_1, perm_1)
+        adj_rad_1 = perm_adj(adj_rad_1, perm_1)
+
+        assert_equal(adjs_dist[1].toarray(), adj_dist_1.toarray())
+        assert_equal(adjs_rad[1].toarray(), adj_rad_1.toarray())
+
+        adj = sp.coo_matrix([[0, 1], [1, 0]])
+        points = np.array([[(4 * 3.5 + 8 * 8) / 12, (4 * 1.5 + 8 * 3) / 12],
+                           [10 / 6, 4 / 6]])
+        mass = np.array([12, 6])
+
+        adj_dist_2, adj_rad_2 = points_to_adj(adj, points, scale_invariance,
+                                              stddev)
+        adj_dist_2 = perm_adj(adj_dist_2, perm_2)
+        adj_rad_2 = perm_adj(adj_rad_2, perm_2)
+
+        assert_equal(adjs_dist[2].toarray(), adj_dist_2.toarray())
+        assert_equal(adjs_rad[2].toarray(), adj_rad_2.toarray())
