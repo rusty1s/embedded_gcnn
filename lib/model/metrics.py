@@ -23,14 +23,13 @@ def cal_accuracy(outputs, labels):
     num_labels = labels.get_shape()[1]
 
     with tf.name_scope('accuracy'):
-        predicted_labels = tf.argmax(outputs, axis=1)
+        labels = tf.cast(labels, tf.bool)
 
+        predicted_labels = tf.argmax(outputs, axis=1)
         predicted_labels_one_hot = tf.one_hot(predicted_labels, num_labels)
         predicted_labels_one_hot = tf.cast(predicted_labels_one_hot, tf.bool)
 
-        labels = tf.cast(labels, tf.bool)
         correct_prediction = tf.logical_and(predicted_labels_one_hot, labels)
-
         correct_prediction = tf.cast(correct_prediction, tf.float32)
         correct_prediction = tf.reduce_max(correct_prediction, axis=1)
 
