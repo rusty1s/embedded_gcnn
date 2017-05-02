@@ -1,5 +1,4 @@
 from __future__ import division
-
 from six.moves import xrange
 
 import numpy as np
@@ -18,12 +17,13 @@ def coarsen_adj(adj,
                 scale_invariance=False,
                 stddev=1,
                 rid=None):
-    # Coarse graph a defined number of levels deep.
+
+    # Coarse adjacency  a defined number of levels deep.
     adjs_dist, adjs_rad, cluster_maps = _coarsen_adj(
         adj, points, mass, levels, scale_invariance, stddev, rid)
 
     # Permutate adjacencies to a binary tree for an efficient O(n) pooling.
-    perms = compute_perms(cluster_maps)
+    perms = _compute_perms(cluster_maps)
     adjs_dist = [perm_adj(adjs_dist[i], perms[i]) for i in xrange(levels + 1)]
     adjs_rad = [perm_adj(adjs_rad[i], perms[i]) for i in xrange(levels + 1)]
 
@@ -74,12 +74,13 @@ def _coarsen_clustered_adj(adj, points, mass, cluster_map):
     adj = sp.coo_matrix((adj.data, (rows, cols)), shape=(n, n))
     adj.setdiag(0)
     adj.eliminate_zeros()
+    adj = adj.tocsc().tocoo()  # Sum up duplicate row/col entries.
 
     points_y = mass * points[:, :1].flatten()
-    points_y = npg.aggregate(cluster_map, points_y, func='mean')
+    points_y = npg.aggregate(cluster_map, points_y, func='sum')
 
     points_x = mass * points[:, 1:].flatten()
-    points_x = npg.aggregate(cluster_map, points_x, func='mean')
+    points_x = npg.aggregate(cluster_map, points_x, func='sum')
 
     mass = npg.aggregate(cluster_map, mass, func='sum')
 
@@ -90,39 +91,66 @@ def _coarsen_clustered_adj(adj, points, mass, cluster_map):
     points_x = np.reshape(points_x, (-1, 1))
     points = np.concatenate((points_y, points_x), axis=1)
 
-    return adj, points, mass
+    return adj.tocsc().tocoo(), points, mass
 
 
-def compute_perms(cluster_maps):
+def _compute_perms(cluster_maps):
     # Last permutation is the ordered list of the number of clusters in the
     # last cluster map.
-    perms = [np.arange(np.max(cluster_maps[-1] + 1))]
+    n = np.max(cluster_maps[-1]) + 1
+    perm = np.arange(n)
+    perms = [perm]
 
     # Iterate backwards through cluster_maps.
-    for i in reversed(xrange(len(cluster_maps))):
+    for i in xrange(len(cluster_maps) - 1, -1, -1):
         cluster_map = cluster_maps[i]
+        cur_singleton_idx = cluster_map.size
 
-        cur_singleton = len(cluster_map)
-
-        perm = []
-        for j in perms[-1]:
+        perm_last = perm
+        perm = np.zeros((2 * perm_last.size), perm_last.dtype)
+        for j in xrange(perm_last.size):
             # Indices of the cluster map that correspond to the calculated
             # permutation.
-            perm_nodes = list(np.where(cluster_map == j)[0])
+            nodes_idx = np.where(cluster_map == perm_last[j])[0]
 
             # Add fake nodes if neccassary.
-            if len(perm_nodes) == 1:
-                perm_nodes.append(cur_singleton)
-                cur_singleton += 1
-            elif len(perm_nodes) == 0:
-                perm_nodes.append(cur_singleton)
-                perm_nodes.append(cur_singleton + 1)
-                cur_singleton += 2
+            if nodes_idx.size == 1:
+                perm[2*j] = nodes_idx[0]
+                perm[2*j+1] = cur_singleton_idx
+                cur_singleton_idx += 1
+            elif nodes_idx.size == 0:
+                perm[2*j] = cur_singleton_idx
+                perm[2*j+1] = cur_singleton_idx + 1
+                cur_singleton_idx += 2
+            else:
+                perm[2*j] = nodes_idx[0]
+                perm[2*j+1] = nodes_idx[1]
 
-            # Append the two nodes to the permutation.
-            perm.extend(perm_nodes)
-
-        perms.append(np.array(perm))
+        perms.append(perm)
 
     # Reverse permutations.
+    return perms[::-1]
+
+
+def _compute_perms2(cluster_maps):
+    n = np.max(cluster_maps[-1]) + 1
+    perm = np.arange(n)
+    perms = [perm]
+
+    for i in xrange(len(cluster_maps) - 1, -1, -1):
+        last_perm = perm
+        cluster_map = cluster_maps[i]
+        n = 2 * n
+
+        idx, counts = np.unique(cluster_map, return_counts=True)
+        rid = np.where(counts == 1)[0]
+        perm = np.concatenate((cluster_map, idx[rid]), axis=0)
+        m = (n - perm.size) // 2
+        bla = perm.max() + 1
+        bla = np.arange(bla, bla + m).repeat(2)
+        perm = np.concatenate((perm, bla), axis=0)
+
+        x = np.array([np.where(perm == i) for i in last_perm]).flatten()
+        perms.append(x)
+
     return perms[::-1]

@@ -22,4 +22,4 @@ def grid_points(shape, dtype=np.float32):
 
 
 def grid_mass(shape, dtype=np.float32):
-    return np.zeros(shape[0] * shape[1], dtype)
+    return np.ones(shape[0] * shape[1], dtype)

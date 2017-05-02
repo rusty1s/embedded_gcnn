@@ -3,7 +3,7 @@ from __future__ import division
 from six.moves import xrange
 
 import numpy as np
-import numpy_groupies as npg
+# import numpy_groupies as npg
 import scipy.sparse as sp
 
 from .distortion import perm_adj
@@ -73,7 +73,7 @@ def cut_new(adj, rid=None):
     rows = adj.row[perm]
     cols = adj.col[perm]
     data = adj.data[perm]
-    degree = 1 / npg.aggregate(rows, data, func='sum')
+    # degree = 1 / npg.aggregate(rows, data, func='sum')
     # data = data * (degree[rows] + degree[cols])
     # print(weights)
     # print(adj.row)
@@ -118,14 +118,6 @@ def cut_new(adj, rid=None):
         min_idx = np.argmin(d)
         cluster_map[c[min_idx]] = cluster_count - 1
 
-
-
-
-
-
-
-
-
     # print('rowstart', rowstart)
     # print('rowlength', rowlength)
 
@@ -159,7 +151,6 @@ def cut_new(adj, rid=None):
     # _sort.row = 0
     # _sort.rowlength = 0
 
-
     # # Sort groups by minimizing normalized cut.
     # npg.aggregate(adj.row, adj.col, func=_sort)
     # print(a)
@@ -167,7 +158,6 @@ def cut_new(adj, rid=None):
     # print(adj.row)
 
     # print(rows)
-
 
     # print(degree)
 

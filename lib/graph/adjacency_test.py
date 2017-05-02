@@ -49,7 +49,7 @@ class GraphTest(TestCase):
 
     def test_points_to_l2_adj(self):
         points = np.array([[2, 2], [2, 4], [3, 2], [2, 1], [1, 2]])
-        adj = sp.coo_matrix([[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
+        adj = sp.coo_matrix([[0, 2, 1, 1, 1], [2, 0, 0, 0, 0], [1, 0, 0, 0, 0],
                              [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]])
         adj_dist, adj_rad = points_to_l2_adj(adj, points)
 
@@ -64,7 +64,7 @@ class GraphTest(TestCase):
 
     def test_points_to_adj(self):
         points = np.array([[2, 2], [2, 4], [3, 2], [2, 1], [1, 2]])
-        adj = sp.coo_matrix([[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
+        adj = sp.coo_matrix([[0, 2, 1, 1, 1], [2, 0, 0, 0, 0], [1, 0, 0, 0, 0],
                              [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]])
         adj_dist, adj_rad = points_to_adj(adj, points, stddev=2)
 
