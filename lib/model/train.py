@@ -56,7 +56,7 @@ def train(model,
 
                 print(', '.join([
                     'step: {}'.format(step),
-                    'time={:.2f}+{:.2f}s'.format(t_preprocess, t_train),
+                    'time={:.2f}s + {:.2f}s'.format(t_preprocess, t_train),
                     'train_loss={:.5f}'.format(train_loss),
                     'train_acc={:.5f}'.format(train_acc),
                     'val_loss={:.5f}'.format(val_loss),
@@ -64,7 +64,7 @@ def train(model,
                 ]))
 
     except KeyboardInterrupt:
-        pass
+        print()
 
     finally:
         train_queue.close()
@@ -98,6 +98,7 @@ def train(model,
         print('Test results: cost={:.5f}, acc={:.5f}'.format(loss, acc))
 
     except KeyboardInterrupt:
+        print()
         print('Test evaluation aborted.')
 
     finally:
