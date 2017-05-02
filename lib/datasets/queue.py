@@ -1,6 +1,10 @@
 from threading import Thread, Event
-from queue import Queue
 from six.moves import xrange
+
+try:
+    from queue import Queue
+except ImportError:
+    from Queue import Queue
 
 
 class PreprocessQueue(object):
