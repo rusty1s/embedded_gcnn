@@ -1,6 +1,7 @@
 language: python
 sudo: required
 dist: trusty
+cache: data
 matrix:
   include:
     - python: 2.7

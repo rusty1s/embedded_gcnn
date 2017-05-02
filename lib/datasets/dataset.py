@@ -2,18 +2,23 @@ import numpy as np
 
 
 class Datasets(object):
-    def __init__(self, train, validation, test):
+    def __init__(self, train, val, test):
 
         self.train = train
-        self.validation = validation
+        self.val = val
         self.test = test
 
-    def label_name(self, label):
+    @property
+    def labels(self):
         raise NotImplementedError
 
     @property
     def num_labels(self):
-        raise NotImplementedError
+        return len(self.labels)
+
+    def label_name(self, label):
+        idx = np.where(label == 1)[0]
+        return [self.labels[i] for i in idx]
 
 
 class Dataset(object):

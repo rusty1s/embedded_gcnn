@@ -36,4 +36,5 @@ def cal_accuracy(outputs, labels):
         accuracy = tf.reduce_mean(correct_prediction)
 
     tf.summary.scalar('train_accuracy', accuracy)
+
     return accuracy

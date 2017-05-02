@@ -4,24 +4,33 @@ from tensorflow.examples.tutorials.mnist import input_data
 from .dataset import Datasets, Dataset
 
 
-def _preprocess(images):
+def _preprocess_images(images):
     return np.reshape(images, (-1, 28, 28, 1))
 
 
+def _preprocess_labels(labels):
+    return labels.astype(np.uint8)
+
+
 class MNIST(Datasets):
-    def __init__(self, data_dir):
-        mnist = input_data.read_data_sets(data_dir, one_hot=True)
+    def __init__(self, data_dir, val_size=5000):
+        mnist = input_data.read_data_sets(
+            data_dir, one_hot=True, validation_size=val_size)
 
-        train = Dataset(_preprocess(mnist.train.images), mnist.train.labels)
-        validation = Dataset(
-            _preprocess(mnist.validation.images), mnist.validation.labels)
-        test = Dataset(_preprocess(mnist.test.images), mnist.test.labels)
+        images = _preprocess_images(mnist.train.images)
+        labels = _preprocess_labels(mnist.train.labels)
+        train = Dataset(images, labels)
 
-        super(MNIST, self).__init__(train, validation, test)
+        images = _preprocess_images(mnist.validation.images)
+        labels = _preprocess_labels(mnist.validation.labels)
+        val = Dataset(images, labels)
 
-    def label_name(self, label):
-        return np.where(label == 1)[0].tolist()
+        images = _preprocess_images(mnist.test.images)
+        labels = _preprocess_labels(mnist.test.labels)
+        test = Dataset(images, labels)
+
+        super(MNIST, self).__init__(train, val, test)
 
     @property
-    def num_labels(self):
-        return 10
+    def labels(self):
+        return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']

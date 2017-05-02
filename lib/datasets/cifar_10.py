@@ -15,68 +15,56 @@ except:
 
 URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
 
-LABELS = [
-    'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse',
-    'ship', 'truck'
-]
 
-
-def _preprocess(images):
+def _preprocess_images(images):
     images = np.reshape(images, (-1, 3, 32, 32))
     images = np.transpose(images, (0, 2, 3, 1))
     return (1 / 255) * images.astype(np.float32)
 
 
-def _load_batch(data_dir, name):
-    batch = pickle.load(
-        open(os.path.join(data_dir, name), 'rb'), encoding='latin1')
-
-    labels = np.array(batch['labels'], np.uint8)
-    index_offset = np.arange(labels.shape[0]) * 10
-    labels_one_hot = np.zeros((labels.shape[0], 10), np.uint8)
+def _preprocess_labels(labels, num_labels):
+    labels = np.array(labels, np.uint8)
+    size = labels.shape[0]
+    index_offset = np.arange(size) * num_labels
+    labels_one_hot = np.zeros((size, num_labels), np.uint8)
     labels_one_hot.flat[index_offset + labels] = 1
+    return labels_one_hot
 
-    return batch['data'], labels_one_hot
+
+def _load_batch(data_dir, name):
+    path = os.path.join(data_dir, name)
+    batch = pickle.load(open(path, 'rb'), encoding='latin1')
+    return batch['data'], batch['labels']
 
 
 class Cifar10(Datasets):
-    def __init__(self, data_dir, validation_size=5000):
+    def __init__(self, data_dir, val_size=5000):
         maybe_download_and_extract(URL, data_dir)
         data_dir = os.path.join(data_dir, 'cifar-10-batches-py')
 
-        # Load the train data from disk.
-        train_images = []
-        train_labels = []
+        images = np.zeros((0, 32 * 32 * 3), dtype=np.float32)
+        labels = np.zeros((0), dtype=np.float32)
         for i in xrange(1, 6):
-            images, labels = _load_batch(data_dir, 'data_batch_{}'.format(i))
-            train_images.append(images)
-            train_labels.append(labels)
+            batch = _load_batch(data_dir, 'data_batch_{}'.format(i))
+            images = np.concatenate((images, batch[0]), axis=0)
+            labels = np.concatenate((labels, batch[1]), axis=0)
 
-        train_images = np.stack(train_images, axis=0)
-        train_images = np.reshape(train_images, (-1, 32 * 32 * 3))
-        train_images = _preprocess(train_images)
-        train_labels = np.stack(train_labels, axis=0)
-        train_labels = np.reshape(train_labels, (-1, self.num_labels))
+        images = _preprocess_images(images)
+        labels = _preprocess_labels(labels, self.num_labels)
 
-        train_images = train_images[validation_size:]
-        train_labels = train_labels[validation_size:]
-        train = Dataset(train_images, train_labels)
+        train = Dataset(images[val_size:], labels[val_size:])
+        val = Dataset(images[:val_size], labels[:val_size])
 
-        # Generate a slice of validation data from training data.
-        validation_images = train_images[:validation_size]
-        validation_labels = train_labels[:validation_size]
-        validation = Dataset(validation_images, validation_labels)
+        images, labels = _load_batch(data_dir, 'test_batch')
+        images = _preprocess_images(images)
+        labels = _preprocess_labels(labels, self.num_labels)
+        test = Dataset(images, labels)
 
-        # Load the test data from disk.
-        test_images, test_labels = _load_batch(data_dir, 'test_batch')
-        test_images = _preprocess(test_images)
-        test = Dataset(test_images, test_labels)
-
-        super(Cifar10, self).__init__(train, validation, test)
-
-    def label_name(self, label):
-        return [LABELS[i] for i in np.where(label == 1)[0]]
+        super(Cifar10, self).__init__(train, val, test)
 
     @property
-    def num_labels(self):
-        return len(LABELS)
+    def labels(self):
+        return [
+            'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog',
+            'horse', 'ship', 'truck'
+        ]

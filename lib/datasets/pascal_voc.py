@@ -1,68 +1,59 @@
-# record_iterator = tf.python_io.tf_record_iterator('test.tfrecords')
-# print(record_iterator)
-# for string_record in record_iterator:
-#     example = tf.train.Example()
-#     example.ParseFromString(string_record)
-#     features = example.features.feature['features'].bytes_list.value[0]
-#     features = np.fromstring(features, dtype=np.float32)
-#     features = np.reshape(features, (-1, 3))
-#     print(features.shape)
-# print(dist)
-
-
 # from __future__ import division
 # from __future__ import print_function
 
 # import sys
-# import os
+import os
 # from six.moves import xrange
 # from xml.dom.minidom import parse
 
-# import numpy as np
+import numpy as np
 # from skimage.io import imread
 
-from .dataset import Datasets
-# from .download import maybe_download_and_extract
+from .dataset import Datasets, Dataset
+from .download import maybe_download_and_extract
 
 
-# URL = 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/'\
-#       'VOCtrainval_11-May-2012.tar'
+URL = 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/'\
+      'VOCtrainval_11-May-2012.tar'
 
-# LABELS = [
-#     'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep', 'aeroplane',
-#     'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
-#     'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
-# ]
+LABELS = [
+    'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep', 'aeroplane',
+    'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
+    'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
+]
+
+
+def _load_dataset(data_dir):
+    images = None
+    labels = None
+
+    return images, labels
 
 
 class PascalVOC(Datasets):
-    pass
-#     def __init__(self, data_dir, validation_size=1500):
-#         maybe_download_and_extract(URL, data_dir)
-#         train_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
+    def __init__(self, data_dir, test_dir=None, val_size=1500):
+        if test_dir is None:
+            test_dir = data_dir
 
-#         train_save_dir = os.path.join(data_dir, 'python', 'train')
-#         train_images, train_labels = self._load_dataset(
-#             train_dir, train_save_dir, 50, 'train and validation')
+        maybe_download_and_extract(URL, data_dir)
 
-#         test_save_dir = os.path.join(data_dir, 'python', 'test')
-#         test_images, test_labels = self._load_dataset(
-#             data_dir, test_save_dir, 20, 'test')
+        data_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
+        images, labels = _load_dataset(data_dir)
+        train = Dataset(images[val_size:], labels[:val_size])
+        val = Dataset(images[:val_size], labels[:val_size])
 
-#         train = Dataset(train_images[validation_size:],
-#                         train_labels[validation_size:])
-#         validation = Dataset(train_images[:validation_size],
-#                              train_labels[:validation_size])
-#         test = Dataset(test_images, test_labels)
+        data_dir = os.path.join(test_dir, 'VOCtestkit')
+        images, labels = _load_dataset(data_dir)
+        test = Dataset(images, labels)
 
-#         super(PascalVOC, self).__init__(train, validation, test)
+        super(PascalVOC, self).__init__(train, val, test)
 
-#     def label_name(self, label):
-#         return [LABELS[i] for i in np.where(label == 1)[0]]
+    def label_name(self, label):
+        return [LABELS[i] for i in np.where(label == 1)[0]]
 
-#     @property
-#     def num_labels(self):
-#         return len(LABELS)
+    @property
+    def num_labels(self):
+        return len(LABELS)
 
 #     def _load_dataset(self, data_dir, save_dir, num_files, dataset):
 #         filenames = [

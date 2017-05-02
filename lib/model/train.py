@@ -30,11 +30,7 @@ def train(model,
             shuffle=True)
 
         val_queue = PreprocessQueue(
-            data.validation,
-            preprocess_algorithm,
-            batch_size,
-            capacity,
-            shuffle=True)
+            data.val, preprocess_algorithm, batch_size, capacity, shuffle=True)
 
         for step in xrange(global_step, max_steps):
             t_preprocess = time.process_time()
