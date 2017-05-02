@@ -113,7 +113,7 @@ class DatasetTest(TestCase):
         batch = datasets.train.next_batch(5, shuffle=False)
         assert_equal(images, batch[0])
         assert_equal(labels, batch[1])
-        batch = datasets.validation.next_batch(5, shuffle=False)
+        batch = datasets.val.next_batch(5, shuffle=False)
         assert_equal(images, batch[0])
         assert_equal(labels, batch[1])
         batch = datasets.test.next_batch(5, shuffle=False)

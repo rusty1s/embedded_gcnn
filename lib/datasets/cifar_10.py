@@ -23,6 +23,7 @@ def _preprocess_images(images):
 
 
 def _preprocess_labels(labels, num_labels):
+    # Convert labels to one hot.
     labels = np.array(labels, np.uint8)
     size = labels.shape[0]
     index_offset = np.arange(size) * num_labels
