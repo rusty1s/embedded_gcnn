@@ -33,37 +33,3 @@ class DistortionTest(TestCase):
         perm = np.array([3, 2, 0, 4, 1, 5])
         expected = [[7, 8], [5, 6], [1, 2], [0, 0], [3, 4], [0, 0]]
         assert_equal(perm_features(features, perm), expected)
-
-    def test_filter_adj(self):
-        # TODO
-        pass
-        # Slice nodes.
-        # perm = np.array([1, 2, 0])
-        # expected = [[0, 0, 2], [0, 0, 1], [2, 1, 0]]
-        # assert_equal(perm_adj(adj, perm).toarray(), expected)
-
-        # perm = np.array([3, 0])
-        # expected = [[0, 0], [0, 0]]
-        # assert_equal(perm_adj(adj, perm).toarray(), expected)
-
-        # # Slice nodes and add fake nodes.
-        # perm = np.array([3, 1, 4, 0])
-        # expected = [[0, 1, 0, 0], [1, 0, 0, 2], [0, 0, 0, 0], [0, 2, 0, 0]]
-        # assert_equal(perm_adj(adj, perm).toarray(), expected)
-
-        # perm = np.array([1, 4, 2])
-        # expected = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        # assert_equal(perm_adj(adj, perm).toarray(), expected)
-
-    def test_filter_features(self):
-        # TODO
-        pass
-        # Slice nodes.
-        # perm = np.array([2, 1])
-        # expected = [[5, 6], [3, 4]]
-        # assert_equal(perm_features(features, perm), expected)
-
-        # # Slice nodes and add fake nodes.
-        # perm = np.array([3, 4, 0])
-        # expected = [[7, 8], [0, 0], [1, 2]]
-        # assert_equal(perm_features(features, perm), expected)
