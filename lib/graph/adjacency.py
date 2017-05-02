@@ -49,7 +49,7 @@ def points_to_l2_adj(adj, points):
 
     dists = vector_y * vector_y + vector_x * vector_x
     rads = np.arctan2(vector_x, vector_y)
-    # Adjust radians to lay in ]0, 2π].
+    # Adjust radians to lay in ]0, 2 * pi].
     rads = np.where(rads > 0, rads, rads + 2 * np.pi)
 
     n = adj.shape[0]
