@@ -16,6 +16,8 @@ def _print_status(name, percentage):
 
 
 def maybe_download_and_extract(url, data_dir):
+    _percentage = 0
+
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
