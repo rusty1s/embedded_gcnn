@@ -13,7 +13,7 @@ install:
 script:
   - pep8 .
   - flake8 .
-  - nosetests --with-coverage --nologcapture
+  - nosetests --with-coverage --nologcapture --nocapture
 after_success:
   - codecov
 notifications:
