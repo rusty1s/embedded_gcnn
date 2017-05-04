@@ -113,8 +113,23 @@ class FeatureExtractionTest(TestCase):
         # TODO perimeter
         # TODO solidity
 
-    def test_get_features(self):
+    def test_methods(self):
         self.assertEqual(len(FormFeatureExtraction.methods), 37)
+
+        expected = [
+            'area', 'bbox_area', 'bbox_height', 'bbox_width', 'centroid_x',
+            'centroid_y', 'eccentricity', 'equivalent_diameter', 'extent',
+            'hu_1', 'hu_2', 'hu_3', 'hu_4', 'hu_5', 'hu_6', 'hu_7',
+            'inertia_tensor_02', 'inertia_tensor_11', 'inertia_tensor_20',
+            'inertia_tensor_eigvals_1', 'inertia_tensor_eigvals_2',
+            'major_axis_length', 'minor_axis_length', 'mu_02', 'mu_03',
+            'mu_11', 'mu_12', 'mu_20', 'mu_21', 'mu_30', 'nu_02', 'nu_03',
+            'nu_11', 'nu_12', 'nu_20', 'nu_21', 'nu_30'
+        ]
+
+        self.assertEqual(FormFeatureExtraction.methods, expected)
+
+    def test_get_features(self):
 
         segmentation = np.array([[0, 0, 1, 1], [0, 0, 1, 1]])
         features = FormFeatureExtraction(segmentation)
