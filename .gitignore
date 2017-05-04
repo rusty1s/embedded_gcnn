@@ -5,4 +5,4 @@ __pycache__/
 .ipynb_checkpoints/
 .coverage
 data/
-pascal_voc_data/VOCDevKit
+test_data/VOCDevKit

@@ -4,7 +4,7 @@ import numpy as np
 
 from .pascal_voc import PascalVOC
 
-data = PascalVOC('pascal_voc_data', val_size=4, max_examples=8)
+data = PascalVOC('test_data', val_size=4, max_examples=8)
 
 
 class PascalVOCTest(TestCase):
@@ -90,7 +90,7 @@ class PascalVOCTest(TestCase):
 
     def test_filter_labels(self):
         filtered_data = PascalVOC(
-            'pascal_voc_data',
+            'test_data',
             val_size=4,
             max_examples=8,
             classes=['aeroplane'])
