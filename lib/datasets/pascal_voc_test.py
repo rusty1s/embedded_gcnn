@@ -4,7 +4,7 @@ import numpy as np
 
 from .pascal_voc import PascalVOC
 
-data = PascalVOC('test_data', val_size=4, max_examples=8)
+data = PascalVOC('test_data', val_size=4)
 
 
 class PascalVOCTest(TestCase):
@@ -15,6 +15,7 @@ class PascalVOCTest(TestCase):
 
     def test_shapes(self):
         images, labels = data.train.next_batch(4, shuffle=False)
+        print('train shapes', labels)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
@@ -22,6 +23,7 @@ class PascalVOCTest(TestCase):
         self.assertEqual(labels.shape, (4, 20))
 
         images, labels = data.val.next_batch(4, shuffle=False)
+        print('val shapes', labels)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
@@ -29,6 +31,7 @@ class PascalVOCTest(TestCase):
         self.assertEqual(labels.shape, (4, 20))
 
         images, labels = data.test.next_batch(32, shuffle=False)
+        print('test shapes', labels)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
@@ -59,16 +62,18 @@ class PascalVOCTest(TestCase):
             self.assertGreaterEqual(image.min(), 0)
 
     def test_labels(self):
-        _, labels = data.train.next_batch(
-            data.train.num_examples, shuffle=False)
+        _, labels = data.train.next_batch(4, shuffle=False)
+        print('train labels', labels)
 
         self.assertEqual(labels.dtype, np.uint8)
 
-        _, labels = data.val.next_batch(data.val.num_examples, shuffle=False)
+        _, labels = data.val.next_batch(4, shuffle=False)
+        print('val labels', labels)
 
         self.assertEqual(labels.dtype, np.uint8)
 
-        _, labels = data.test.next_batch(data.test.num_examples, shuffle=False)
+        _, labels = data.test.next_batch(4, shuffle=False)
+        print('test labels', labels)
 
         self.assertEqual(labels.dtype, np.uint8)
 
@@ -82,6 +87,12 @@ class PascalVOCTest(TestCase):
         self.assertEqual(data.num_classes, 20)
 
         _, labels = data.test.next_batch(4, shuffle=False)
+        print('test labels', labels)
+
+        print(data.classnames(labels[0]))
+        print(data.classnames(labels[1]))
+        print(data.classnames(labels[2]))
+        print(data.classnames(labels[3]))
 
         self.assertEqual(data.classnames(labels[0]), ['person'])
         self.assertEqual(data.classnames(labels[1]), ['person', 'aeroplane'])
@@ -92,7 +103,6 @@ class PascalVOCTest(TestCase):
         filtered_data = PascalVOC(
             'test_data',
             val_size=4,
-            max_examples=8,
             classes=['aeroplane'])
 
         images, labels = filtered_data.test.next_batch(4, shuffle=False)
