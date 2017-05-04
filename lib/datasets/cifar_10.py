@@ -1,6 +1,7 @@
 from __future__ import division
 
 import os
+import sys
 from six.moves import xrange
 
 import numpy as np
@@ -34,9 +35,10 @@ def _preprocess_labels(labels, num_classes):
 
 def _load_batch(data_dir, name):
     with open(os.path.join(data_dir, name), 'rb') as f:
-        u = pickle._Unpickler(f)
-        u.encoding = 'latin1'
-        batch = u.load()
+        if sys.version_info >= (3, 0):
+            batch = pickle.load(f, encoding='latin1')
+        else:
+            batch = pickle.load(f)
     return batch['data'], batch['labels']
 
 
