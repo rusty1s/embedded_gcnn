@@ -17,7 +17,6 @@ def _convert(props, key):
 class FeatureExtractionTest(TestCase):
     def test_feature_extraction_helper(self):
         segmentation = np.array([[0, 0, 1, 1], [0, 0, 1, 1]])
-
         features = FormFeatureExtraction(segmentation)
         props = regionprops(segmentation + 1)
 
@@ -113,3 +112,15 @@ class FeatureExtractionTest(TestCase):
         # TODO orientation
         # TODO perimeter
         # TODO solidity
+
+    def test_get_features(self):
+        self.assertEqual(len(FormFeatureExtraction.methods), 37)
+
+        segmentation = np.array([[0, 0, 1, 1], [0, 0, 1, 1]])
+        features = FormFeatureExtraction(segmentation)
+
+        f = features.get_features([0, 1, 2])
+        assert_equal(f, [[4, 4, 2], [4, 4, 2]])
+
+        f = features.get_features()
+        self.assertEqual(f.shape, (2, 37))

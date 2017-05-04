@@ -1,5 +1,7 @@
 from __future__ import division
 
+import re
+
 from cached_property import cached_property
 import numpy as np
 from numpy import pi as PI
@@ -9,6 +11,16 @@ import numpy_groupies as npg
 class FormFeatureExtraction(object):
     def __init__(self, segmentation):
         self.segmentation = segmentation
+
+    def get_features(self, features=None):
+        methods = FormFeatureExtraction.methods
+
+        if features is None:
+            features = range(len(methods))
+
+        methods = [methods[i] for i in features]
+
+        return np.stack([getattr(self, m) for m in methods]).T
 
     @cached_property
     def _flat(self):
@@ -307,9 +319,9 @@ class FormFeatureExtraction(object):
     def centroid_x(self):
         return self._centroid_x - self._min_x
 
-    @cached_property
-    def convex_area(self):
-        raise NotImplementedError
+    # @cached_property
+    # def convex_area(self):
+    #     raise NotImplementedError
 
     @cached_property
     def eccentricity(self):
@@ -323,17 +335,17 @@ class FormFeatureExtraction(object):
     def equivalent_diameter(self):
         return np.sqrt(4 * self._M_00 / PI)
 
-    @cached_property
-    def euler_number(self):
-        raise NotImplementedError
+    # @cached_property
+    # def euler_number(self):
+    #     raise NotImplementedError
 
     @cached_property
     def extent(self):
         return self._M_00 / self.bbox_area
 
-    @cached_property
-    def filled_area(self):
-        raise NotImplementedError
+    # @cached_property
+    # def filled_area(self):
+    #     raise NotImplementedError
 
     @cached_property
     def major_axis_length(self):
@@ -343,14 +355,22 @@ class FormFeatureExtraction(object):
     def minor_axis_length(self):
         return 4 * np.sqrt(self.inertia_tensor_eigvals_2)
 
-    @cached_property
-    def orientation(self):
-        raise NotImplementedError
+    # @cached_property
+    # def orientation(self):
+    #     raise NotImplementedError
 
-    @cached_property
-    def perimeter(self):
-        raise NotImplementedError
+    # @cached_property
+    # def perimeter(self):
+    #     raise NotImplementedError
 
-    @cached_property
-    def solidity(self):
-        raise NotImplementedError
+    # @cached_property
+    # def solidity(self):
+    #     raise NotImplementedError
+
+
+methods = dir(FormFeatureExtraction)
+# Filter private properties and get_features method.
+p = re.compile('^_|(get_features)')
+methods = [m for m in methods if not p.match(m)]
+methods = sorted(methods)
+FormFeatureExtraction.methods = methods
