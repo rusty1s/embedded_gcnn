@@ -15,7 +15,6 @@ class PascalVOCTest(TestCase):
 
     def test_shapes(self):
         images, labels = data.train.next_batch(4, shuffle=False)
-        print('train shapes', labels)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
@@ -23,15 +22,13 @@ class PascalVOCTest(TestCase):
         self.assertEqual(labels.shape, (4, 20))
 
         images, labels = data.val.next_batch(4, shuffle=False)
-        print('val shapes', labels)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
             self.assertEqual(image.shape[2], 3)
         self.assertEqual(labels.shape, (4, 20))
 
-        images, labels = data.test.next_batch(32, shuffle=False)
-        print('test shapes', labels)
+        images, labels = data.test.next_batch(4, shuffle=False)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
@@ -63,18 +60,12 @@ class PascalVOCTest(TestCase):
 
     def test_labels(self):
         _, labels = data.train.next_batch(4, shuffle=False)
-        print('train labels', labels)
-
         self.assertEqual(labels.dtype, np.uint8)
 
         _, labels = data.val.next_batch(4, shuffle=False)
-        print('val labels', labels)
-
         self.assertEqual(labels.dtype, np.uint8)
 
         _, labels = data.test.next_batch(4, shuffle=False)
-        print('test labels', labels)
-
         self.assertEqual(labels.dtype, np.uint8)
 
     def test_class_functions(self):
@@ -87,12 +78,6 @@ class PascalVOCTest(TestCase):
         self.assertEqual(data.num_classes, 20)
 
         _, labels = data.test.next_batch(4, shuffle=False)
-        print('test labels', labels)
-
-        print(data.classnames(labels[0]))
-        print(data.classnames(labels[1]))
-        print(data.classnames(labels[2]))
-        print(data.classnames(labels[3]))
 
         self.assertEqual(data.classnames(labels[0]), ['person'])
         self.assertEqual(data.classnames(labels[1]), ['person', 'aeroplane'])
