@@ -33,8 +33,10 @@ def _preprocess_labels(labels, num_labels):
 
 
 def _load_batch(data_dir, name):
-    path = os.path.join(data_dir, name)
-    batch = pickle.load(open(path, 'rb'), encoding='latin1')
+    with open(os.path.join(data_dir, name), 'rb') as f:
+        u = pickle._Unpickler(f)
+        u.encoding = 'latin1'
+        batch = u.load()
     return batch['data'], batch['labels']
 
 
