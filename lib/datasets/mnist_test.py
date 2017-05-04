@@ -55,18 +55,27 @@ class MNISTTest(TestCase):
 
         self.assertEqual(labels.dtype, np.uint8)
 
-    def test_label_functions(self):
-        self.assertEqual(data.labels,
-                         ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
-        self.assertEqual(data.num_labels, 10)
+        _, labels = data.val.next_batch(
+            data.val.num_examples, shuffle=False)
 
-        _, labels = data.test.next_batch(5, shuffle=False)
         self.assertEqual(labels.dtype, np.uint8)
 
-        self.assertEqual(data.label_name(labels[0]), ['7'])
-        self.assertEqual(data.label_name(labels[1]), ['2'])
-        self.assertEqual(data.label_name(labels[2]), ['1'])
-        self.assertEqual(data.label_name(labels[3]), ['0'])
-        self.assertEqual(data.label_name(labels[4]), ['4'])
+        _, labels = data.test.next_batch(
+            data.test.num_examples, shuffle=False)
+
+        self.assertEqual(labels.dtype, np.uint8)
+
+    def test_class_functions(self):
+        self.assertEqual(data.classes,
+                         ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'])
+        self.assertEqual(data.num_classes, 10)
+
+        _, labels = data.test.next_batch(5, shuffle=False)
+
+        self.assertEqual(data.classnames(labels[0]), ['7'])
+        self.assertEqual(data.classnames(labels[1]), ['2'])
+        self.assertEqual(data.classnames(labels[2]), ['1'])
+        self.assertEqual(data.classnames(labels[3]), ['0'])
+        self.assertEqual(data.classnames(labels[4]), ['4'])
 
         data.test.next_batch(data.test.num_examples - 5, shuffle=False)

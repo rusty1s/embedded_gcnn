@@ -1,13 +1,12 @@
-# from __future__ import division
-# from __future__ import print_function
+from __future__ import division
+from __future__ import print_function
 
-# import sys
+import sys
 import os
-# from six.moves import xrange
-# from xml.dom.minidom import parse
+from xml.dom.minidom import parse
 
 import numpy as np
-# from skimage.io import imread
+from skimage.io import imread
 
 from .dataset import Datasets, Dataset
 from .download import maybe_download_and_extract
@@ -16,110 +15,110 @@ from .download import maybe_download_and_extract
 URL = 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/'\
       'VOCtrainval_11-May-2012.tar'
 
-LABELS = [
-    'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep', 'aeroplane',
-    'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
-    'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
-]
+
+def _print_status(data_dir, percentage):
+    sys.stdout.write('\r>> Reading {} {:.2f}%'.format(data_dir, percentage))
+    sys.stdout.flush()
 
 
-def _load_dataset(data_dir):
-    images = None
-    labels = None
+def _load_dataset(data_dir, classes, max_examples=None):
+    names = os.listdir(os.path.join(data_dir, 'Annotations'))
+    names = [name.split('.')[0] for name in names]
 
-    return images, labels
+    if max_examples is None:
+        max_examples = len(names)
+
+    images = []
+    labels = []
+
+    i = 0  # Current index over filename.
+    j = 0  # Current index over taken examples
+
+    while i < len(names) and j < max_examples:
+        name = names[i]
+        i += 1
+
+        label = _read_label(data_dir, name, classes)
+
+        # Abort if no label found.
+        if label.max() == 0:
+            continue
+
+        j += 1
+
+        labels.append(label)
+        images.append(_read_image(data_dir, name))
+
+        if j % 100 == 0:
+            _print_status(data_dir, 100 * j / max_examples)
+
+    _print_status(data_dir, 100)
+    print()
+    return images, np.array(labels, dtype=np.uint8)
+
+
+def _read_image(data_dir, name):
+    path = os.path.join(data_dir, 'JPEGImages', '{}.jpg'.format(name))
+    image = imread(path)
+    image = (1 / 255) * image.astype(np.float32)
+    return image
+
+
+def _read_label(data_dir, name, classes):
+    path = os.path.join(data_dir, 'Annotations', '{}.xml'.format(name))
+    annotation = parse(path)
+
+    label = np.zeros((len(classes)), np.uint8)
+
+    for obj in annotation.getElementsByTagName('object'):
+        # Pass difficult objects.
+        difficult = obj.getElementsByTagName('difficult')
+        if len(difficult) > 0:
+            difficult = difficult[0].firstChild.nodeValue
+            if difficult == '1':
+                continue
+
+        name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
+
+        try:
+            index = classes.index(name)
+            label[index] = 1
+        except ValueError:
+            pass
+
+    return label
 
 
 class PascalVOC(Datasets):
-    def __init__(self, data_dir, test_dir=None, val_size=1500):
-        if test_dir is None:
-            test_dir = data_dir
+    def __init__(self,
+                 data_dir,
+                 val_size=1500,
+                 classes=None,
+                 max_examples=None):
+
+        self._classes = classes
 
         maybe_download_and_extract(URL, data_dir)
 
         data_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
-        images, labels = _load_dataset(data_dir)
-        train = Dataset(images[val_size:], labels[:val_size])
+        images, labels = _load_dataset(data_dir, self.classes, max_examples)
+        train = Dataset(images[val_size:], labels[val_size:])
         val = Dataset(images[:val_size], labels[:val_size])
 
-        data_dir = os.path.join(test_dir, 'VOCtestkit')
-        images, labels = _load_dataset(data_dir)
-        test = Dataset(images, labels)
+        # PascalVOC doesn't have released the full test annotation, use
+        # the validation set instead :(
+        test = val
 
         super(PascalVOC, self).__init__(train, val, test)
 
-    def label_name(self, label):
-        return [LABELS[i] for i in np.where(label == 1)[0]]
-
     @property
-    def num_labels(self):
-        return len(LABELS)
-
-#     def _load_dataset(self, data_dir, save_dir, num_files, dataset):
-#         filenames = [
-#             os.path.join(save_dir, '{}.p'.format(i + 1))
-#             for i in xrange(num_files)
-#         ]
-#         labels_filename = os.path.join(save_dir, 'labels.p')
-
-#         if os.path.exists(save_dir):
-#             images = []
-#             for i in xrange(num_files):
-#                 images.append(pickle.load(open(filenames[i], 'rb')))
-#             labels = pickle.load(open(labels_filename, 'rb'))
-#         else:
-#             images, labels = self._read_dataset(data_dir, dataset)
-
-#             os.makedirs(save_dir)
-
-#             start = 0
-#             num_examples = len(images)
-#             interval = num_examples // num_files + num_files
-#             for i in xrange(num_files):
-#                 end = start + interval
-#                 pickle.dump(images[start:end], open(filenames[i], 'wb'))
-#                 start = end
-
-#                 sys.stdout.write('\r>> Saving {} dataset {:.2f}%'.format(
-#                     dataset, 100 * (i + 1) / num_files))
-#                 sys.stdout.flush()
-
-#             pickle.dump(labels, open(labels_filename, 'wb'))
-
-#         print()
-#         return images, labels
-
-#     def _read_dataset(self, data_dir, dataset):
-#         filenames = os.listdir(os.path.join(data_dir, 'Annotations'))
-#         filenames = [filename.split('.')[0] for filename in filenames]
-
-#         num_examples = len(filenames)
-#         images = []
-#         labels = np.zeros((num_examples, self.num_labels), np.uint8)
-#         for i in xrange(num_examples):
-#             filename = filenames[i]
-#             images.append(self._read_image(data_dir, filename))
-#             labels[i] = self._read_label(data_dir, filename)
-
-#             sys.stdout.write('\r>> Extracting {} dataset {:.2f}%'.format(
-#                 dataset, 100 * (i + 1) / num_examples))
-#             sys.stdout.flush()
-
-#         print()
-#         return images, labels
-
-#     def _read_image(self, data_dir, filename):
-#         image = imread(
-#             os.path.join(data_dir, 'JPEGImages', '{}.jpg'.format(filename)))
-#         return (1 / 255) * image.astype(np.float32)
-
-#     def _read_label(self, data_dir, filename):
-#         annotation = parse(
-#             os.path.join(data_dir, 'Annotations', '{}.xml'.format(filename)))
-
-#         label = np.zeros((self.num_labels), np.uint8)
-#         for obj in annotation.getElementsByTagName('object'):
-#             name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
-#             index = LABELS.index(name)
-#             label[index] = 1
-#         return label
+    def classes(self):
+        if self._classes is None:
+            return [
+                'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep',
+                'aeroplane', 'bicycle', 'boat', 'bus', 'car', 'motorbike',
+                'train', 'bottle', 'chair', 'diningtable', 'pottedplant',
+                'sofa', 'tvmonitor'
+            ]
+        else:
+            return self._classes

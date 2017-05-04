@@ -55,20 +55,29 @@ class Cifar10Test(TestCase):
 
         self.assertEqual(labels.dtype, np.uint8)
 
-    def test_label_functions(self):
-        self.assertEqual(data.labels, [
+        _, labels = data.val.next_batch(
+            data.val.num_examples, shuffle=False)
+
+        self.assertEqual(labels.dtype, np.uint8)
+
+        _, labels = data.test.next_batch(
+            data.test.num_examples, shuffle=False)
+
+        self.assertEqual(labels.dtype, np.uint8)
+
+    def test_class_functions(self):
+        self.assertEqual(data.classes, [
             'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog',
             'horse', 'ship', 'truck'
         ])
-        self.assertEqual(data.num_labels, 10)
+        self.assertEqual(data.num_classes, 10)
 
         _, labels = data.test.next_batch(5, shuffle=False)
-        self.assertEqual(labels.dtype, np.uint8)
 
-        self.assertEqual(data.label_name(labels[0]), ['cat'])
-        self.assertEqual(data.label_name(labels[1]), ['ship'])
-        self.assertEqual(data.label_name(labels[2]), ['ship'])
-        self.assertEqual(data.label_name(labels[3]), ['airplane'])
-        self.assertEqual(data.label_name(labels[4]), ['frog'])
+        self.assertEqual(data.classnames(labels[0]), ['cat'])
+        self.assertEqual(data.classnames(labels[1]), ['ship'])
+        self.assertEqual(data.classnames(labels[2]), ['ship'])
+        self.assertEqual(data.classnames(labels[3]), ['airplane'])
+        self.assertEqual(data.classnames(labels[4]), ['frog'])
 
         data.test.next_batch(data.test.num_examples - 5, shuffle=False)

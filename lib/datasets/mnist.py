@@ -32,5 +32,5 @@ class MNIST(Datasets):
         super(MNIST, self).__init__(train, val, test)
 
     @property
-    def labels(self):
+    def classes(self):
         return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']

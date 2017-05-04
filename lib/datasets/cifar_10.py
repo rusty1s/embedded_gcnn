@@ -22,12 +22,12 @@ def _preprocess_images(images):
     return (1 / 255) * images.astype(np.float32)
 
 
-def _preprocess_labels(labels, num_labels):
+def _preprocess_labels(labels, num_classes):
     # Convert labels to one hot.
     labels = np.array(labels, np.uint8)
     size = labels.shape[0]
-    index_offset = np.arange(size) * num_labels
-    labels_one_hot = np.zeros((size, num_labels), np.uint8)
+    index_offset = np.arange(size) * num_classes
+    labels_one_hot = np.zeros((size, num_classes), np.uint8)
     labels_one_hot.flat[index_offset + labels] = 1
     return labels_one_hot
 
@@ -53,20 +53,20 @@ class Cifar10(Datasets):
             labels = np.concatenate((labels, batch[1]), axis=0)
 
         images = _preprocess_images(images)
-        labels = _preprocess_labels(labels, self.num_labels)
+        labels = _preprocess_labels(labels, self.num_classes)
 
         train = Dataset(images[val_size:], labels[val_size:])
         val = Dataset(images[:val_size], labels[:val_size])
 
         images, labels = _load_batch(data_dir, 'test_batch')
         images = _preprocess_images(images)
-        labels = _preprocess_labels(labels, self.num_labels)
+        labels = _preprocess_labels(labels, self.num_classes)
         test = Dataset(images, labels)
 
         super(Cifar10, self).__init__(train, val, test)
 
     @property
-    def labels(self):
+    def classes(self):
         return [
             'airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog',
             'horse', 'ship', 'truck'
