@@ -22,7 +22,8 @@ def _print_status(data_dir, percentage):
 
 
 def _load_dataset(data_dir, classes, max_examples=None):
-    names = os.listdir(os.path.join(data_dir, 'Annotations'))
+    print(os.getcwd())
+    names = os.listdir(os.path.join(os.getcwd(), data_dir, 'Annotations'))
     names = [name.split('.')[0] for name in names]
 
     if max_examples is None:
