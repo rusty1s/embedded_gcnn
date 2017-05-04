@@ -6,7 +6,7 @@ from numpy import pi as PI
 import numpy_groupies as npg
 
 
-class FeatureExtraction(object):
+class FormFeatureExtraction(object):
     def __init__(self, segmentation):
         self.segmentation = segmentation
 
@@ -257,11 +257,31 @@ class FeatureExtraction(object):
 
     @cached_property
     def hu_6(self):
-        raise NotImplementedError
+        prod_1 = self.nu_20 - self.nu_02
+        prod_21 = self.nu_30 + self.nu_12
+        prod_21 = prod_21 * prod_21
+        prod_22 = self.nu_21 + self.nu_03
+        prod_22 = prod_22 * prod_22
+        sum_1 = prod_1 * (prod_21 - prod_22)
+        sum_2 = 4 * self.nu_11 * (self.nu_30 + self.nu_12)
+        sum_2 *= (self.nu_21 + self.nu_03)
+        return sum_1 + sum_2
 
     @cached_property
     def hu_7(self):
-        raise NotImplementedError
+        prod_1 = (3 * self.nu_21 - self.nu_03) * (self.nu_30 + self.nu_12)
+        prod_21 = self.nu_30 + self.nu_12
+        prod_21 = prod_21 * prod_21
+        prod_22 = self.nu_21 + self.nu_03
+        prod_22 = 3 * prod_22 * prod_22
+        sum_1 = prod_1 * (prod_21 - prod_22)
+        prod_1 = (self.nu_30 - 3 * self.nu_12) * (self.nu_21 + self.nu_03)
+        prod_21 = self.nu_30 + self.nu_12
+        prod_21 = 3 * prod_21 * prod_21
+        prod_22 = self.nu_21 + self.nu_03
+        prod_22 = prod_22 * prod_22
+        sum_2 = prod_1 * (prod_21 - prod_22)
+        return sum_1 - sum_2
 
     @cached_property
     def area(self):
@@ -295,7 +315,9 @@ class FeatureExtraction(object):
     def eccentricity(self):
         eigval_1 = self.inertia_tensor_eigvals_1
         eigval_2 = self.inertia_tensor_eigvals_2
-        return np.sqrt(1 - eigval_2 / eigval_1)
+        with np.errstate(invalid='ignore'):
+            result = np.sqrt(1 - eigval_2 / eigval_1)
+        return np.nan_to_num(result)
 
     @cached_property
     def equivalent_diameter(self):
