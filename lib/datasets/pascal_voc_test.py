@@ -4,39 +4,36 @@ import numpy as np
 
 from .pascal_voc import PascalVOC
 
-data = PascalVOC('data/pascal_voc', val_size=100, max_examples=200)
+data = PascalVOC('pascal_voc_data', val_size=4, max_examples=8)
 
 
 class PascalVOCTest(TestCase):
     def test_init(self):
-        self.assertEqual(data.train.num_examples, 100)
-        self.assertEqual(data.val.num_examples, 100)
-        self.assertEqual(data.test.num_examples, 100)
+        self.assertEqual(data.train.num_examples, 4)
+        self.assertEqual(data.val.num_examples, 4)
+        self.assertEqual(data.test.num_examples, 4)
 
     def test_shapes(self):
-        images, labels = data.train.next_batch(32, shuffle=False)
+        images, labels = data.train.next_batch(4, shuffle=False)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
             self.assertEqual(image.shape[2], 3)
-        self.assertEqual(labels.shape, (32, 20))
-        data.train.next_batch(data.train.num_examples - 32, shuffle=False)
+        self.assertEqual(labels.shape, (4, 20))
 
-        images, labels = data.val.next_batch(32, shuffle=False)
+        images, labels = data.val.next_batch(4, shuffle=False)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
             self.assertEqual(image.shape[2], 3)
-        self.assertEqual(labels.shape, (32, 20))
-        data.val.next_batch(data.val.num_examples - 32, shuffle=False)
+        self.assertEqual(labels.shape, (4, 20))
 
         images, labels = data.test.next_batch(32, shuffle=False)
         for image in images:
             self.assertGreater(image.shape[0], 0)
             self.assertGreater(image.shape[0], 0)
             self.assertEqual(image.shape[2], 3)
-        self.assertEqual(labels.shape, (32, 20))
-        data.test.next_batch(data.test.num_examples - 32, shuffle=False)
+        self.assertEqual(labels.shape, (4, 20))
 
     def test_images(self):
         images, _ = data.train.next_batch(
@@ -84,27 +81,24 @@ class PascalVOCTest(TestCase):
         ])
         self.assertEqual(data.num_classes, 20)
 
-        _, labels = data.test.next_batch(5, shuffle=False)
+        _, labels = data.test.next_batch(4, shuffle=False)
 
         self.assertEqual(data.classnames(labels[0]), ['person'])
         self.assertEqual(data.classnames(labels[1]), ['person', 'aeroplane'])
         self.assertEqual(data.classnames(labels[2]), ['aeroplane'])
         self.assertEqual(data.classnames(labels[3]), ['tvmonitor'])
-        self.assertEqual(data.classnames(labels[4]), ['train'])
-
-        data.test.next_batch(data.test.num_examples - 5, shuffle=False)
 
     def test_filter_labels(self):
         filtered_data = PascalVOC(
-            'data/pascal_voc',
-            val_size=10,
-            max_examples=20,
+            'pascal_voc_data',
+            val_size=4,
+            max_examples=8,
             classes=['aeroplane'])
 
-        images, labels = filtered_data.test.next_batch(10, shuffle=False)
+        images, labels = filtered_data.test.next_batch(4, shuffle=False)
 
-        self.assertEqual(len(images), 10)
-        self.assertEqual(labels.shape, (10, 1))
+        self.assertEqual(len(images), 4)
+        self.assertEqual(labels.shape, (4, 1))
 
         for label in labels:
             self.assertEqual(label[0], 1)

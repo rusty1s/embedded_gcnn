@@ -7,17 +7,12 @@ import tarfile
 from six.moves import urllib
 
 
-_percentage = 0
-
-
 def _print_status(name, percentage):
     sys.stdout.write('\r>> Downloading {} {:.2f}%'.format(name, percentage))
     sys.stdout.flush()
 
 
 def maybe_download_and_extract(url, data_dir):
-    _percentage = 0
-
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
 
@@ -28,17 +23,11 @@ def maybe_download_and_extract(url, data_dir):
     if not os.path.exists(filepath):
 
         def _progress(count, block_size, total_size):
-            global _percentage
             percentage = 100 * count * block_size / total_size
-
-            # Only print if percentages have changed by 1%.
-            if percentage + 1 > _percentage:
-                _print_status(filename, percentage)
-                _percentage = percentage
+            _print_status(filename, percentage)
 
         filepath, _ = urllib.request.urlretrieve(url, filepath, _progress)
         size = os.stat(filepath).st_size
-        _print_status(filename, 100)
 
         print()
         print('Successfully downloaded {} ({} bytes).'.format(filename, size))

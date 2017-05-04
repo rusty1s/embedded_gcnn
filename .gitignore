@@ -3,5 +3,6 @@ tags
 __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
-data/
 .coverage
+data/
+pascal_voc_data/VOCDevKit
