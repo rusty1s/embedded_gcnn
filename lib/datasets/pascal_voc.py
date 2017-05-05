@@ -21,7 +21,7 @@ def _print_status(data_dir, percentage):
     sys.stdout.flush()
 
 
-def _load_dataset(data_dir, classes):
+def _load_dataset(data_dir, classes, num_examples):
     names = os.listdir(os.path.join(data_dir, 'Annotations'))
     names = [name.split('.')[0] for name in names]
     names = sorted(names)
@@ -29,7 +29,12 @@ def _load_dataset(data_dir, classes):
     images = []
     labels = []
 
-    num_examples = len(names)
+    if num_examples is None:
+        num_examples = len(names)
+    else:
+        num_examples = min(num_examples, len(names))
+        names = names[:num_examples]
+
     for i, name in enumerate(names):
         label = _read_label(data_dir, name, classes)
 
@@ -40,11 +45,12 @@ def _load_dataset(data_dir, classes):
         labels.append(label)
         images.append(_read_image(data_dir, name))
 
-        if i % 100 == 0:
+        if i % 20 == 0:
             _print_status(data_dir, 100 * i / num_examples)
 
     _print_status(data_dir, 100)
     print()
+
     return images, np.array(labels, dtype=np.uint8)
 
 
@@ -83,6 +89,7 @@ def _read_label(data_dir, name, classes):
 class PascalVOC(Datasets):
     def __init__(self,
                  data_dir,
+                 num_examples=None,
                  val_size=1500,
                  classes=None):
 
@@ -91,7 +98,7 @@ class PascalVOC(Datasets):
         maybe_download_and_extract(URL, data_dir)
 
         data_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
-        images, labels = _load_dataset(data_dir, self.classes)
+        images, labels = _load_dataset(data_dir, self.classes, num_examples)
         train = Dataset(images[val_size:], labels[val_size:])
         val = Dataset(images[:val_size], labels[:val_size])
 
