@@ -14,7 +14,7 @@ def _convert(props, key):
     return p
 
 
-class FeatureExtractionTest(TestCase):
+class FormFeatureExtractionTest(TestCase):
     def test_feature_extraction_helper(self):
         segmentation = np.array([[0, 0, 1, 1], [0, 0, 1, 1]])
         features = FormFeatureExtraction(segmentation)
