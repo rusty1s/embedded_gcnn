@@ -1,7 +1,6 @@
 from lib.datasets import MNIST as Data
 from lib.model import Model as BaseModel, generate_placeholders, train
-from lib.segmentation import (slic_fixed, mnist_slic_feature_extraction,
-                              NUM_MNIST_SLIC_FEATURES)
+from lib.segmentation import slic_fixed, extract_features_fixed
 from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
@@ -17,17 +16,17 @@ LOG_DIR = None
 
 DROPOUT = 0.5
 BATCH_SIZE = 64
-MAX_STEPS = 20000
+MAX_STEPS = 10000
 DISPLAY_STEP = 10
-
-NUM_FEATURES = NUM_MNIST_SLIC_FEATURES
+FORM_FEATURES = [2, 3, 4, 5, 13, 13, 18, 29, 34]
+NUM_FEATURES = len(FORM_FEATURES) + 1
 
 data = Data(DATA_DIR)
 
 segmentation_algorithm = slic_fixed(
     num_segments=100, compactness=2, max_iterations=10, sigma=0)
 
-feature_extraction_algorithm = mnist_slic_feature_extraction
+feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
 preprocess_algorithm = preprocess_pipeline_fixed(
     segmentation_algorithm, feature_extraction_algorithm, LEVELS,
@@ -41,7 +40,7 @@ class Model(BaseModel):
 
     def _build(self):
         conv_1 = Conv(
-            6,
+            NUM_FEATURES,
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'])
@@ -67,7 +66,7 @@ class Model(BaseModel):
         average_pool = AveragePool()
         fc_1 = FC(256, 128)
         fc_2 = FC(128,
-                  data.num_labels,
+                  data.num_classes,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   logging=self.logging)
@@ -79,7 +78,7 @@ class Model(BaseModel):
 
 
 placeholders = generate_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
-                                     data.num_labels, DROPOUT)
+                                     data.num_classes, DROPOUT)
 
 model = Model(
     placeholders=placeholders,
