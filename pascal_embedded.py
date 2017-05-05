@@ -11,8 +11,8 @@ SCALE_INVARIANCE = False
 STDDEV = 1
 
 LEARNING_RATE = 0.001
-TRAIN_DIR = 'data/embedded_gcnn/pascal_voc'
-LOG_DIR = 'data/embedded_gcnn/pascal_voc'
+TRAIN_DIR = None
+LOG_DIR = None
 
 DROPOUT = 0.5
 BATCH_SIZE = 64

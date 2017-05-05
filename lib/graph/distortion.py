@@ -24,3 +24,22 @@ def perm_features(features, perm):
     zeros = np.zeros((num_fake_nodes, k), features.dtype)
     features = np.concatenate((features, zeros), axis=0)
     return features[perm]
+
+
+def filter_adj(adj, nodes):
+    in1d = np.in1d(adj.row, nodes)
+    rows = adj.row[in1d]
+    cols = adj.col[in1d]
+    data = adj.data[in1d]
+    in1d = np.in1d(cols, nodes)
+    rows = rows[in1d]
+    cols = cols[in1d]
+    data = data[in1d]
+    rows = np.unique(rows, return_inverse=True)[1]
+    cols = np.unique(cols, return_inverse=True)[1]
+    n = nodes.size
+    return sp.coo_matrix((data, (rows, cols)), (n, n))
+
+
+def filter_features(features, nodes):
+    return features[nodes]
