@@ -1,5 +1,6 @@
 import numpy as np
 import numpy_groupies as npg
+from sklearn.preprocessing import MinMaxScaler
 
 from .form_feature_extraction import FormFeatureExtraction
 
@@ -12,8 +13,7 @@ def extract_features(segmentation, image, form_features=None):
     if image.shape[2] == 1:
         mean = npg.aggregate(group_idx, image.flatten(), func='mean')
         mean = np.reshape(mean, (-1, 1))
-        return np.concatenate((mean, features), axis=1)
-
+        features = np.concatenate((mean, features), axis=1)
     elif image.shape[2] == 3:
         r = npg.aggregate(group_idx, image[:, :, 0:1].flatten(), func='mean')
         r = np.reshape(r, (-1, 1))
@@ -21,10 +21,12 @@ def extract_features(segmentation, image, form_features=None):
         g = np.reshape(g, (-1, 1))
         b = npg.aggregate(group_idx, image[:, :, 2:3].flatten(), func='mean')
         b = np.reshape(b, (-1, 1))
-        return np.concatenate((r, g, b, features), axis=1)
-
+        features = np.concatenate((r, g, b, features), axis=1)
     else:
         raise ValueError
+
+    features = features.astype(np.float32)
+    return MinMaxScaler().fit_transform(features)
 
 
 def extract_features_fixed(form_features=None):

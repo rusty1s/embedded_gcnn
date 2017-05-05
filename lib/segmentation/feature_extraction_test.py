@@ -3,7 +3,8 @@ from __future__ import division
 from unittest import TestCase
 
 import numpy as np
-from numpy.testing import assert_equal
+from numpy.testing import assert_almost_equal
+from sklearn.preprocessing import MinMaxScaler
 
 from .feature_extraction import extract_features, extract_features_fixed
 
@@ -16,8 +17,8 @@ class FeatureExtractionTest(TestCase):
                                                         [0.0]]])
 
         features = extract_features(segmentation, gray, [0, 2, 3])
-        expected = [[1.7 / 4, 4, 2, 2], [0.6 / 4, 4, 2, 2]]
-        assert_equal(features, expected)
+        expected = np.array([[1.7 / 4, 4, 2, 2], [0.6 / 4, 4, 2, 2]])
+        assert_almost_equal(features, MinMaxScaler().fit_transform(expected))
 
         rgb = np.array([[[0.1, 0.2, 0.4], [0.5, 0.3, 0.6], [0.1, 0.2, 1.0],
                          [0.4, 0.9, 1.0]], [[0.3, 0.4, 0.2], [0.8, 0.4, 0.2],
@@ -26,7 +27,7 @@ class FeatureExtractionTest(TestCase):
         features = extract_features(segmentation, rgb, [0, 2, 3])
         expected = [[1.7 / 4, 1.3 / 4, 1.4 / 4, 4, 2, 2],
                     [0.6 / 4, 1.5 / 4, 3.6 / 4, 4, 2, 2]]
-        assert_equal(features, expected)
+        assert_almost_equal(features, MinMaxScaler().fit_transform(expected))
 
     def test_extract_features_fixed(self):
         segmentation = np.array([[0, 0, 1, 1], [0, 0, 1, 1]])
@@ -37,4 +38,4 @@ class FeatureExtractionTest(TestCase):
         extract = extract_features_fixed([0, 2, 3])
         features = extract(segmentation, gray)
         expected = [[1.7 / 4, 4, 2, 2], [0.6 / 4, 4, 2, 2]]
-        assert_equal(features, expected)
+        assert_almost_equal(features, MinMaxScaler().fit_transform(expected))
