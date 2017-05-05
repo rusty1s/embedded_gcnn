@@ -95,62 +95,25 @@ def _coarsen_clustered_adj(adj, points, mass, cluster_map):
 
 
 def _compute_perms(cluster_maps):
-    # Last permutation is the ordered list of the number of clusters in the
-    # last cluster map.
-    n = np.max(cluster_maps[-1]) + 1
-    perm = np.arange(n)
-    perms = [perm]
-
-    # Iterate backwards through cluster_maps.
-    for i in xrange(len(cluster_maps) - 1, -1, -1):
-        cluster_map = cluster_maps[i]
-        cur_singleton_idx = cluster_map.size
-
-        perm_last = perm
-        perm = np.zeros((2 * perm_last.size), perm_last.dtype)
-        for j in xrange(perm_last.size):
-            # Indices of the cluster map that correspond to the calculated
-            # permutation.
-            nodes_idx = np.where(cluster_map == perm_last[j])[0]
-
-            # Add fake nodes if neccassary.
-            if nodes_idx.size == 1:
-                perm[2*j] = nodes_idx[0]
-                perm[2*j+1] = cur_singleton_idx
-                cur_singleton_idx += 1
-            elif nodes_idx.size == 0:
-                perm[2*j] = cur_singleton_idx
-                perm[2*j+1] = cur_singleton_idx + 1
-                cur_singleton_idx += 2
-            else:
-                perm[2*j] = nodes_idx[0]
-                perm[2*j+1] = nodes_idx[1]
-
-        perms.append(perm)
-
-    # Reverse permutations.
-    return perms[::-1]
-
-
-def _compute_perms2(cluster_maps):
-    n = np.max(cluster_maps[-1]) + 1
+    max_cluster = np.max(cluster_maps[-1]) + 1
+    n = max_cluster
     perm = np.arange(n)
     perms = [perm]
 
     for i in xrange(len(cluster_maps) - 1, -1, -1):
-        last_perm = perm
         cluster_map = cluster_maps[i]
-        n = 2 * n
 
         idx, counts = np.unique(cluster_map, return_counts=True)
-        rid = np.where(counts == 1)[0]
-        perm = np.concatenate((cluster_map, idx[rid]), axis=0)
-        m = (n - perm.size) // 2
-        bla = perm.max() + 1
-        bla = np.arange(bla, bla + m).repeat(2)
-        perm = np.concatenate((perm, bla), axis=0)
+        singles = idx[np.where(counts == 1)]
 
-        x = np.array([np.where(perm == i) for i in last_perm]).flatten()
-        perms.append(x)
+        max_cluster = (cluster_map.size + singles.size) // 2
+        doubles = np.arange(max_cluster, n).repeat(2)
+        cluster_map = np.concatenate((cluster_map, singles, doubles))
+
+        cluster_map = np.argsort(perm)[cluster_map]
+        rid = np.argsort(cluster_map)
+        n *= 2
+        perm = np.arange(n)[rid]
+        perms.append(perm)
 
     return perms[::-1]
