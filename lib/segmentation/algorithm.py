@@ -23,6 +23,7 @@ def quickshift(image, ratio=1, kernel_size=5, max_dist=1, sigma=0):
 def quickshift_fixed(ratio=1, kernel_size=5, max_dist=1, sigma=0):
     def quickshift_image(image):
         return quickshift(image, ratio, kernel_size, max_dist, sigma)
+    return quickshift_image
 
 
 def felzenszwalb(image, scale=1, min_size=1, sigma=0):
@@ -33,6 +34,7 @@ def felzenszwalb(image, scale=1, min_size=1, sigma=0):
 def felzenszwalb_fixed(scale=1, min_size=1, sigma=0):
     def felzenszwalb_image(image):
         return felzenszwalb(image, scale, min_size, sigma)
+    return felzenszwalb_image
 
 
 def _preprocess(image):
