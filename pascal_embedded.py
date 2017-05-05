@@ -10,9 +10,9 @@ LEVELS = 5
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.01
-TRAIN_DIR = None
-LOG_DIR = None
+LEARNING_RATE = 0.001
+TRAIN_DIR = 'data/embedded_gcnn/pascal_voc'
+LOG_DIR = 'data/embedded_gcnn/pascal_voc'
 
 DROPOUT = 0.5
 BATCH_SIZE = 64

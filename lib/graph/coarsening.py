@@ -100,16 +100,20 @@ def _compute_perms(cluster_maps):
     perm = np.arange(n)
     perms = [perm]
 
-    for i in xrange(len(cluster_maps) - 1, -1, -1):
+    for i in xrange(len(cluster_maps) - 1, -1, -1):  # Iterate backwards
         cluster_map = cluster_maps[i]
 
+        # Add single fake nodes to end of cluster map.
         idx, counts = np.unique(cluster_map, return_counts=True)
         singles = idx[np.where(counts == 1)]
 
+        # Add double fake nodes to end of cluster map.
         max_cluster = (cluster_map.size + singles.size) // 2
         doubles = np.arange(max_cluster, n).repeat(2)
+
         cluster_map = np.concatenate((cluster_map, singles, doubles))
 
+        # Permutate cluster_map.
         cluster_map = np.argsort(perm)[cluster_map]
         rid = np.argsort(cluster_map)
         n *= 2

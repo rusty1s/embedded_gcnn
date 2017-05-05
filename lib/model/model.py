@@ -30,7 +30,7 @@ class Model(object):
         self.layers = []
         self.vars = {}
 
-        self.optimizer = tf.train.AdamOptimizer(learning_rate)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=0.1)
 
         self._accuracy = 0
         self._loss = 0
