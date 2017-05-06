@@ -34,4 +34,4 @@ class Layer(object):
         return outputs
 
     def _call(self, inputs):
-        raise NotImplementedError
+        return inputs

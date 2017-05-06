@@ -19,7 +19,8 @@ class VarLayerTest(tf.test.TestCase):
             weight_stddev=0.0,
             weight_decay=0.01,
             bias=True,
-            bias_constant=1)
+            bias_constant=1,
+            logging=True)
         losses = tf.get_collection('losses')
 
         expected_weights = [[0, 0]]

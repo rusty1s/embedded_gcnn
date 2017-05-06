@@ -18,4 +18,14 @@ class LayerTest(tf.test.TestCase):
 
     def test_call(self):
         layer = Layer(name='call')
-        self.assertRaises(NotImplementedError, layer.__call__, None)
+        inputs = tf.constant([1, 2, 3])
+
+        with self.test_session():
+            self.assertAllEqual(layer(inputs).eval(), inputs.eval())
+
+    def test_call_with_logging(self):
+        layer = Layer(name='call_with_logging', logging=True)
+        inputs = tf.constant([1, 2, 3])
+
+        with self.test_session():
+            self.assertAllEqual(layer(inputs).eval(), inputs.eval())
