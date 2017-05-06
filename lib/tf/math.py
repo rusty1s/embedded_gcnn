@@ -21,12 +21,20 @@ def sparse_subtract(a, b):
 
 
 def sparse_tensor_diag_matmul(a, diag, transpose=False):
-    def _py_func(indices, values, diag):
-        diag = diag[indices[:, 1:2]] if transpose else diag[indices[:, 0:1]]
-        diag = np.reshape(diag, (-1))
-        return np.multiply(values, diag).astype(diag.dtype)
-
+    _py_func = _diag_matmul_py if not transpose else _diag_matmul_transpose_py
     values = tf.py_func(
         _py_func, [a.indices, a.values, diag], Tout=diag.dtype, stateful=False)
 
     return tf.SparseTensorValue(a.indices, values, a.dense_shape)
+
+
+def _diag_matmul_py(indices, values, diag):
+    diag = diag[indices[:, 0:1]]
+    diag = np.reshape(diag, (-1))
+    return np.multiply(values, diag).astype(diag.dtype)
+
+
+def _diag_matmul_transpose_py(indices, values, diag):
+    diag = diag[indices[:, 1:2]]
+    diag = np.reshape(diag, (-1))
+    return np.multiply(values, diag).astype(diag.dtype)
