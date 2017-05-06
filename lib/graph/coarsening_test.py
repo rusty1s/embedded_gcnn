@@ -68,7 +68,7 @@ class CoarseningTest(TestCase):
         assert_equal(points, [[40 / 6, 14 / 6], [5 / 3, 4 / 3], [3, 0]])
         assert_equal(mass, [6, 3, 1])
 
-    def test_coarsen_adj_private(self):
+    def test_coarsen_adj(self):
         adj = [[0, 1, 1, 0, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0],
                [0, 1, 1, 0, 1], [0, 0, 0, 1, 0]]
         adj = sp.coo_matrix(adj)
@@ -115,7 +115,7 @@ class CoarseningTest(TestCase):
         assert_equal(adjs_dist[2].toarray(), adj_dist_2.toarray())
         assert_equal(adjs_rad[2].toarray(), adj_rad_2.toarray())
 
-    def test_coarsen_adj(self):
+    def test_coarsen_adj_with_efficient_pooling(self):
         adj = [[0, 1, 1, 0, 0], [1, 0, 0, 1, 0], [1, 0, 0, 1, 0],
                [0, 1, 1, 0, 1], [0, 0, 0, 1, 0]]
         adj = sp.coo_matrix(adj)
