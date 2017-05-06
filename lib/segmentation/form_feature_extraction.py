@@ -6,6 +6,7 @@ from cached_property import cached_property
 import numpy as np
 from numpy import pi as PI
 import numpy_groupies as npg
+import scipy.ndimage as ndi
 
 
 class FormFeatureExtraction(object):
@@ -45,20 +46,39 @@ class FormFeatureExtraction(object):
         return self._xs * self._xs
 
     @cached_property
+    def _group_idx(self):
+        return np.arange(np.unique(self._flat).size)
+
+    @cached_property
+    def _extrema_y(self):
+        # npg aggregate min/max is very slow, use scipy.ndimage instead.
+        mi, ma, _, _ = ndi.extrema(self._ys, self._flat, self._group_idx)
+        return mi, ma
+
+    @cached_property
+    def _extrema_x(self):
+        # npg aggregate min/max is very slow, use scipy.ndimage instead.
+        mi, ma, _, _ = ndi.extrema(self._xs, self._flat, self._group_idx)
+        return mi, ma
+
+    @cached_property
     def _min_y(self):
-        return npg.aggregate(self._flat, self._ys, func='min')
+        return self._extrema_y[0]
+        return npg.aggregate(self._flat, self._ys, func='argmin')
 
     @cached_property
     def _max_y(self):
-        return 1 + npg.aggregate(self._flat, self._ys, func='max')
+        return self._extrema_y[1] + 1
+        return 1 + npg.aggregate(self._flat, self._ys, func='argmax')
 
     @cached_property
     def _min_x(self):
+        return self._extrema_x[0]
         return npg.aggregate(self._flat, self._xs, func='min')
 
     @cached_property
     def _max_x(self):
-        return 1 + npg.aggregate(self._flat, self._xs, func='max')
+        return self._extrema_x[1] + 1
 
     @cached_property
     def _M_00(self):

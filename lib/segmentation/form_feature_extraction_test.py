@@ -21,6 +21,7 @@ class FormFeatureExtractionTest(TestCase):
         props = regionprops(segmentation + 1)
 
         # Test private helper
+        assert_equal(features._group_idx, [0, 1])
         assert_equal(features._min_y, [0, 0])
         assert_equal(features._max_y, [2, 2])
         assert_equal(features._min_x, [0, 2])
