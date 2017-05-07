@@ -4,7 +4,8 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .distortion import perm_adj, perm_features, filter_adj, filter_features
+from .distortion import (perm_adj, perm_features, filter_adj, filter_features,
+                         gray_color_threshold, degree_threshold)
 
 
 class DistortionTest(TestCase):
@@ -48,3 +49,19 @@ class DistortionTest(TestCase):
         nodes = np.array([1, 3])
         expected = [[3, 4], [7, 8]]
         assert_equal(filter_features(features, nodes), expected)
+
+    def test_gray_color_threshold(self):
+        features = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
+
+        nodes = gray_color_threshold(None, features, 3)
+        expected = [1, 2, 3]
+        assert_equal(nodes, expected)
+
+    def test_degree_threshold(self):
+        adj = [[0, 1, 1, 1, 1], [1, 0, 1, 0, 0], [1, 1, 0, 1, 0],
+               [1, 0, 1, 0, 1], [1, 0, 0, 1, 0]]
+        adj = sp.coo_matrix(adj)
+
+        nodes = degree_threshold(adj, None, 3)
+        expected = [1, 2, 3, 4]
+        assert_equal(nodes, expected)

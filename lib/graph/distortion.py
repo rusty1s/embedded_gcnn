@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse as sp
+import numpy_groupies as npg
 
 
 def perm_adj(adj, perm):
@@ -49,3 +50,26 @@ def filter_adj(adj, nodes):
 
 def filter_features(features, nodes):
     return features[nodes]
+
+
+def gray_color_threshold(adj, features, k):
+    gray = features[:, :1]
+    return np.where(gray >= k)[0]
+
+
+def gray_color_threshold_fixed(k):
+    def _threshold(adj, features):
+        return gray_color_threshold(adj, features, k)
+    return _threshold
+
+
+def degree_threshold(adj, features, k):
+    # Adjacency must contain one in every entry.
+    degree = npg.aggregate(adj.row, adj.data, func='sum')
+    return np.where(degree <= k)[0]
+
+
+def degree_threshold_fixed(k):
+    def _threshold(adj, features):
+        return degree_threshold(adj, features, k)
+    return _threshold

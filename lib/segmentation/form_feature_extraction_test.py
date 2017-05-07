@@ -131,7 +131,6 @@ class FormFeatureExtractionTest(TestCase):
         self.assertEqual(FormFeatureExtraction.methods, expected)
 
     def test_get_features(self):
-
         segmentation = np.array([[0, 0, 1, 1], [0, 0, 1, 1]])
         features = FormFeatureExtraction(segmentation)
 
