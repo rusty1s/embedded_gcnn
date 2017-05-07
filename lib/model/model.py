@@ -12,6 +12,7 @@ class Model(object):
                  loss_algorithm=softmax_cross_entropy,
                  accuracy_algorithm=top_accuracy,
                  learning_rate=0.001,
+                 epsilon=1e-08,
                  train_dir=None,
                  log_dir=None):
 
@@ -34,7 +35,7 @@ class Model(object):
         self.layers = []
         self.vars = {}
 
-        self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=0.1)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=epsilon)
 
         self._loss = None
         self._accuracy = None

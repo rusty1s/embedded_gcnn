@@ -118,6 +118,7 @@ model = Model(
     placeholders=placeholders,
     loss_algorithm=sigmoid_cross_entropy,
     learning_rate=LEARNING_RATE,
+    epsilon=0.1,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 
