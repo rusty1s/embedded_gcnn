@@ -18,10 +18,10 @@ def preprocess_pipeline(image,
 
     if filter_algorithm is not None:
         nodes = filter_algorithm(adj, features)
-        adj = filter_adj(adj)
-        points = filter_features(points)
-        mass = filter_features(mass)
-        features = filter_features(features)
+        adj = filter_adj(adj, nodes)
+        points = filter_features(points, nodes)
+        mass = filter_features(mass, nodes)
+        features = filter_features(features, nodes)
 
     adjs_dist, adjs_rad, perm = coarsen_adj(adj, points, mass, levels,
                                             scale_invariance, stddev)
@@ -36,11 +36,12 @@ def preprocess_pipeline(image,
 def preprocess_pipeline_fixed(segmentation_algorithm,
                               feature_extraction_algorithm,
                               levels,
+                              filter_algorithm=None,
                               scale_invariance=False,
                               stddev=1):
     def _preprocess(image):
         return preprocess_pipeline(image, segmentation_algorithm,
                                    feature_extraction_algorithm, levels,
-                                   scale_invariance, stddev)
+                                   filter_algorithm, scale_invariance, stddev)
 
     return _preprocess
