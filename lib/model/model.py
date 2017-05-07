@@ -2,13 +2,15 @@ import time
 
 import tensorflow as tf
 
-from .metrics import cal_softmax_cross_entropy, cal_accuracy
+from .metrics import softmax_cross_entropy, total_loss, top_accuracy
 
 
 class Model(object):
     def __init__(self,
                  placeholders,
                  name=None,
+                 loss_algorithm=softmax_cross_entropy,
+                 accuracy_algorithm=top_accuracy,
                  learning_rate=0.001,
                  train_dir=None,
                  log_dir=None):
@@ -18,6 +20,8 @@ class Model(object):
 
         self.placeholders = placeholders
         self.name = name
+        self._loss_algorithm = loss_algorithm
+        self._accuracy_algorithm = accuracy_algorithm
         self.train_dir = train_dir
         self.log_dir = log_dir
         self.logging = False if log_dir is None else True
@@ -32,8 +36,8 @@ class Model(object):
 
         self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=0.1)
 
-        self._accuracy = 0
-        self._loss = 0
+        self._loss = None
+        self._accuracy = None
         self._train = None
         self._summary = None
         self._writer = None
@@ -61,14 +65,15 @@ class Model(object):
             self.outputs = layer(self.outputs)
 
         # Build metrics.
-        self._loss = cal_softmax_cross_entropy(self.outputs, self.labels)
-        self._accuracy = cal_accuracy(self.outputs, self.labels)
+        self._loss = self._loss_algorithm(self.outputs, self.labels)
+        self._loss = total_loss(self._loss)
+        self._accuracy = self._accuracy_algorithm(self.outputs, self.labels)
 
         # Build train op.
         self._train = self.optimizer.minimize(
             self._loss, global_step=self._global_step)
 
-        # # Create session.
+        # Create session.
         self.sess = tf.Session()
         if self.log_dir is not None:
             if tf.gfile.Exists(self.log_dir):

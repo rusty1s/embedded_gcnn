@@ -1,14 +1,25 @@
 import tensorflow as tf
 
 
-def cal_softmax_cross_entropy(outputs, labels):
+def softmax_cross_entropy(outputs, labels):
     """Calculate softmax cross-entropy loss."""
 
     loss_per_example = tf.nn.softmax_cross_entropy_with_logits(
         logits=outputs, labels=labels, name='loss_per_example')
-    loss = tf.reduce_mean(loss_per_example, name='loss')
-    tf.add_to_collection('losses', loss)
+    return tf.reduce_mean(loss_per_example, name='loss')
 
+
+def sigmoid_cross_entropy(outputs, labels):
+    """Calculate sigmoid cross-entropy loss."""
+
+    labels = tf.cast(labels, tf.float32)
+    loss_per_example = tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=outputs, labels=labels, name='loss_per_example')
+    return tf.reduce_mean(loss_per_example, name='loss')
+
+
+def total_loss(loss):
+    tf.add_to_collection('losses', loss)
     losses = tf.get_collection('losses')
 
     for loss in losses:
@@ -17,7 +28,7 @@ def cal_softmax_cross_entropy(outputs, labels):
     return tf.add_n(losses, name='total_loss')
 
 
-def cal_accuracy(outputs, labels):
+def top_accuracy(outputs, labels):
     """Calculate accuracy."""
 
     num_labels = labels.get_shape()[1]

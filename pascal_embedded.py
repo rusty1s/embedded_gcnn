@@ -1,5 +1,6 @@
 from lib.datasets import PascalVOC as Data
-from lib.model import Model as BaseModel, generate_placeholders, train
+from lib.model import (Model as BaseModel, sigmoid_cross_entropy,
+                       generate_placeholders, train)
 from lib.segmentation import slic_fixed, extract_features_fixed
 from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
@@ -10,7 +11,7 @@ LEVELS = 5
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.01
 TRAIN_DIR = None
 LOG_DIR = None
 
@@ -95,8 +96,8 @@ class Model(BaseModel):
             adjs_rad=self.placeholders['adj_rad_5'])
         max_pool_5 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(512, 256)
-        fc_2 = FC(256, 128)
+        fc_1 = FC(512, 256, weight_decay=0.004)
+        fc_2 = FC(256, 128, weight_decay=0.004)
         fc_3 = FC(128,
                   data.num_classes,
                   dropout=self.placeholders['dropout'],
@@ -115,6 +116,7 @@ placeholders = generate_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
 
 model = Model(
     placeholders=placeholders,
+    loss_algorithm=sigmoid_cross_entropy,
     learning_rate=LEARNING_RATE,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
