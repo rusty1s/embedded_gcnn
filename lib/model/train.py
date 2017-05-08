@@ -15,7 +15,8 @@ def train(model,
           batch_size,
           dropout,
           max_steps,
-          display_step=10):
+          display_step=10,
+          save_step=250):
 
     global_step = model.initialize()
 
@@ -58,6 +59,9 @@ def train(model,
                     'val_loss={:.5f}'.format(val_loss),
                     'val_acc={:.5f}'.format(val_acc),
                 ]))
+
+            if step % save_step == 0:
+                model.save()
 
     except KeyboardInterrupt:
         print()

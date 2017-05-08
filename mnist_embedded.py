@@ -17,12 +17,13 @@ SCALE_INVARIANCE = False
 STDDEV = 1
 
 LEARNING_RATE = 0.001
-TRAIN_DIR = None
+TRAIN_DIR = 'data/savings/mnist_slic_embedded'
+# TRAIN_DIR = 'data/savings/mnist_quickshift_embedded'
 LOG_DIR = 'data/summaries/mnist_slic_embedded'
 # LOG_DIR = 'data/summaries/mnist_quickshift_embedded'
 
 DROPOUT = 0.5
-BATCH_SIZE = 8
+BATCH_SIZE = 64
 MAX_STEPS = 20000
 DISPLAY_STEP = 10
 FORM_FEATURES = SLIC_FEATURES
@@ -81,7 +82,7 @@ class Model(BaseModel):
             logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(256, 128, logging=self.logging)
+        fc_1 = FC(256, 128, weight_decay=0.004, logging=self.logging)
         fc_2 = FC(128,
                   data.num_classes,
                   dropout=self.placeholders['dropout'],

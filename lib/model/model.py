@@ -101,7 +101,7 @@ class Model(object):
         else:
             tf.gfile.MakeDirs(self.train_dir)
 
-        return self.sess.run(self.global_step)
+        return self.sess.run(self._global_step)
 
     def save(self):
         if self.train_dir is None:
