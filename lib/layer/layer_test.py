@@ -17,7 +17,7 @@ class LayerTest(tf.test.TestCase):
         self.assertEqual(layer.name, 'layer_2')
 
     def test_call(self):
-        layer = Layer(name='call', logging=True)
+        layer = Layer(name='call')
         inputs = tf.constant([1, 2, 3])
 
         with self.test_session():
