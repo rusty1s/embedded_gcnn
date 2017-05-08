@@ -44,60 +44,70 @@ class Model(BaseModel):
             NUM_FEATURES,
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
-            adjs_rad=self.placeholders['adj_rad_1'])
+            adjs_rad=self.placeholders['adj_rad_1'],
+            logging=self.logging)
         conv_1_2 = Conv(
             32,
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
-            adjs_rad=self.placeholders['adj_rad_1'])
+            adjs_rad=self.placeholders['adj_rad_1'],
+            logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2_1 = Conv(
             32,
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
-            adjs_rad=self.placeholders['adj_rad_2'])
+            adjs_rad=self.placeholders['adj_rad_2'],
+            logging=self.logging)
         conv_2_2 = Conv(
             64,
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
-            adjs_rad=self.placeholders['adj_rad_2'])
+            adjs_rad=self.placeholders['adj_rad_2'],
+            logging=self.logging)
         max_pool_2 = MaxPool(size=2)
         conv_3_1 = Conv(
             64,
             128,
             adjs_dist=self.placeholders['adj_dist_3'],
-            adjs_rad=self.placeholders['adj_rad_3'])
+            adjs_rad=self.placeholders['adj_rad_3'],
+            logging=self.logging)
         conv_3_2 = Conv(
             128,
             128,
             adjs_dist=self.placeholders['adj_dist_3'],
-            adjs_rad=self.placeholders['adj_rad_3'])
+            adjs_rad=self.placeholders['adj_rad_3'],
+            logging=self.logging)
         max_pool_3 = MaxPool(size=2)
         conv_4_1 = Conv(
             128,
             256,
             adjs_dist=self.placeholders['adj_dist_4'],
-            adjs_rad=self.placeholders['adj_rad_4'])
+            adjs_rad=self.placeholders['adj_rad_4'],
+            logging=self.logging)
         conv_4_2 = Conv(
             256,
             256,
             adjs_dist=self.placeholders['adj_dist_4'],
-            adjs_rad=self.placeholders['adj_rad_4'])
+            adjs_rad=self.placeholders['adj_rad_4'],
+            logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         conv_5_1 = Conv(
             256,
             512,
             adjs_dist=self.placeholders['adj_dist_5'],
-            adjs_rad=self.placeholders['adj_rad_5'])
+            adjs_rad=self.placeholders['adj_rad_5'],
+            logging=self.logging)
         conv_5_2 = Conv(
             512,
             512,
             adjs_dist=self.placeholders['adj_dist_5'],
-            adjs_rad=self.placeholders['adj_rad_5'])
+            adjs_rad=self.placeholders['adj_rad_5'],
+            logging=self.logging)
         max_pool_5 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(512, 256, weight_decay=0.004)
-        fc_2 = FC(256, 128, weight_decay=0.004)
+        fc_1 = FC(512, 256, weight_decay=0.004, logging=self.logging)
+        fc_2 = FC(256, 128, weight_decay=0.004, logging=self.logging)
         fc_3 = FC(128,
                   data.num_classes,
                   dropout=self.placeholders['dropout'],

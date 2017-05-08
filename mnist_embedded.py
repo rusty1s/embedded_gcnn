@@ -22,7 +22,7 @@ LOG_DIR = 'data/summaries/mnist_slic_embedded'
 # LOG_DIR = 'data/summaries/mnist_quickshift_embedded'
 
 DROPOUT = 0.5
-BATCH_SIZE = 64
+BATCH_SIZE = 8
 MAX_STEPS = 20000
 DISPLAY_STEP = 10
 FORM_FEATURES = SLIC_FEATURES
@@ -56,28 +56,32 @@ class Model(BaseModel):
             NUM_FEATURES,
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
-            adjs_rad=self.placeholders['adj_rad_1'])
+            adjs_rad=self.placeholders['adj_rad_1'],
+            logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2 = Conv(
             32,
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
-            adjs_rad=self.placeholders['adj_rad_2'])
+            adjs_rad=self.placeholders['adj_rad_2'],
+            logging=self.logging)
         max_pool_2 = MaxPool(size=2)
         conv_3 = Conv(
             64,
             128,
             adjs_dist=self.placeholders['adj_dist_3'],
-            adjs_rad=self.placeholders['adj_rad_3'])
+            adjs_rad=self.placeholders['adj_rad_3'],
+            logging=self.logging)
         max_pool_3 = MaxPool(size=2)
         conv_4 = Conv(
             128,
             256,
             adjs_dist=self.placeholders['adj_dist_4'],
-            adjs_rad=self.placeholders['adj_rad_4'])
+            adjs_rad=self.placeholders['adj_rad_4'],
+            logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(256, 128)
+        fc_1 = FC(256, 128, logging=self.logging)
         fc_2 = FC(128,
                   data.num_classes,
                   dropout=self.placeholders['dropout'],
