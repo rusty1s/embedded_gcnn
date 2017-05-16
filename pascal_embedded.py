@@ -13,8 +13,8 @@ SCALE_INVARIANCE = False
 STDDEV = 1
 
 LEARNING_RATE = 0.01
-TRAIN_DIR = 'data/savings/pascal_voc_slic_embedded'
-LOG_DIR = 'data/summaries/pascal_voc_slic_embedded'
+TRAIN_DIR = 'data/savings/pascal_slic_embedded'
+LOG_DIR = 'data/summaries/pascal_slic_embedded'
 
 DROPOUT = 0.5
 BATCH_SIZE = 64
