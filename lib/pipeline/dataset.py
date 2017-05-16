@@ -6,8 +6,6 @@ from six.moves import xrange
 
 import numpy as np
 
-from .preprocess import preprocess_pipeline
-
 
 def _print_status(percentage):
     sys.stdout.write('\r>> Preprocessing {:.2f}%'.format(percentage))
@@ -15,14 +13,7 @@ def _print_status(percentage):
 
 
 class PreprocessedDataset(object):
-    def __init__(self,
-                 dataset,
-                 segmentation_algorithm,
-                 feature_extraction_algorithm,
-                 levels,
-                 filter_algorithm=None,
-                 scale_invariance=False,
-                 stddev=1):
+    def __init__(self, dataset, preprocess_algorithm):
 
         self.epochs_completed = 0
         self._index_in_epoch = 0
@@ -32,11 +23,7 @@ class PreprocessedDataset(object):
 
         self._data = []
         for i in xrange(dataset.num_examples):
-            features, adjs_dist, adjs_rad = preprocess_pipeline(
-                images[i], segmentation_algorithm,
-                feature_extraction_algorithm, levels, filter_algorithm,
-                scale_invariance, stddev)
-
+            features, adjs_dist, adjs_rad = preprocess_algorithm(images[i])
             self._data.append((features, adjs_dist, adjs_rad, labels[i]))
 
             if i % 20 == 0:

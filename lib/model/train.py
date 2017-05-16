@@ -7,6 +7,7 @@ import time
 
 from ..datasets import PreprocessQueue
 from .placeholder import feed_dict_with_batch
+from ..pipeline.dataset import PreprocessedDataset
 
 
 def train(model,
@@ -15,6 +16,7 @@ def train(model,
           batch_size,
           dropout,
           max_steps,
+          preprocess_first=False,
           display_step=10,
           save_step=250):
 
@@ -22,20 +24,35 @@ def train(model,
 
     capacity = 10 * batch_size
 
-    try:
-        train_queue = PreprocessQueue(
-            data.train,
-            preprocess_algorithm,
-            batch_size,
-            capacity,
-            shuffle=True)
+    if preprocess_first:
+        data.train = PreprocessedDataset(data.train, preprocess_algorithm)
+        data.val = PreprocessedDataset(data.val, preprocess_algorithm)
+        data.test = PreprocessedDataset(data.test, preprocess_algorithm)
 
-        val_queue = PreprocessQueue(
-            data.val, preprocess_algorithm, batch_size, capacity, shuffle=True)
+    try:
+        if not preprocess_first:
+            train_queue = PreprocessQueue(
+                data.train,
+                preprocess_algorithm,
+                batch_size,
+                capacity,
+                shuffle=True)
+
+            val_queue = PreprocessQueue(
+                data.val,
+                preprocess_algorithm,
+                batch_size,
+                capacity,
+                shuffle=True)
 
         for step in xrange(global_step, max_steps):
             t_preprocess = time.process_time()
-            batch = train_queue.dequeue()
+
+            if not preprocess_first:
+                batch = train_queue.dequeue()
+            else:
+                batch = data.train.next_batch(batch_size, shuffle=True)
+
             feed_dict = feed_dict_with_batch(model.placeholders, batch,
                                              dropout)
             t_preprocess = time.process_time() - t_preprocess
@@ -47,7 +64,11 @@ def train(model,
                 feed_dict.update({model.placeholders['dropout']: 0})
                 train_loss, train_acc = model.evaluate(feed_dict)
 
-                batch = val_queue.dequeue()
+                if not preprocess_first:
+                    batch = val_queue.dequeue()
+                else:
+                    batch = data.val.next_batch(batch_size, shuffle=True)
+
                 feed_dict = feed_dict_with_batch(model.placeholders, batch)
                 val_loss, val_acc = model.evaluate(feed_dict)
 
@@ -67,26 +88,32 @@ def train(model,
         print()
 
     finally:
-        train_queue.close()
-        val_queue.close()
+        if not preprocess_first:
+            train_queue.close()
+            val_queue.close()
 
     print('Optimization finished!')
     print('Evaluate on test set. This can take a few minutes.')
 
     try:
-        test_queue = PreprocessQueue(
-            data.test,
-            preprocess_algorithm,
-            batch_size,
-            capacity,
-            shuffle=False)
+        if not preprocess_first:
+            test_queue = PreprocessQueue(
+                data.test,
+                preprocess_algorithm,
+                batch_size,
+                capacity,
+                shuffle=False)
 
         num_steps = data.test.num_examples // batch_size
         loss = 0
         acc = 0
 
         for i in xrange(num_steps):
-            batch = test_queue.dequeue()
+            if not preprocess_first:
+                batch = test_queue.dequeue()
+            else:
+                batch = data.test.next_batch(batch_size, shuffle=True)
+
             feed_dict = feed_dict_with_batch(model.placeholders, batch)
             batch_loss, batch_acc = model.evaluate(feed_dict)
             loss += batch_loss
@@ -102,4 +129,5 @@ def train(model,
         print('Test evaluation aborted.')
 
     finally:
-        test_queue.close()
+        if not preprocess_first:
+            test_queue.close()

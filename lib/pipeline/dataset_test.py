@@ -7,6 +7,7 @@ from ..datasets.mnist import MNIST
 from ..datasets.dataset import Dataset
 from ..segmentation.algorithm import slic_fixed
 from ..segmentation.feature_extraction import extract_features_fixed
+from ..pipeline import preprocess_pipeline_fixed
 
 dataset = MNIST('data/mnist').train
 # Reduce dataset to 100 examples.
@@ -15,9 +16,10 @@ dataset = Dataset(dataset._images[:50], dataset._labels[:50])
 segmentation_algorithm = slic_fixed(
     num_segments=100, compactness=5, max_iterations=10, sigma=0)
 feature_extraction_algorithm = extract_features_fixed([0, 1, 2])
+preprocess_algorithm = preprocess_pipeline_fixed(
+    segmentation_algorithm, feature_extraction_algorithm, levels=4)
 
-dataset = PreprocessedDataset(dataset, segmentation_algorithm,
-                              feature_extraction_algorithm, 4)
+dataset = PreprocessedDataset(dataset, preprocess_algorithm)
 
 
 class PreprocessedDatasetTest(TestCase):
