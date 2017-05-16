@@ -17,8 +17,7 @@ SCALE_INVARIANCE = False
 STDDEV = 1
 
 LEARNING_RATE = 0.001
-# TRAIN_DIR = 'data/savings/mnist_slic_embedded'
-TRAIN_DIR = 'data/savings/mnist_quickshift_embedded'
+TRAIN_DIR = None
 # LOG_DIR = 'data/summaries/mnist_slic_embedded'
 LOG_DIR = 'data/summaries/mnist_quickshift_embedded'
 
@@ -104,5 +103,5 @@ model = Model(
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 
-train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, PREPROCESS_FIRST,
-      MAX_STEPS, DISPLAY_STEP)
+train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, MAX_STEPS,
+      PREPROCESS_FIRST, DISPLAY_STEP)

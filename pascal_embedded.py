@@ -6,15 +6,15 @@ from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
 DATA_DIR = 'data/pascal_voc'
-PREPROCESS_FIRST = False
+PREPROCESS_FIRST = True
 
 LEVELS = 5
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.1
-TRAIN_DIR = None
-LOG_DIR = None
+LEARNING_RATE = 0.01
+TRAIN_DIR = 'data/savings/pascal_voc_slic_embedded'
+LOG_DIR = 'data/summaries/pascal_voc_slic_embedded'
 
 DROPOUT = 0.5
 BATCH_SIZE = 64
@@ -133,5 +133,5 @@ model = Model(
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 
-train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, PREPROCESS_FIRST,
-      MAX_STEPS, DISPLAY_STEP)
+train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, MAX_STEPS,
+      PREPROCESS_FIRST, DISPLAY_STEP)

@@ -112,7 +112,7 @@ def train(model,
             if not preprocess_first:
                 batch = test_queue.dequeue()
             else:
-                batch = data.test.next_batch(batch_size, shuffle=True)
+                batch = data.test.next_batch(batch_size, shuffle=False)
 
             feed_dict = feed_dict_with_batch(model.placeholders, batch)
             batch_loss, batch_acc = model.evaluate(feed_dict)
