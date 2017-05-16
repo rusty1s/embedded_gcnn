@@ -104,7 +104,7 @@ class PascalVOC(Datasets):
 
         # PascalVOC doesn't have released the full test annotation, use
         # the validation set instead :(
-        test = val
+        test = Dataset(images[:val_size], labels[:val_size])
 
         super(PascalVOC, self).__init__(train, val, test)
 
