@@ -27,8 +27,9 @@ def normalized_cut(adj, rid=None):
     _, rowstart, rowlength = np.unique(
         rows, return_index=True, return_counts=True)
 
+    # Dismiss if adjacency contains just a single node.
     if rowstart.size == 0:
-        return cluster_map + 1
+        return np.ones(1, np.int32)
 
     for r in xrange(n):
         # Iterate randomly.
