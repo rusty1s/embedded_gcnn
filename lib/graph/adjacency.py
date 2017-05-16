@@ -10,7 +10,8 @@ def zero_one_scale_adj(adj, scale_invariance=False):
 
     if not scale_invariance:
         data = adj.data
-        adj.data = (1 / data.max()) * data
+        if data.size > 0:
+            adj.data = (1 / data.max()) * data
     else:
         rows = adj.row
         data = adj.data
@@ -25,7 +26,7 @@ def zero_one_scale_adj(adj, scale_invariance=False):
 def invert_adj(adj, stddev=1):
     """Return (inverted) gaussian kernel representation."""
 
-    denominator = - 2 * stddev * stddev
+    denominator = -2 * stddev * stddev
     adj.data = np.exp(adj.data / denominator)
     return adj
 

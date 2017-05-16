@@ -60,8 +60,11 @@ def _coarsen_adj(adj,
         adjs_rad.append(adj_rad)
 
         # Iterate by degree at next iteration.
-        degree = npg.aggregate(adj_dist.row, adj_dist.data, func='sum')
-        rid = np.argsort(degree)
+        if adj_dist.data.size > 0:
+            degree = npg.aggregate(adj_dist.row, adj_dist.data, func='sum')
+            rid = np.argsort(degree)
+        else:
+            rid = None
 
     return adjs_dist, adjs_rad, cluster_maps
 
