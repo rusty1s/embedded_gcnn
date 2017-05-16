@@ -6,8 +6,6 @@ import numpy as np
 # import numpy_groupies as npg
 import scipy.sparse as sp
 
-from .distortion import perm_adj
-
 
 def normalized_cut(adj, rid=None):
     if rid is None:
@@ -28,6 +26,9 @@ def normalized_cut(adj, rid=None):
     # Get the beginning indices and the count of every row.
     _, rowstart, rowlength = np.unique(
         rows, return_index=True, return_counts=True)
+
+    if rowstart.size == 0:
+        return cluster_map + 1
 
     for r in xrange(n):
         # Iterate randomly.
@@ -55,104 +56,32 @@ def normalized_cut(adj, rid=None):
     return cluster_map
 
 
-def cut_new(adj, rid=None):
-    if rid is None:
-        rid = np.random.permutation(np.arange(adj.shape[0]))
+# import numpy_groupies as npg
 
-    # print(adj.toarray())
+# def cut_new(adj, rid=None):
+#     if rid is None:
+#         rid = np.random.permutation(np.arange(adj.shape[0]))
 
-    # Sort data by rid
-    adj = perm_adj(adj, rid)
-    perm = np.argsort(adj.row)
-    rows = adj.row[perm]
-    cols = adj.col[perm]
-    data = adj.data[perm]
-    # degree = 1 / npg.aggregate(rows, data, func='sum')
-    # data = data * (degree[rows] + degree[cols])
-    # print(weights)
-    # print(adj.row)
-    # print(adj.col)
+#     cluster_map = None
 
-    n = adj.shape[0]
-    cluster_map = np.full(n, -1, np.int32)
+#     adj = perm_adj(adj, rid)
 
-    _, rowlength = np.unique(rows, return_counts=True)
+#     rows = adj.row
+#     cols = adj.col
+#     data = adj.data
+#     degree = 1 / npg.aggregate(rows, data, func='sum')
+#     data = data * (degree[rows] + degree[cols])
 
-    rowend = 0
-    cluster_count = 0
-    for r in xrange(n):
-        # print('r', r)
-        rowstart = rowend
-        rowend += rowlength[r]
+#     # SO, jetz ist row in rid order und data can be sorted
+#     print(rows)
+#     print(cols)
+#     print(data)
+#     # Data has now normalized cut comparison
 
-        if cluster_map[r] >= 0:
-            continue
+#     # Problem
+#     # wir wollen jetz rows durchlaufen (in rid order)
+#     # und sortieren col dabei???
 
-        # print('drin')
+#     # dann durchlaufen wir row+col und setzen unsere cluster map
 
-        cluster_map[r] = cluster_count
-        cluster_count += 1
-
-        c = cols[rowstart:rowend]
-
-        cluster = cluster_map[c]
-        filter_map = np.where(cluster == -1)[0]
-        # print('filter', filter_map)
-
-        if filter_map.size == 0:
-            continue
-
-        # print('drin')
-
-        c = c[filter_map]
-        d = data[rowstart:rowend]
-        d = d[filter_map]
-        # print(d)
-
-        min_idx = np.argmin(d)
-        cluster_map[c[min_idx]] = cluster_count - 1
-
-    # print('rowstart', rowstart)
-    # print('rowlength', rowlength)
-
-    # def _sort(cols):
-    #     # Abort early if row already clustered.
-    #     # return 0
-    #     v = cluster_map[_sort.row]
-    #     if v >= 0:
-    #         return v
-
-    #     cluster_map[_sort.row] = _sort.row
-
-    #     # Filter cols which are already clustered.
-    #     cluster = cluster_map[cols]
-    #     filter_map = np.where(cluster >= 0)[0]
-
-    #     # No unclustered adjacent nodes => single node cluster.
-    #     if filter_map.size > 0:
-
-    #         w = data[_sort.rowlength:_sort.rowlength+cols.size]
-    #         cols = cols[filter_map]
-    #         w = w[filter_map]
-
-    #         min_idx = np.argmin(w)
-    #         cluster_map[cols[min_idx]] = _sort.row
-
-    #     _sort.row += 1
-    #     _sort.rowlength += cols.size
-    #     return _sort.row
-
-    # _sort.row = 0
-    # _sort.rowlength = 0
-
-    # # Sort groups by minimizing normalized cut.
-    # npg.aggregate(adj.row, adj.col, func=_sort)
-    # print(a)
-
-    # print(adj.row)
-
-    # print(rows)
-
-    # print(degree)
-
-    return cluster_map
+#     return cluster_map

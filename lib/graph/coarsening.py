@@ -52,7 +52,6 @@ def _coarsen_adj(adj,
         # Coarsen adjacency.
         adj, points, mass = _coarsen_clustered_adj(adj, points, mass,
                                                    cluster_map)
-
         # Compute to distance/radian adjacency.
         adj_dist, adj_rad = points_to_adj(adj, points, scale_invariance,
                                           stddev)
