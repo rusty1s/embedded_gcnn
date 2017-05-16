@@ -10,6 +10,7 @@ from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 QUICKSHIFT_FEATURES = [17, 24, 25, 26, 28, 29, 31, 33, 36]
 
 DATA_DIR = 'data/mnist'
+PREPROCESS_FIRST = False
 
 LEVELS = 4
 SCALE_INVARIANCE = False
@@ -103,5 +104,5 @@ model = Model(
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 
-train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, MAX_STEPS,
-      DISPLAY_STEP)
+train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, PREPROCESS_FIRST,
+      MAX_STEPS, DISPLAY_STEP)
