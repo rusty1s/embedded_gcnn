@@ -1,6 +1,5 @@
 from lib.datasets import PascalVOC as Data
-from lib.model import (Model as BaseModel, sigmoid_cross_entropy,
-                       generate_placeholders, train)
+from lib.model import (Model as BaseModel, generate_placeholders, train)
 from lib.segmentation import slic_fixed, extract_features_fixed
 from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
@@ -12,7 +11,7 @@ LEVELS = 5
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
 TRAIN_DIR = 'data/savings/pascal_slic_embedded'
 LOG_DIR = 'data/summaries/pascal_slic_embedded'
 
@@ -129,7 +128,7 @@ placeholders = generate_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
 
 model = Model(
     placeholders=placeholders,
-    loss_algorithm=sigmoid_cross_entropy,
+    isMultilabel=True,
     learning_rate=LEARNING_RATE,
     epsilon=0.1,
     train_dir=TRAIN_DIR,

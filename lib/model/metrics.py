@@ -49,3 +49,20 @@ def top_accuracy(outputs, labels):
     tf.summary.scalar('train_accuracy', accuracy)
 
     return accuracy
+
+
+def threshold_accuracy(outputs, labels, k=0.5):
+    with tf.name_scope('threshold_accuracy'):
+        predicted_labels = tf.nn.sigmoid(outputs)
+        k = tf.fill(outputs.get_shape(), k)
+        predicted_labels = tf.greater(predicted_labels, k)
+
+        labels = tf.cast(labels, tf.bool)
+        correct_prediction = tf.equal(predicted_labels, labels)
+        correct_prediction = tf.cast(correct_prediction, tf.float32)
+
+        accuracy = tf.reduce_mean(correct_prediction)
+
+    tf.summary.scalar('train_threshold_accuracy', accuracy)
+
+    return accuracy

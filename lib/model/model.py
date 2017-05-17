@@ -2,15 +2,15 @@ import time
 
 import tensorflow as tf
 
-from .metrics import softmax_cross_entropy, total_loss, top_accuracy
+from .metrics import (softmax_cross_entropy, sigmoid_cross_entropy, total_loss,
+                      top_accuracy, threshold_accuracy)
 
 
 class Model(object):
     def __init__(self,
                  placeholders,
                  name=None,
-                 loss_algorithm=softmax_cross_entropy,
-                 accuracy_algorithm=top_accuracy,
+                 isMultilabel=False,
                  learning_rate=0.001,
                  epsilon=1e-08,
                  train_dir=None,
@@ -21,8 +21,12 @@ class Model(object):
 
         self.placeholders = placeholders
         self.name = name
-        self._loss_algorithm = loss_algorithm
-        self._accuracy_algorithm = accuracy_algorithm
+        self.isMultilabel = isMultilabel
+        if not isMultilabel:
+            self._loss_algorithm = softmax_cross_entropy
+        else:
+            self._loss_algorithm = sigmoid_cross_entropy
+
         self.train_dir = train_dir
         self.log_dir = log_dir
         self.logging = False if log_dir is None else True
@@ -68,7 +72,10 @@ class Model(object):
         # Build metrics.
         self._loss = self._loss_algorithm(self.outputs, self.labels)
         self._loss = total_loss(self._loss)
-        self._accuracy = self._accuracy_algorithm(self.outputs, self.labels)
+        self._top_accuracy = top_accuracy(self.outputs, self.labels)
+        if self.isMultilabel:
+            self._threshold_accuracy = threshold_accuracy(self.outputs,
+                                                          self.labels)
 
         # Build train op.
         self._train = self.optimizer.minimize(
@@ -124,4 +131,9 @@ class Model(object):
         return time.time() - t
 
     def evaluate(self, feed_dict):
-        return self.sess.run([self._loss, self._accuracy], feed_dict)
+        if not self.isMultilabel:
+            return self.sess.run([self._loss, self._top_accuracy], feed_dict)
+        else:
+            return self.sess.run(
+                [self._loss, self._top_accuracy,
+                 self._threshold_accuracy], feed_dict)
