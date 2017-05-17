@@ -39,7 +39,6 @@ segmentation_algorithm = quickshift_fixed(
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
 filter_algorithm = None
-# filter_algorithm = gray_color_threshold_fixed(0.01)
 
 preprocess_algorithm = preprocess_pipeline_fixed(
     segmentation_algorithm, feature_extraction_algorithm, LEVELS,
