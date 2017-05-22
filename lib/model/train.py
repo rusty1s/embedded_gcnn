@@ -8,6 +8,7 @@ import time
 from ..datasets import PreprocessQueue
 from .placeholder import feed_dict_with_batch
 from ..pipeline.dataset import PreprocessedDataset
+from ..pipeline.file_queue import FileQueue
 
 
 def train(model,
@@ -23,9 +24,13 @@ def train(model,
     capacity = 10 * batch_size
 
     if preprocess_first is not None:
-        data.train = PreprocessedDataset(data.train, preprocess_algorithm)
-        data.val = PreprocessedDataset(data.val, preprocess_algorithm)
-        data.test = PreprocessedDataset(data.test, preprocess_algorithm)
+        n = preprocess_first
+        data.train = PreprocessedDataset(n, data.train, preprocess_algorithm)
+        data.val = PreprocessedDataset(n, data.val, preprocess_algorithm)
+        data.test = PreprocessedDataset(n, data.test, preprocess_algorithm)
+
+        train_queue = FileQueue(data.train, batch_size, capacity, shuffle=True)
+        val_queue = FileQueue(data.val, batch_size, capacity, shuffle=True)
     else:
         train_queue = PreprocessQueue(
             data.train,
@@ -43,12 +48,7 @@ def train(model,
     try:
         for step in xrange(global_step, max_steps):
             t_pre = time.process_time()
-
-            if not preprocess_first:
-                batch = train_queue.dequeue()
-            else:
-                batch = data.train.next_batch(batch_size, shuffle=True)
-
+            batch = train_queue.dequeue()
             feed_dict = feed_dict_with_batch(model.placeholders, batch,
                                              dropout)
             t_pre = time.process_time() - t_pre
@@ -58,17 +58,14 @@ def train(model,
             if step % display_step == 0:
                 # Evaluate on training and validation set with zero dropout.
                 feed_dict.update({model.placeholders['dropout']: 0})
+
                 if not model.isMultilabel:
                     train_loss, train_acc = model.evaluate(feed_dict)
                 else:
                     train_loss, train_acc_1, train_acc_2 = model.evaluate(
                         feed_dict)
 
-                if not preprocess_first:
-                    batch = val_queue.dequeue()
-                else:
-                    batch = data.val.next_batch(batch_size, shuffle=True)
-
+                batch = val_queue.dequeue()
                 feed_dict = feed_dict_with_batch(model.placeholders, batch)
                 if not model.isMultilabel:
                     val_loss, val_acc = model.evaluate(feed_dict)
@@ -76,10 +73,7 @@ def train(model,
                     val_loss, val_acc_1, val_acc_2 = model.evaluate(feed_dict)
 
                 log = 'step={}, '.format(step)
-                if preprocess_first:
-                    log += 'time={:.2f}s, '.format(t_train)
-                else:
-                    log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
+                log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
                 log += 'train_loss={:.5f}, '.format(train_loss)
                 if not model.isMultilabel:
                     log += 'train_acc={:.5f}, '.format(train_acc)
@@ -102,15 +96,17 @@ def train(model,
         print()
 
     finally:
-        if not preprocess_first:
-            train_queue.close()
-            val_queue.close()
+        train_queue.close()
+        val_queue.close()
 
     print('Optimization finished!')
     print('Evaluate on test set. This can take a few minutes.')
 
     try:
-        if not preprocess_first:
+        if preprocess_first is not None:
+            test_queue = FileQueue(
+                data.test, batch_size, capacity, shuffle=False)
+        else:
             test_queue = PreprocessQueue(
                 data.test,
                 preprocess_algorithm,
@@ -124,12 +120,9 @@ def train(model,
         acc_2 = 0
 
         for i in xrange(num_steps):
-            if not preprocess_first:
-                batch = test_queue.dequeue()
-            else:
-                batch = data.test.next_batch(batch_size, shuffle=False)
-
+            batch = test_queue.dequeue()
             feed_dict = feed_dict_with_batch(model.placeholders, batch)
+
             if not model.isMultilabel:
                 batch_loss, batch_acc = model.evaluate(feed_dict)
                 acc_1 += batch_acc
@@ -160,5 +153,4 @@ def train(model,
         print('Test evaluation aborted.')
 
     finally:
-        if not preprocess_first:
-            test_queue.close()
+        test_queue.close()

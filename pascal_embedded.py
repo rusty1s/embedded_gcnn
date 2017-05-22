@@ -120,7 +120,7 @@ class Model(BaseModel):
 
 
 placeholders = generate_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
-                                     data.num_classes, DROPOUT)
+                                     data.num_classes)
 
 model = Model(
     placeholders=placeholders,
