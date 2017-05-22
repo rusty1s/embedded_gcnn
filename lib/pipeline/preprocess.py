@@ -1,7 +1,6 @@
 from ..segmentation import segmentation_adjacency
 from ..graph import coarsen_adj, perm_features
 from ..graph import filter_adj, filter_features
-from ..tf import sparse_to_tensor
 
 
 def preprocess_pipeline(image,

@@ -4,14 +4,14 @@ from numpy.testing import assert_equal
 
 from .dataset import PreprocessedDataset
 from ..datasets.mnist import MNIST
-from ..datasets.dataset import Dataset
 from ..segmentation.algorithm import slic_fixed
 from ..segmentation.feature_extraction import extract_features_fixed
 from ..pipeline import preprocess_pipeline_fixed
 
+# Load MNIST dataset and reduce size to 50 examples.
 mnist = MNIST('data/mnist').train
-# Reduce dataset to 100 examples.
-mnist = Dataset(mnist._images[:50], mnist._labels[:50])
+mnist._images = mnist._images[:50]
+mnist._labels = mnist._labels[:50]
 
 segmentation_algorithm = slic_fixed(
     num_segments=100, compactness=5, max_iterations=10, sigma=0)
