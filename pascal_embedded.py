@@ -126,7 +126,7 @@ model = Model(
     placeholders=placeholders,
     isMultilabel=True,
     learning_rate=LEARNING_RATE,
-    epsilon=0.1,
+    # epsilon=0.1,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 

@@ -16,13 +16,13 @@ def train(model,
           batch_size,
           dropout,
           max_steps,
-          preprocess_first=False,
+          preprocess_first=None,
           display_step=10,
           save_step=250):
 
     capacity = 10 * batch_size
 
-    if preprocess_first:
+    if preprocess_first is not None:
         data.train = PreprocessedDataset(data.train, preprocess_algorithm)
         data.val = PreprocessedDataset(data.val, preprocess_algorithm)
         data.test = PreprocessedDataset(data.test, preprocess_algorithm)
