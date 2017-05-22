@@ -27,8 +27,6 @@ def preprocess_pipeline(image,
                                             scale_invariance, stddev)
 
     features = perm_features(features, perm)
-    adjs_dist = [sparse_to_tensor(A) for A in adjs_dist]
-    adjs_rad = [sparse_to_tensor(A) for A in adjs_rad]
 
     return features, adjs_dist, adjs_rad
 

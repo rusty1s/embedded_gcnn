@@ -3,6 +3,8 @@ from six.moves import xrange
 import numpy as np
 import tensorflow as tf
 
+from ..tf.convert import sparse_to_tensor
+
 
 def generate_placeholders(batch_size,
                           levels,
@@ -62,13 +64,13 @@ def feed_dict_with_batch(placeholders, batch, dropout=0.0):
     adj_name = 'adj_dist' if has_radians else 'adj'
     for j in xrange(levels):
         feed_dict.update({
-            placeholders['{}_{}'.format(adj_name, j + 1)][i]: batch[i][1][j]
+            placeholders['{}_{}'.format(adj_name, j + 1)][i]: sparse_to_tensor(batch[i][1][j])
             for i in xrange(batch_size)
         })
 
         if has_radians:
             feed_dict.update({
-                placeholders['adj_rad_{}'.format(j + 1)][i]: batch[i][2][j]
+                placeholders['adj_rad_{}'.format(j + 1)][i]: sparse_to_tensor(batch[i][2][j])
                 for i in xrange(batch_size)
             })
 
