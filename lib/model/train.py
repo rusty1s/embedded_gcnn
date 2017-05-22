@@ -3,6 +3,7 @@ from __future__ import division
 
 from six.moves import xrange
 
+import os
 import time
 
 from ..datasets import PreprocessQueue
@@ -24,10 +25,13 @@ def train(model,
     capacity = 10 * batch_size
 
     if preprocess_first is not None:
-        n = preprocess_first
-        data.train = PreprocessedDataset(n, data.train, preprocess_algorithm)
-        data.val = PreprocessedDataset(n, data.val, preprocess_algorithm)
-        data.test = PreprocessedDataset(n, data.test, preprocess_algorithm)
+        data_dir = preprocess_first
+        data.train = PreprocessedDataset(
+            os.path.join(data_dir, 'train'), data.train, preprocess_algorithm)
+        data.val = PreprocessedDataset(
+            os.path.join(data_dir, 'val'), data.val, preprocess_algorithm)
+        data.test = PreprocessedDataset(
+            os.path.join(data_dir, 'test'), data.test, preprocess_algorithm)
 
         train_queue = FileQueue(data.train, batch_size, capacity, shuffle=True)
         val_queue = FileQueue(data.val, batch_size, capacity, shuffle=True)

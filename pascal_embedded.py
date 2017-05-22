@@ -5,7 +5,7 @@ from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
 DATA_DIR = 'data/pascal_voc'
-PREPROCESS_FIRST = True
+PREPROCESS_FIRST = 'data/pascal_voc/slic'
 
 LEVELS = 5
 SCALE_INVARIANCE = False

@@ -10,7 +10,9 @@ SLIC_FEATURES = [2, 3, 4, 5, 13, 13, 18, 29, 34]
 # QUICKSHIFT_FEATURES = [17, 24, 25, 26, 28, 29, 31, 33, 36]
 
 DATA_DIR = 'data/mnist'
+
 PREPROCESS_FIRST = 'data/mnist/slic'
+# PREPROCESS_FIRST = 'data/mnist/quickshift'
 
 LEVELS = 4
 SCALE_INVARIANCE = False
