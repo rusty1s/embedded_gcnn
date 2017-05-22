@@ -46,10 +46,6 @@ preprocess_algorithm = preprocess_pipeline_fixed(
 
 
 class Model(BaseModel):
-    def __init__(self, **kwargs):
-        super(Model, self).__init__(**kwargs)
-        self.build()
-
     def _build(self):
         conv_1 = Conv(
             NUM_FEATURES,

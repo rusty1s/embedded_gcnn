@@ -20,31 +20,27 @@ def train(model,
           display_step=10,
           save_step=250):
 
-    global_step = model.initialize()
-
     capacity = 10 * batch_size
 
     if preprocess_first:
         data.train = PreprocessedDataset(data.train, preprocess_algorithm)
         data.val = PreprocessedDataset(data.val, preprocess_algorithm)
         data.test = PreprocessedDataset(data.test, preprocess_algorithm)
+    else:
+        train_queue = PreprocessQueue(
+            data.train,
+            preprocess_algorithm,
+            batch_size,
+            capacity,
+            shuffle=True)
+
+        val_queue = PreprocessQueue(
+            data.val, preprocess_algorithm, batch_size, capacity, shuffle=True)
+
+    model.build()
+    global_step = model.initialize()
 
     try:
-        if not preprocess_first:
-            train_queue = PreprocessQueue(
-                data.train,
-                preprocess_algorithm,
-                batch_size,
-                capacity,
-                shuffle=True)
-
-            val_queue = PreprocessQueue(
-                data.val,
-                preprocess_algorithm,
-                batch_size,
-                capacity,
-                shuffle=True)
-
         for step in xrange(global_step, max_steps):
             t_pre = time.process_time()
 

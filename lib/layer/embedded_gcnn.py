@@ -14,7 +14,7 @@ def conv(features, adj_dist, adj_rad, weights, K=2):
     for p in xrange(P):
         partition = base(adj_rad, K, P, p)
 
-        # Note that we can perform elementwise multiplication on the two
+        # Note that we can perform element-wise multiplication on the two
         # adjacency matrices, although the sparse partition matrix has way less
         # elements than adj_dist. `base()` doesn't remove any element from
         # adj_rad and instead fills the irrelevant values with zeros. It is
