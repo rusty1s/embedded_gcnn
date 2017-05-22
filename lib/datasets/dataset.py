@@ -23,8 +23,8 @@ class Datasets(object):
 class Dataset(object):
     def __init__(self, images, labels):
         self.epochs_completed = 0
-        self._images = images  # Numpy array or a python list.
-        self._labels = labels  # Numpy array.
+        self._images = images
+        self._labels = labels
         self._index_in_epoch = 0
 
     @property
@@ -34,10 +34,7 @@ class Dataset(object):
     def _random_shuffle_examples(self):
         perm = np.arange(self.num_examples)
         np.random.shuffle(perm)
-        if isinstance(self._images, list):
-            self._images = [self._images[i] for i in perm]
-        else:
-            self._images = self._images[perm]
+        self._images = self._images[perm]
         self._labels = self._labels[perm]
 
     def next_batch(self, batch_size, shuffle=True):
@@ -68,11 +65,7 @@ class Dataset(object):
             labels_new = self._labels[start:end]
 
             labels = np.concatenate((labels_rest, labels_new), axis=0)
-            # Check if we look at python lists or numpy arrays.
-            if isinstance(self._images, list):
-                images = images_rest + images_new
-            else:
-                images = np.concatenate((images_rest, images_new), axis=0)
+            images = np.concatenate((images_rest, images_new), axis=0)
         else:
             # Just slice the examples.
             self._index_in_epoch += batch_size

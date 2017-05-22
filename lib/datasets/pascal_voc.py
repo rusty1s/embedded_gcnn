@@ -1,71 +1,37 @@
 from __future__ import division
 from __future__ import print_function
 
-import sys
 import os
 from xml.dom.minidom import parse
 
 import numpy as np
 from skimage.io import imread
 
-from .dataset import Datasets, Dataset
+from .dataset import Datasets
 from .download import maybe_download_and_extract
 
 
 URL = 'http://host.robots.ox.ac.uk/pascal/VOC/voc2012/'\
       'VOCtrainval_11-May-2012.tar'
+CLASSES = [
+    'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep', 'aeroplane',
+    'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
+    'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
+]
 
 
-def _print_status(data_dir, percentage):
-    sys.stdout.write('\r>> Reading {} {:.2f}%'.format(data_dir, percentage))
-    sys.stdout.flush()
-
-
-def _load_dataset(data_dir, classes, num_examples):
-    names = os.listdir(os.path.join(data_dir, 'Annotations'))
-    names = [name.split('.')[0] for name in names]
-    names = sorted(names)
-
-    images = []
-    labels = []
-
-    if num_examples is None:
-        num_examples = len(names)
-    else:
-        num_examples = min(num_examples, len(names))
-        names = names[:num_examples]
-
-    for i, name in enumerate(names):
-        label = _read_label(data_dir, name, classes)
-
-        # Abort if no label found.
-        if label.max() == 0:
-            continue
-
-        labels.append(label)
-        images.append(_read_image(data_dir, name))
-
-        if i % 20 == 0:
-            _print_status(data_dir, 100 * i / num_examples)
-
-    _print_status(data_dir, 100)
-    print()
-
-    return images, np.array(labels, dtype=np.uint8)
-
-
-def _read_image(data_dir, name):
+def _read_image(name, data_dir):
     path = os.path.join(data_dir, 'JPEGImages', '{}.jpg'.format(name))
     image = imread(path)
     image = (1 / 255) * image.astype(np.float32)
     return image
 
 
-def _read_label(data_dir, name, classes):
+def _read_label(name, data_dir):
     path = os.path.join(data_dir, 'Annotations', '{}.xml'.format(name))
     annotation = parse(path)
 
-    label = np.zeros((len(classes)), np.uint8)
+    label = np.zeros((len(CLASSES)), np.uint8)
 
     for obj in annotation.getElementsByTagName('object'):
         # Pass difficult objects.
@@ -78,7 +44,7 @@ def _read_label(data_dir, name, classes):
         name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
 
         try:
-            index = classes.index(name)
+            index = CLASSES.index(name)
             label[index] = 1
         except ValueError:
             pass
@@ -87,35 +53,75 @@ def _read_label(data_dir, name, classes):
 
 
 class PascalVOC(Datasets):
-    def __init__(self,
-                 data_dir,
-                 num_examples=None,
-                 val_size=1500,
-                 classes=None):
-
-        self._classes = classes
-
+    def __init__(self, data_dir, val_size=1500):
         maybe_download_and_extract(URL, data_dir)
 
         data_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
-        images, labels = _load_dataset(data_dir, self.classes, num_examples)
-        train = Dataset(images[val_size:], labels[val_size:])
-        val = Dataset(images[:val_size], labels[:val_size])
+        names = os.listdir(os.path.join(data_dir, 'Annotations'))
+        names = [name.split('.')[0] for name in names]
 
-        # PascalVOC doesn't have released the full test annotation, use
-        # the validation set instead :(
-        test = Dataset(images[:val_size], labels[:val_size])
+        # # PascalVOC doesn't have released the full test annotation, use
+        # # the validation set instead :(
+        train = Dataset(names[val_size:], self.classes, data_dir)
+        val = Dataset(names[:val_size], self.classes, data_dir)
+        test = Dataset(names[:val_size], self.classes, data_dir)
 
         super(PascalVOC, self).__init__(train, val, test)
 
     @property
     def classes(self):
-        if self._classes is None:
-            return [
-                'person', 'bird', 'cat', 'cow', 'dog', 'horse', 'sheep',
-                'aeroplane', 'bicycle', 'boat', 'bus', 'car', 'motorbike',
-                'train', 'bottle', 'chair', 'diningtable', 'pottedplant',
-                'sofa', 'tvmonitor'
-            ]
+        return CLASSES
+
+
+class Dataset(object):
+    def __init__(self, names, classes, data_dir):
+        self.epochs_completed = 0
+        self._data_dir = data_dir
+        self._names = names
+        self._classes = classes
+        self._index_in_epoch = 0
+
+    @property
+    def num_examples(self):
+        return len(self._names)
+
+    def _random_shuffle_examples(self):
+        perm = np.arange(self.num_examples)
+        np.random.shuffle(perm)
+        self._names = [self._names[i] for i in perm]
+
+    def next_batch(self, batch_size, shuffle=True):
+        start = self._index_in_epoch
+
+        # Shuffle for the first epoch.
+        if self.epochs_completed == 0 and start == 0 and shuffle:
+            self._random_shuffle_examples()
+
+        if start + batch_size > self.num_examples:
+            # Finished epoch.
+            self.epochs_completed += 1
+
+            # Get the rest examples in this epoch.
+            rest_num_examples = self.num_examples - start
+            names_rest = self._names[start:self.num_examples]
+
+            # Shuffle the examples.
+            if shuffle:
+                self._random_shuffle_examples()
+
+            # Start next epoch.
+            start = 0
+            self._index_in_epoch = batch_size - rest_num_examples
+            end = self._index_in_epoch
+            names = names_rest + self._names[start:end]
         else:
-            return self._classes
+            # Just slice the examples.
+            self._index_in_epoch += batch_size
+            end = self._index_in_epoch
+            names = self._names[start:end]
+
+        images = [_read_image(name, self._data_dir) for name in names]
+        labels = np.array(
+            [_read_label(name, self._data_dir) for name in names], np.uint8)
+
+        return images, labels

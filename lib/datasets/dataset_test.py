@@ -16,7 +16,7 @@ class DatasetTest(TestCase):
         self.assertEqual(dataset._index_in_epoch, 0)
         self.assertEqual(dataset.num_examples, 5)
 
-    def test_next_batch_numpy(self):
+    def test_next_batch(self):
         images = np.array([1, 2, 3, 4, 5])
         labels = np.array([0, 1, 0, 1, 0])
         dataset = Dataset(images, labels)
@@ -37,28 +37,7 @@ class DatasetTest(TestCase):
         assert_equal(batch[0], [1, 2, 3, 4, 5])
         assert_equal(batch[1], [0, 1, 0, 1, 0])
 
-    def test_next_batch_list(self):
-        images = [1, 2, 3, 4, 5]
-        labels = np.array([0, 1, 0, 1, 0])
-        dataset = Dataset(images, labels)
-
-        batch = dataset.next_batch(4, shuffle=False)
-        self.assertEqual(batch[0], [1, 2, 3, 4])
-        assert_equal(batch[1], [0, 1, 0, 1])
-
-        batch = dataset.next_batch(4, shuffle=False)
-        self.assertEqual(batch[0], [5, 1, 2, 3])
-        assert_equal(batch[1], [0, 0, 1, 0])
-
-        batch = dataset.next_batch(2, shuffle=False)
-        self.assertEqual(batch[0], [4, 5])
-        assert_equal(batch[1], [1, 0])
-
-        batch = dataset.next_batch(5, shuffle=False)
-        self.assertEqual(batch[0], [1, 2, 3, 4, 5])
-        assert_equal(batch[1], [0, 1, 0, 1, 0])
-
-    def test_next_batch_shuffle_numpy(self):
+    def test_next_batch_shuffle(self):
         images = np.array([1, 2, 3, 4, 5])
         labels = np.array([0, 1, 0, 1, 0])
         dataset = Dataset(images, labels)
@@ -79,29 +58,6 @@ class DatasetTest(TestCase):
 
         images, labels = dataset.next_batch(5, shuffle=True)
         assert_equal(np.sort(images), [1, 2, 3, 4, 5])
-        assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
-
-    def test_next_batch_shuffle_list(self):
-        images = [1, 2, 3, 4, 5]
-        labels = np.array([0, 1, 0, 1, 0])
-        dataset = Dataset(images, labels)
-
-        batch_1 = dataset.next_batch(4, shuffle=True)
-        self.assertEqual(len(batch_1[0]), 4)
-        self.assertEqual(batch_1[1].shape, (4, ))
-
-        batch_2 = dataset.next_batch(1, shuffle=True)
-        self.assertEqual(len(batch_2[0]), 1)
-        self.assertEqual(batch_2[1].shape, (1, ))
-
-        images = batch_1[0] + batch_2[0]
-        labels = np.concatenate((batch_1[1], batch_2[1]), axis=0)
-
-        self.assertEqual(sorted(images), [1, 2, 3, 4, 5])
-        assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
-
-        images, labels = dataset.next_batch(5, shuffle=True)
-        self.assertEqual(sorted(images), [1, 2, 3, 4, 5])
         assert_equal(np.sort(labels), [0, 0, 0, 1, 1])
 
     def test_init_datasets(self):

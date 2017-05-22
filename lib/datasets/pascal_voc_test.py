@@ -84,17 +84,8 @@ class PascalVOCTest(TestCase):
         self.assertEqual(data.classnames(labels[2]), ['aeroplane'])
         self.assertEqual(data.classnames(labels[3]), ['tvmonitor'])
 
-    def test_filter_labels(self):
-        filtered_data = PascalVOC(
-            'test_data',
-            val_size=4,
-            classes=['aeroplane'])
-
-        images, labels = filtered_data.test.next_batch(4, shuffle=False)
-
-        self.assertEqual(len(images), 4)
-        self.assertEqual(labels.shape, (4, 1))
-
-        for label in labels:
-            self.assertEqual(label[0], 1)
-            self.assertEqual(filtered_data.classnames(label), ['aeroplane'])
+    def test_next_batch_shuffle(self):
+        _, _ = data.train.next_batch(2, shuffle=True)
+        _, _ = data.train.next_batch(2, shuffle=True)
+        _, _ = data.train.next_batch(2, shuffle=True)
+        _, _ = data.train.next_batch(2, shuffle=True)
