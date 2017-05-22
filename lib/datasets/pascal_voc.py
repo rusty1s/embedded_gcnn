@@ -59,6 +59,7 @@ class PascalVOC(Datasets):
         data_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
         names = os.listdir(os.path.join(data_dir, 'Annotations'))
         names = [name.split('.')[0] for name in names]
+        names = sorted(names)
 
         # # PascalVOC doesn't have released the full test annotation, use
         # # the validation set instead :(
