@@ -8,8 +8,9 @@ from six.moves import xrange
 import numpy as np
 
 
-def _print_status(percentage):
-    sys.stdout.write('\r>> Preprocessing {:.2f}%'.format(percentage))
+def _print_status(data_dir, percentage):
+    sys.stdout.write(
+        '\r>> Preprocessing to {} {:.2f}%'.format(data_dir, percentage))
     sys.stdout.flush()
 
 
@@ -56,9 +57,10 @@ class PreprocessedDataset(object):
                     _save(data_dir, self._names[j], f, adjs_dist, adjs_rad,
                           labels[i])
                     j += 1
-                _print_status(100 * (1 - num_left / dataset.num_examples))
+                _print_status(data_dir,
+                              100 * (1 - num_left / dataset.num_examples))
 
-            _print_status(100)
+            _print_status(data_dir, 100)
             print()
 
     @property
