@@ -24,7 +24,7 @@ LOG_DIR = 'data/summaries/mnist_slic_embedded'
 # LOG_DIR = 'data/summaries/mnist_quickshift_embedded'
 
 DROPOUT = 0.5
-BATCH_SIZE = 64
+BATCH_SIZE = 4
 MAX_STEPS = 20000
 DISPLAY_STEP = 10
 FORM_FEATURES = SLIC_FEATURES
@@ -54,6 +54,7 @@ class Model(BaseModel):
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
+            bias=False,
             logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2 = Conv(
@@ -61,6 +62,7 @@ class Model(BaseModel):
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
+            bias=False,
             logging=self.logging)
         max_pool_2 = MaxPool(size=2)
         conv_3 = Conv(
@@ -68,6 +70,7 @@ class Model(BaseModel):
             128,
             adjs_dist=self.placeholders['adj_dist_3'],
             adjs_rad=self.placeholders['adj_rad_3'],
+            bias=False,
             logging=self.logging)
         max_pool_3 = MaxPool(size=2)
         conv_4 = Conv(
@@ -75,14 +78,16 @@ class Model(BaseModel):
             256,
             adjs_dist=self.placeholders['adj_dist_4'],
             adjs_rad=self.placeholders['adj_rad_4'],
+            bias=False,
             logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(256, 128, weight_decay=0.004, logging=self.logging)
+        fc_1 = FC(256, 128, logging=self.logging)
         fc_2 = FC(128,
                   data.num_classes,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
+                  bias=False,
                   logging=self.logging)
 
         self.layers = [

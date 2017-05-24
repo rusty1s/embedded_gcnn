@@ -11,12 +11,12 @@ LEVELS = 5
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.001
-TRAIN_DIR = 'data/savings/pascal_slic_embedded'
+LEARNING_RATE = 0.0001
+TRAIN_DIR = None
 LOG_DIR = 'data/summaries/pascal_slic_embedded'
 
 DROPOUT = 0.5
-BATCH_SIZE = 64
+BATCH_SIZE = 4
 MAX_STEPS = 20000
 DISPLAY_STEP = 10
 FORM_FEATURES = [15, 21, 24, 25, 26, 28, 29, 31, 36]
@@ -43,12 +43,14 @@ class Model(BaseModel):
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
+            bias=False,
             logging=self.logging)
         conv_1_2 = Conv(
             32,
             32,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
+            bias=False,
             logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2_1 = Conv(
@@ -56,12 +58,14 @@ class Model(BaseModel):
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
+            bias=False,
             logging=self.logging)
         conv_2_2 = Conv(
             64,
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
+            bias=False,
             logging=self.logging)
         max_pool_2 = MaxPool(size=2)
         conv_3_1 = Conv(
@@ -69,12 +73,14 @@ class Model(BaseModel):
             128,
             adjs_dist=self.placeholders['adj_dist_3'],
             adjs_rad=self.placeholders['adj_rad_3'],
+            bias=False,
             logging=self.logging)
         conv_3_2 = Conv(
             128,
             128,
             adjs_dist=self.placeholders['adj_dist_3'],
             adjs_rad=self.placeholders['adj_rad_3'],
+            bias=False,
             logging=self.logging)
         max_pool_3 = MaxPool(size=2)
         conv_4_1 = Conv(
@@ -82,12 +88,14 @@ class Model(BaseModel):
             256,
             adjs_dist=self.placeholders['adj_dist_4'],
             adjs_rad=self.placeholders['adj_rad_4'],
+            bias=False,
             logging=self.logging)
         conv_4_2 = Conv(
             256,
             256,
             adjs_dist=self.placeholders['adj_dist_4'],
             adjs_rad=self.placeholders['adj_rad_4'],
+            bias=False,
             logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         conv_5_1 = Conv(
@@ -95,21 +103,24 @@ class Model(BaseModel):
             512,
             adjs_dist=self.placeholders['adj_dist_5'],
             adjs_rad=self.placeholders['adj_rad_5'],
+            bias=False,
             logging=self.logging)
         conv_5_2 = Conv(
             512,
             512,
             adjs_dist=self.placeholders['adj_dist_5'],
             adjs_rad=self.placeholders['adj_rad_5'],
+            bias=False,
             logging=self.logging)
         max_pool_5 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(512, 256, weight_decay=0.004, logging=self.logging)
-        fc_2 = FC(256, 128, weight_decay=0.004, logging=self.logging)
+        fc_1 = FC(512, 256, logging=self.logging)
+        fc_2 = FC(256, 128, logging=self.logging)
         fc_3 = FC(128,
                   data.num_classes,
                   dropout=self.placeholders['dropout'],
                   act=lambda x: x,
+                  bias=False,
                   logging=self.logging)
 
         self.layers = [
@@ -126,7 +137,7 @@ model = Model(
     placeholders=placeholders,
     isMultilabel=True,
     learning_rate=LEARNING_RATE,
-    # epsilon=0.1,
+    epsilon=0.01,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 

@@ -21,10 +21,6 @@ def sigmoid_cross_entropy(outputs, labels):
 def total_loss(loss):
     tf.add_to_collection('losses', loss)
     losses = tf.get_collection('losses')
-
-    for loss in losses:
-        tf.summary.scalar(loss.op.name, loss)
-
     return tf.add_n(losses, name='total_loss')
 
 
@@ -46,8 +42,6 @@ def top_accuracy(outputs, labels):
 
         accuracy = tf.reduce_mean(correct_prediction)
 
-    tf.summary.scalar('train_accuracy', accuracy)
-
     return accuracy
 
 
@@ -62,7 +56,5 @@ def threshold_accuracy(outputs, labels, k=0.5):
         correct_prediction = tf.cast(correct_prediction, tf.float32)
 
         accuracy = tf.reduce_mean(correct_prediction)
-
-    tf.summary.scalar('train_threshold_accuracy', accuracy)
 
     return accuracy

@@ -42,7 +42,8 @@ class Model(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=epsilon)
 
         self._loss = None
-        self._accuracy = None
+        self._top_accuracy = None
+        self._threshold_accuracy = None
         self._train = None
         self._summary = None
         self._writer = None
@@ -83,7 +84,7 @@ class Model(object):
 
         # Create session.
         self.sess = tf.Session()
-        if self.log_dir is not None:
+        if self.logging:
             if tf.gfile.Exists(self.log_dir):
                 tf.gfile.DeleteRecursively(self.log_dir)
             tf.gfile.MakeDirs(self.log_dir)
@@ -122,18 +123,34 @@ class Model(object):
     def train(self, feed_dict, step=None):
         t = time.time()
 
-        if self.log_dir is None:
-            self.sess.run(self._train, feed_dict)
-        else:
+        if self.logging:
             _, summary = self.sess.run([self._train, self._summary], feed_dict)
             self._writer.add_summary(summary, step)
+        else:
+            self.sess.run(self._train, feed_dict)
 
         return time.time() - t
 
-    def evaluate(self, feed_dict):
+    def evaluate(self, feed_dict, step=None, name=None):
         if not self.isMultilabel:
-            return self.sess.run([self._loss, self._top_accuracy], feed_dict)
+            loss, acc = self.sess.run([self._loss, self._top_accuracy],
+                                      feed_dict)
+            if self.logging and step is not None and name is not None:
+                self._add_summary('{}_loss'.format(name), loss, step)
+                self._add_summary('{}_accuracy'.format(name), acc, step)
+            return loss, acc
         else:
-            return self.sess.run(
-                [self._loss, self._top_accuracy,
-                 self._threshold_accuracy], feed_dict)
+            loss, acc_1, acc_2 = self.sess.run(
+                [self._loss, self._top_accuracy, self._threshold_accuracy],
+                feed_dict)
+            if self.logging and step is not None and name is not None:
+                self._add_summary('{}_loss'.format(name), loss, step)
+                self._add_summary('{}_top_accuracy'.format(name), acc_1, step)
+                self._add_summary('{}_threshold_accuracy'.format(name), acc_2,
+                                  step)
+            return loss, acc_1, acc_2
+
+    def _add_summary(self, name, value, step):
+        summary = tf.Summary(
+            value=[tf.Summary.Value(tag=name, simple_value=value)])
+        self._writer.add_summary(summary, step)

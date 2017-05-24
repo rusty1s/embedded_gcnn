@@ -62,19 +62,19 @@ def train(model,
             if step % display_step == 0:
                 # Evaluate on training and validation set with zero dropout.
                 feed_dict.update({model.placeholders['dropout']: 0})
+                batch = val_queue.dequeue()
+                val_feed_dict = feed_dict_with_batch(model.placeholders, batch)
 
                 if not model.isMultilabel:
-                    train_loss, train_acc = model.evaluate(feed_dict)
+                    train_loss, train_acc = model.evaluate(feed_dict, step,
+                                                           'train')
+                    val_loss, val_acc = model.evaluate(val_feed_dict, step,
+                                                       'val')
                 else:
                     train_loss, train_acc_1, train_acc_2 = model.evaluate(
-                        feed_dict)
-
-                batch = val_queue.dequeue()
-                feed_dict = feed_dict_with_batch(model.placeholders, batch)
-                if not model.isMultilabel:
-                    val_loss, val_acc = model.evaluate(feed_dict)
-                else:
-                    val_loss, val_acc_1, val_acc_2 = model.evaluate(feed_dict)
+                        feed_dict, step, 'train')
+                    val_loss, val_acc_1, val_acc_2 = model.evaluate(
+                        val_feed_dict, step, 'val')
 
                 log = 'step={}, '.format(step)
                 log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
