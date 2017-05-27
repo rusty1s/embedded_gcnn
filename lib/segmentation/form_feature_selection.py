@@ -5,7 +5,6 @@ import sys
 from six.moves import xrange
 
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest, chi2, RFE
 from sklearn.linear_model import LogisticRegression
@@ -25,7 +24,6 @@ class FormFeatureSelection(object):
             num_examples = dataset.num_examples
 
         images, labels = dataset.next_batch(num_examples, shuffle=False)
-        scaler = MinMaxScaler()
 
         self._features = []
         self._labels = []
@@ -34,7 +32,6 @@ class FormFeatureSelection(object):
             segmentation = segmentation_algorithm(images[i])
 
             features = FormFeatureExtraction(segmentation).get_features()
-            features = scaler.fit_transform(features)
             label = np.where(labels[i] == 1)[0][0]
             label = label.repeat(features.shape[0])
 

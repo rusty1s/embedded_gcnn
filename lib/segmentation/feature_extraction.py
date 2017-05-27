@@ -1,6 +1,6 @@
 import numpy as np
 import numpy_groupies as npg
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
 
 from .form_feature_extraction import FormFeatureExtraction
 
@@ -26,10 +26,11 @@ def extract_features(segmentation, image, form_features=None):
         raise ValueError
 
     features = features.astype(np.float32)
-    return MinMaxScaler().fit_transform(features)
+    return StandardScaler().fit_transform(features)
 
 
 def extract_features_fixed(form_features=None):
     def _extract(segmentation, image):
         return extract_features(segmentation, image, form_features)
+
     return _extract
