@@ -40,11 +40,9 @@ segmentation_algorithm = slic_fixed(
 
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
-filter_algorithm = None
-
 preprocess_algorithm = preprocess_pipeline_fixed(
     segmentation_algorithm, feature_extraction_algorithm, LEVELS,
-    filter_algorithm, SCALE_INVARIANCE, STDDEV)
+    SCALE_INVARIANCE, STDDEV)
 
 
 class Model(BaseModel):

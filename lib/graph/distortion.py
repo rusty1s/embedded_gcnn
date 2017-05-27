@@ -60,6 +60,7 @@ def gray_color_threshold(adj, features, k):
 def gray_color_threshold_fixed(k):
     def _threshold(adj, features):
         return gray_color_threshold(adj, features, k)
+
     return _threshold
 
 
@@ -72,4 +73,5 @@ def degree_threshold(adj, features, k):
 def degree_threshold_fixed(k):
     def _threshold(adj, features):
         return degree_threshold(adj, features, k)
+
     return _threshold

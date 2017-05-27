@@ -65,31 +65,23 @@ def train(model,
                 batch = val_queue.dequeue()
                 val_feed_dict = feed_dict_with_batch(model.placeholders, batch)
 
-                if not model.isMultilabel:
-                    train_loss, train_acc = model.evaluate(feed_dict, step,
-                                                           'train')
-                    val_loss, val_acc = model.evaluate(val_feed_dict, step,
-                                                       'val')
-                else:
-                    train_loss, train_acc_1, train_acc_2 = model.evaluate(
-                        feed_dict, step, 'train')
-                    val_loss, val_acc_1, val_acc_2 = model.evaluate(
-                        val_feed_dict, step, 'val')
+                train_info = model.evaluate(feed_dict, step, 'train')
+                val_info = model.evaluate(val_feed_dict, step, 'val')
 
                 log = 'step={}, '.format(step)
                 log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
-                log += 'train_loss={:.5f}, '.format(train_loss)
+                log += 'train_loss={:.5f}, '.format(train_info[0])
                 if not model.isMultilabel:
-                    log += 'train_acc={:.5f}, '.format(train_acc)
+                    log += 'train_acc={:.5f}, '.format(train_info[1])
                 else:
-                    log += 'train_top_acc={:.5f}, '.format(train_acc_1)
-                    log += 'train_threshold_acc={:.5f}, '.format(train_acc_2)
-                log += 'val_loss={:.5f}, '.format(val_loss)
+                    log += 'train_top_acc={:.5f}, '.format(train_info[1])
+                    log += 'train_threshold_acc={:.5f}, '.format(train_info[2])
+                log += 'val_loss={:.5f}, '.format(val_info[0])
                 if not model.isMultilabel:
-                    log += 'val_acc={:.5f}'.format(val_acc)
+                    log += 'val_acc={:.5f}'.format(val_info[1])
                 else:
-                    log += 'val_top_acc={:.5f}, '.format(val_acc_1)
-                    log += 'val_threshold_acc={:.5f}'.format(val_acc_2)
+                    log += 'val_top_acc={:.5f}, '.format(val_info[1])
+                    log += 'val_threshold_acc={:.5f}'.format(val_info[2])
 
                 print(log)
 
@@ -119,36 +111,22 @@ def train(model,
                 shuffle=False)
 
         num_steps = data.test.num_examples // batch_size
-        loss = 0
-        acc_1 = 0
-        acc_2 = 0
+        test_info = [0, 0, 0] if model.isMultilabel else [0, 0]
 
         for i in xrange(num_steps):
             batch = test_queue.dequeue()
             feed_dict = feed_dict_with_batch(model.placeholders, batch)
 
-            if not model.isMultilabel:
-                batch_loss, batch_acc = model.evaluate(feed_dict)
-                acc_1 += batch_acc
-            else:
-                batch_loss, batch_acc_1, batch_acc_2 = model.evaluate(
-                    feed_dict)
-                acc_1 += batch_acc_1
-                acc_2 += batch_acc_2
-
-            loss += batch_loss
-
-        loss /= num_steps
-        acc_1 /= num_steps
-        acc_2 /= num_steps
+            batch_info = model.evaluate(feed_dict)
+            test_info = [a + b for a, b in zip(test_info, batch_info)]
 
         log = 'Test results: '
-        log += 'cost={:.5f}, '.format(loss)
+        log += 'loss={:.5f}, '.format(test_info[0] / num_steps)
         if not model.isMultilabel:
-            log += 'acc={:.5f}'.format(acc_1)
+            log += 'acc={:.5f}'.format(test_info[1] / num_steps)
         else:
-            log += 'top_acc={:.5f}, '.format(acc_1)
-            log += 'threshold_acc={:.5f}'.format(acc_2)
+            log += 'top_acc={:.5f}, '.format(test_info[1] / num_steps)
+            log += 'threshold_acc={:.5f}'.format(test_info[2] / num_steps)
 
         print(log)
 
