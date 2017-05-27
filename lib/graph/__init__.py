@@ -1,7 +1,6 @@
 from .coarsening import coarsen_adj
 from .distortion import (perm_features, filter_adj, filter_features,
-                         gray_color_threshold, gray_color_threshold_fixed,
-                         degree_threshold, degree_threshold_fixed)
+                         gray_color_threshold, degree_threshold)
 from .grid import grid_adj, grid_points, grid_mass
 
 __all__ = [
@@ -10,9 +9,7 @@ __all__ = [
     'filter_adj',
     'filter_features',
     'gray_color_threshold',
-    'gray_color_threshold_fixed',
     'degree_threshold',
-    'degree_threshold_fixed',
     'grid_adj',
     'grid_points',
     'grid_mass',
