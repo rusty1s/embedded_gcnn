@@ -12,6 +12,7 @@ class VarLayer(Layer):
                  weight_decay=0.0,
                  bias=True,
                  bias_constant=0.1,
+                 bias_decay=0.0,
                  act=tf.nn.relu,
                  **kwargs):
 
@@ -27,8 +28,9 @@ class VarLayer(Layer):
                 weight_decay)
 
             if self.bias:
-                self.vars['bias'] = bias_variable(
-                    bias_shape, '{}_bias'.format(self.name), bias_constant)
+                self.vars['bias'] = bias_variable(bias_shape,
+                                                  '{}_bias'.format(self.name),
+                                                  bias_constant, bias_decay)
 
         if self.logging:
             for var in self.vars:
