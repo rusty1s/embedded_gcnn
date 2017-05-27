@@ -10,6 +10,7 @@ from ..datasets import PreprocessQueue
 from .placeholder import feed_dict_with_batch
 from ..pipeline.dataset import PreprocessedDataset
 from ..pipeline.file_queue import FileQueue
+from ..pipeline.augment import augment_batch
 
 
 def train(model,
@@ -17,6 +18,7 @@ def train(model,
           preprocess_algorithm,
           batch_size,
           dropout,
+          augment,
           max_steps,
           preprocess_first=None,
           display_step=10,
@@ -53,6 +55,7 @@ def train(model,
         for step in xrange(global_step, max_steps):
             t_pre = time.process_time()
             batch = train_queue.dequeue()
+            batch = augment_batch(batch) if augment else batch
             feed_dict = feed_dict_with_batch(model.placeholders, batch,
                                              dropout)
             t_pre = time.process_time() - t_pre

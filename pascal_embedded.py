@@ -15,6 +15,7 @@ LEARNING_RATE = 0.0001
 TRAIN_DIR = None
 LOG_DIR = 'data/summaries/pascal_slic_embedded'
 
+AUGMENT_TRAIN_EXAMPLES = True
 DROPOUT = 0.5
 BATCH_SIZE = 4
 MAX_STEPS = 20000
@@ -138,5 +139,5 @@ model = Model(
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 
-train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT, MAX_STEPS,
-      PREPROCESS_FIRST, DISPLAY_STEP)
+train(model, data, preprocess_algorithm, BATCH_SIZE, DROPOUT,
+      AUGMENT_TRAIN_EXAMPLES, MAX_STEPS, PREPROCESS_FIRST, DISPLAY_STEP)

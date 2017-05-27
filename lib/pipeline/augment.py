@@ -1,3 +1,7 @@
+def augment_batch(batch):
+    return batch
+
+
 def random_flip_left_right_adj(adj_rad):
     raise NotImplementedError
 
