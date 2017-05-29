@@ -3,7 +3,7 @@ import time
 import tensorflow as tf
 
 from .metrics import (softmax_cross_entropy, sigmoid_cross_entropy, total_loss,
-                      accuracy, precision_recall)
+                      accuracy, precision, recall)
 
 
 class Model(object):
@@ -43,7 +43,8 @@ class Model(object):
 
         self._loss = None
         self._accuracy = None
-        self._precision_recall = None
+        self._precision = None
+        self._recall = None
         self._train = None
         self._summary = None
         self._writer = None
@@ -75,8 +76,8 @@ class Model(object):
         self._loss = total_loss(self._loss)
         self._accuracy = accuracy(self.outputs, self.labels)
         if self.isMultilabel:
-            self._precision_recall = precision_recall(self.outputs,
-                                                      self.labels)
+            self._precision = precision(self.outputs, self.labels)
+            self._recall = recall(self.outputs, self.labels)
 
         # Build train op.
         self._train = self.optimizer.minimize(
@@ -139,15 +140,15 @@ class Model(object):
                 self._add_summary('{}_accuracy'.format(name), acc, step)
             return loss, acc
         else:
-            loss, acc_1, acc_2 = self.sess.run(
-                [self._loss, self._accuracy, self._precision_recall],
+            loss, acc, pre, rec = self.sess.run(
+                [self._loss, self._accuracy, self._precision, self._recall],
                 feed_dict)
             if self.logging and step is not None and name is not None:
                 self._add_summary('{}_loss'.format(name), loss, step)
-                self._add_summary('{}_accuracy'.format(name), acc_1, step)
-                self._add_summary('{}_precision_recall'.format(name), acc_2,
-                                  step)
-            return loss, acc_1, acc_2
+                self._add_summary('{}_accuracy'.format(name), acc, step)
+                self._add_summary('{}_precision'.format(name), pre, step)
+                self._add_summary('{}_recall'.format(name), rec, step)
+            return loss, acc, pre, rec
 
     def _add_summary(self, name, value, step):
         summary = tf.Summary(

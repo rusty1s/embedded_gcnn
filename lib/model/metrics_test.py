@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from .metrics import accuracy, precision_recall
+from .metrics import accuracy, precision, recall
 
 
 class MetricsTest(tf.test.TestCase):
@@ -55,7 +55,7 @@ class MetricsTest(tf.test.TestCase):
         with self.test_session():
             self.assertEqual(accuracy(outputs, labels).eval(), 0.5)
 
-    def test_precision_recall(self):
+    def test_precision(self):
         outputs = [[-2, -1, 0, 1, 2], [1, 2, 0, -1, -2]]
         # [[0, 0, 0, 1, 1], [1, 1, 0, 0, 0]]
         outputs = tf.constant(outputs, tf.float32)
@@ -65,19 +65,42 @@ class MetricsTest(tf.test.TestCase):
         labels = tf.constant(labels, tf.int32)
 
         with self.test_session():
-            self.assertEqual(precision_recall(outputs, labels).eval(), 0.0)
+            self.assertEqual(precision(outputs, labels).eval(), 0.0)
 
         # All right.
         labels = [[0, 0, 0, 1, 1], [1, 1, 0, 0, 0]]
         labels = tf.constant(labels, tf.int32)
 
         with self.test_session():
-            self.assertEqual(precision_recall(outputs, labels).eval(), 1.0)
+            self.assertEqual(precision(outputs, labels).eval(), 1.0)
 
-        # 6 out of 10 right.
-        labels = [[1, 0, 0, 1, 0], [1, 0, 1, 0, 0]]
+        labels = [[1, 1, 0, 1, 0], [1, 1, 1, 0, 0]]
         labels = tf.constant(labels, tf.int32)
 
         with self.test_session():
-            self.assertAlmostEqual(
-                precision_recall(outputs, labels).eval(), 0.6)
+            self.assertAlmostEqual(precision(outputs, labels).eval(), 0.75)
+
+    def test_recall(self):
+        outputs = [[-2, -1, 0, 1, 2], [1, 2, 0, -1, -2]]
+        # [[0, 0, 0, 1, 1], [1, 1, 0, 0, 0]]
+        outputs = tf.constant(outputs, tf.float32)
+
+        # None right.
+        labels = [[1, 1, 1, 0, 0], [0, 0, 1, 1, 1]]
+        labels = tf.constant(labels, tf.int32)
+
+        with self.test_session():
+            self.assertEqual(recall(outputs, labels).eval(), 0.0)
+
+        # All right.
+        labels = [[0, 0, 0, 1, 1], [1, 1, 0, 0, 0]]
+        labels = tf.constant(labels, tf.int32)
+
+        with self.test_session():
+            self.assertEqual(recall(outputs, labels).eval(), 1.0)
+
+        labels = [[1, 1, 0, 1, 0], [1, 1, 1, 0, 0]]
+        labels = tf.constant(labels, tf.int32)
+
+        with self.test_session():
+            self.assertAlmostEqual(recall(outputs, labels).eval(), 0.5)

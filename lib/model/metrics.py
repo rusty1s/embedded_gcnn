@@ -45,16 +45,29 @@ def accuracy(outputs, labels):
     return accuracy
 
 
-def precision_recall(outputs, labels, k=0.5):
-    with tf.name_scope('precision_recall'):
+def precision(outputs, labels, k=0.5):
+    with tf.name_scope('precision'):
         predicted_labels = tf.nn.sigmoid(outputs)
         k = tf.fill(outputs.get_shape(), k)
         predicted_labels = tf.greater(predicted_labels, k)
 
         labels = tf.cast(labels, tf.bool)
-        correct_prediction = tf.equal(predicted_labels, labels)
-        correct_prediction = tf.cast(correct_prediction, tf.float32)
+        true_positives = tf.logical_and(labels, predicted_labels)
+        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.uint8))
 
-        accuracy = tf.reduce_mean(correct_prediction)
+        all_positives = tf.reduce_sum(tf.cast(predicted_labels, tf.uint8))
+        return true_positives / all_positives
 
-    return accuracy
+
+def recall(outputs, labels, k=0.5):
+    with tf.name_scope('recall'):
+        predicted_labels = tf.nn.sigmoid(outputs)
+        k = tf.fill(outputs.get_shape(), k)
+        predicted_labels = tf.greater(predicted_labels, k)
+
+        labels = tf.cast(labels, tf.bool)
+        true_positives = tf.logical_and(labels, predicted_labels)
+        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.uint8))
+
+        all_positives = tf.reduce_sum(tf.cast(labels, tf.uint8))
+        return true_positives / all_positives
