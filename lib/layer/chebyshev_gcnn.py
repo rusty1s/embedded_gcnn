@@ -30,8 +30,7 @@ def conv(features, adj, weights):
 
 
 class ChebyshevGCNN(VarLayer):
-    def __init__(self, in_channels, out_channels, adjs, degree,
-                 **kwargs):
+    def __init__(self, in_channels, out_channels, adjs, degree, **kwargs):
 
         self.adjs = adjs
 

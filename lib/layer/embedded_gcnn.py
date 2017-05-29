@@ -3,13 +3,24 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf import base
+from ..tf import base, sparse_identity, sparse_tensor_diag_matmul
 
 
 def conv(features, adj_dist, adj_rad, weights, K=2):
+    n = adj_dist.dense_shape[0]
     P = weights.get_shape()[0].value - 1
 
-    output = tf.matmul(features, weights[P])
+    adj_norm = tf.sparse_add(adj_dist,
+                             sparse_identity(n, adj_dist.values.dtype))
+    degree = tf.sparse_reduce_sum(adj_norm, axis=1)
+    degree = tf.cast(degree, tf.float32)
+
+    features_rescaled = tf.reshape(tf.pow(degree, -1), [-1, 1]) * features
+    output = tf.matmul(features_rescaled, weights[P])
+
+    degree = tf.pow(degree, -0.5)
+    adj_dist = sparse_tensor_diag_matmul(adj_dist, degree, transpose=True)
+    adj_dist = sparse_tensor_diag_matmul(adj_dist, degree, transpose=False)
 
     for p in xrange(P):
         partition = base(adj_rad, K, P, p)

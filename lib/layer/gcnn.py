@@ -3,14 +3,19 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf import sparse_identity, normalize_adj
+from ..tf import sparse_identity, sparse_tensor_diag_matmul
 
 
 def conv(features, adj, weights):
     n = adj.dense_shape[0]
 
     adj = tf.sparse_add(adj, sparse_identity(n, adj.values.dtype))
-    adj = normalize_adj(adj)
+    degree = tf.sparse_reduce_sum(adj, axis=1)
+    degree = tf.cast(degree, tf.float32)
+    degree = tf.pow(degree, -0.5)
+
+    adj = sparse_tensor_diag_matmul(adj, degree, transpose=True)
+    adj = sparse_tensor_diag_matmul(adj, degree, transpose=False)
 
     output = tf.sparse_tensor_dense_matmul(adj, features)
     return tf.matmul(output, weights)

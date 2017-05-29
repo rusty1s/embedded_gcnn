@@ -17,7 +17,7 @@ class EmbeddedGCNNTest(tf.test.TestCase):
         adj_dist = sp.coo_matrix(adj_dist, dtype=np.float32)
         adj_dist = sparse_to_tensor(adj_dist)
 
-        adj_rad = [[0, 0.25 * PI, 0.75 * PI, 0], [1.25 * PI, 0, 0, 0.25 * PI],
+        adj_rad = [[0, 0.25 * PI, 0.75 * PI, 0], [1.25 * PI, 0, 0, 0.75 * PI],
                    [1.75 * PI, 0, 0, 0.25 * PI], [0, 1.75 * PI, 1.25 * PI, 0]]
         adj_rad = sp.coo_matrix(adj_rad, dtype=np.float32)
         adj_rad = sparse_to_tensor(adj_rad)
@@ -26,29 +26,29 @@ class EmbeddedGCNNTest(tf.test.TestCase):
                    [[0.8], [0.2]], [[0.5], [0.5]]]
         weights = tf.constant(weights, dtype=tf.float32)
 
-        expected_1 = 1 * 0.5 + 2 * 0.5
-        expected_1 += 2 * 0.5 * (3 * 0.1 + 4 * 0.9)
-        expected_1 += 2 * 0.5 * (3 * 0.8 + 4 * 0.2)
-        expected_1 += 1 * 0.5 * (5 * 0.7 + 6 * 0.3)
-        expected_1 += 1 * 0.5 * (5 * 0.1 + 6 * 0.9)
+        expected_1 = 1 * 0.5 * 0.25 + 2 * 0.5 * 0.25
+        expected_1 += 2 * 0.5 * 0.25 * (3 * 0.1 + 4 * 0.9)
+        expected_1 += 2 * 0.5 * 0.25 * (3 * 0.8 + 4 * 0.2)
+        expected_1 += 1 * 0.5 * 0.25 * (5 * 0.7 + 6 * 0.3)
+        expected_1 += 1 * 0.5 * 0.25 * (5 * 0.1 + 6 * 0.9)
 
-        expected_2 = 3 * 0.5 + 4 * 0.5
-        expected_2 += 2 * 0.5 * (1 * 0.4 + 2 * 0.6)
-        expected_2 += 2 * 0.5 * (1 * 0.7 + 2 * 0.3)
-        expected_2 += 1 * 0.5 * (7 * 0.8 + 8 * 0.2)
-        expected_2 += 1 * 0.5 * (7 * 0.1 + 8 * 0.9)
+        expected_2 = 3 * 0.5 * 0.25 + 4 * 0.5 * 0.25
+        expected_2 += 2 * 0.5 * 0.25 * (1 * 0.4 + 2 * 0.6)
+        expected_2 += 2 * 0.5 * 0.25 * (1 * 0.7 + 2 * 0.3)
+        expected_2 += 1 * 0.5 * 0.25 * (7 * 0.7 + 8 * 0.3)
+        expected_2 += 1 * 0.5 * 0.25 * (7 * 0.1 + 8 * 0.9)
 
-        expected_3 = 5 * 0.5 + 6 * 0.5
-        expected_3 += 1 * 0.5 * (1 * 0.8 + 2 * 0.2)
-        expected_3 += 1 * 0.5 * (1 * 0.4 + 2 * 0.6)
-        expected_3 += 2 * 0.5 * (7 * 0.1 + 8 * 0.9)
-        expected_3 += 2 * 0.5 * (7 * 0.8 + 8 * 0.2)
+        expected_3 = 5 * 0.5 * 0.25 + 6 * 0.5 * 0.25
+        expected_3 += 1 * 0.5 * 0.25 * (1 * 0.8 + 2 * 0.2)
+        expected_3 += 1 * 0.5 * 0.25 * (1 * 0.4 + 2 * 0.6)
+        expected_3 += 2 * 0.5 * 0.25 * (7 * 0.1 + 8 * 0.9)
+        expected_3 += 2 * 0.5 * 0.25 * (7 * 0.8 + 8 * 0.2)
 
-        expected_4 = 7 * 0.5 + 8 * 0.5
-        expected_4 += 1 * 0.5 * (3 * 0.8 + 4 * 0.2)
-        expected_4 += 1 * 0.5 * (3 * 0.4 + 4 * 0.6)
-        expected_4 += 2 * 0.5 * (5 * 0.7 + 6 * 0.3)
-        expected_4 += 2 * 0.5 * (5 * 0.4 + 6 * 0.6)
+        expected_4 = 7 * 0.5 * 0.25 + 8 * 0.5 * 0.25
+        expected_4 += 1 * 0.5 * 0.25 * (3 * 0.8 + 4 * 0.2)
+        expected_4 += 1 * 0.5 * 0.25 * (3 * 0.4 + 4 * 0.6)
+        expected_4 += 2 * 0.5 * 0.25 * (5 * 0.7 + 6 * 0.3)
+        expected_4 += 2 * 0.5 * 0.25 * (5 * 0.4 + 6 * 0.6)
 
         expected = [[expected_1], [expected_2], [expected_3], [expected_4]]
 
