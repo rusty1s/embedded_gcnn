@@ -8,9 +8,7 @@ import time
 
 from ..datasets import PreprocessQueue
 from .placeholder import feed_dict_with_batch
-from ..pipeline.dataset import PreprocessedDataset
-from ..pipeline.file_queue import FileQueue
-from ..pipeline.augment import augment_batch
+from ..pipeline import PreprocessedDataset, FileQueue, augment_batch
 
 
 def train(model,
