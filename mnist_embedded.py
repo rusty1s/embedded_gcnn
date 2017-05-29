@@ -11,7 +11,8 @@ QUICKSHIFT_FEATURES = [2, 6, 7, 8, 24, 25, 28, 32, 37]
 
 DATA_DIR = 'data/mnist'
 
-PREPROCESS_FIRST = None
+# PREPROCESS_FIRST = 'data/mnist/slic'
+PREPROCESS_FIRST = 'data/mnist/quickshift'
 
 LEVELS = 4
 SCALE_INVARIANCE = False
@@ -24,7 +25,7 @@ LOG_DIR = 'data/summaries/mnist_quickshift_embedded'
 
 AUGMENT_TRAIN_EXAMPLES = False
 DROPOUT = 0.5
-BATCH_SIZE = 4
+BATCH_SIZE = 64
 MAX_STEPS = 20000
 DISPLAY_STEP = 10
 # FORM_FEATURES = SLIC_FEATURES

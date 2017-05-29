@@ -3,15 +3,14 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf import base, sparse_identity, sparse_tensor_diag_matmul
+from ..tf import base, sparse_tensor_diag_matmul
 
 
 def conv(features, adj_dist, adj_rad, weights, K=2):
-    n = adj_dist.dense_shape[0]
     P = weights.get_shape()[0].value - 1
 
-    adj_norm = tf.sparse_add(adj_dist, sparse_identity(n))
-    degree = tf.sparse_reduce_sum(adj_norm, axis=1)
+    degree = tf.sparse_reduce_sum(adj_dist, axis=1)
+    degree = degree + tf.ones_like(degree)
     degree = tf.cast(degree, tf.float32)
 
     features_rescaled = tf.reshape(tf.pow(degree, -1), [-1, 1]) * features
