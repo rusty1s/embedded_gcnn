@@ -60,3 +60,17 @@ class InitsTest(tf.test.TestCase):
 
             self.assertEqual(bias.name, 'bias_2:0')
             self.assertAllEqual(bias.eval(), expected)
+
+    def test_bias_variable_with_decay(self):
+        bias = bias_variable([2, 3], name='biases', decay=0.01)
+        losses = tf.get_collection('losses')
+
+        expected = tf.nn.l2_loss(bias)
+        expected = expected * 0.01
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertEqual(len(losses), 1)
+            self.assertEqual(losses[0].name, 'bias_loss:0')
+            self.assertEqual(losses[0].eval(), expected.eval())

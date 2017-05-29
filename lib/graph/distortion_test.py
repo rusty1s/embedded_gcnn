@@ -5,7 +5,8 @@ from numpy.testing import assert_equal
 import scipy.sparse as sp
 
 from .distortion import (perm_adj, perm_features, filter_adj, filter_features,
-                         gray_color_threshold, degree_threshold)
+                         gray_color_threshold, degree_threshold,
+                         area_threshold)
 
 
 class DistortionTest(TestCase):
@@ -64,4 +65,11 @@ class DistortionTest(TestCase):
 
         nodes = degree_threshold(adj, None, 3)
         expected = [1, 2, 3, 4]
+        assert_equal(nodes, expected)
+
+    def test_area_threshold(self):
+        features = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
+
+        nodes = area_threshold(None, features, 4, idx=1)
+        expected = [0, 1]
         assert_equal(nodes, expected)
