@@ -10,8 +10,7 @@ def conv(features, adj_dist, adj_rad, weights, K=2):
     n = adj_dist.dense_shape[0]
     P = weights.get_shape()[0].value - 1
 
-    adj_norm = tf.sparse_add(adj_dist,
-                             sparse_identity(n, adj_dist.values.dtype))
+    adj_norm = tf.sparse_add(adj_dist, sparse_identity(n))
     degree = tf.sparse_reduce_sum(adj_norm, axis=1)
     degree = tf.cast(degree, tf.float32)
 

@@ -5,8 +5,9 @@ import sys
 from six.moves import xrange
 
 import numpy as np
+from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import VarianceThreshold
-from sklearn.feature_selection import SelectKBest, chi2, RFE
+from sklearn.feature_selection import SelectKBest, RFE, f_classif
 from sklearn.linear_model import LogisticRegression
 
 from .form_feature_extraction import FormFeatureExtraction
@@ -18,7 +19,11 @@ def _print_status(percentage):
 
 
 class FormFeatureSelection(object):
-    def __init__(self, dataset, segmentation_algorithm, num_examples=None):
+    def __init__(self,
+                 dataset,
+                 segmentation_algorithm,
+                 num_examples=None,
+                 scaler=StandardScaler()):
 
         if num_examples is None:
             num_examples = dataset.num_examples
@@ -32,6 +37,7 @@ class FormFeatureSelection(object):
             segmentation = segmentation_algorithm(images[i])
 
             features = FormFeatureExtraction(segmentation).get_features()
+            features = scaler.fit_transform(features)
             label = np.where(labels[i] == 1)[0][0]
             label = label.repeat(features.shape[0])
 
@@ -69,7 +75,7 @@ class FormFeatureSelection(object):
         self._idx = self._idx[np.where(sel.get_support())[0]]
 
     def select_univariate(self, k):
-        sel = SelectKBest(chi2, k)
+        sel = SelectKBest(f_classif, k)
         self._features = sel.fit_transform(self._features, self._labels)
         self._idx = self._idx[np.where(sel.get_support())[0]]
 

@@ -5,7 +5,10 @@ from sklearn.preprocessing import StandardScaler
 from .form_feature_extraction import FormFeatureExtraction
 
 
-def extract_features(segmentation, image, form_features=None):
+def extract_features(segmentation,
+                     image,
+                     form_features=None,
+                     scaler=StandardScaler()):
     features = FormFeatureExtraction(segmentation).get_features(form_features)
 
     group_idx = segmentation.flatten()
@@ -26,7 +29,11 @@ def extract_features(segmentation, image, form_features=None):
         raise ValueError
 
     features = features.astype(np.float32)
-    return StandardScaler().fit_transform(features)
+
+    if scaler is None:
+        return features
+    else:
+        return scaler.fit_transform(features)
 
 
 def extract_features_fixed(form_features=None):

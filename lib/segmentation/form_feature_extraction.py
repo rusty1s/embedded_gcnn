@@ -7,7 +7,6 @@ import numpy as np
 from numpy import pi as PI
 import numpy_groupies as npg
 import scipy.ndimage as ndi
-from skimage.measure import regionprops
 
 
 class FormFeatureExtraction(object):
@@ -27,10 +26,6 @@ class FormFeatureExtraction(object):
     @cached_property
     def _flat(self):
         return self.segmentation.flatten()
-
-    @cached_property
-    def _regionprops(self):
-        return regionprops(self.segmentation + 1)
 
     @cached_property
     def _ys(self):
@@ -69,17 +64,14 @@ class FormFeatureExtraction(object):
     @cached_property
     def _min_y(self):
         return self._extrema_y[0]
-        return npg.aggregate(self._flat, self._ys, func='argmin')
 
     @cached_property
     def _max_y(self):
         return self._extrema_y[1] + 1
-        return 1 + npg.aggregate(self._flat, self._ys, func='argmax')
 
     @cached_property
     def _min_x(self):
         return self._extrema_x[0]
-        return npg.aggregate(self._flat, self._xs, func='min')
 
     @cached_property
     def _max_x(self):
@@ -345,10 +337,6 @@ class FormFeatureExtraction(object):
         return self._centroid_x - self._min_x
 
     @cached_property
-    def convex_area(self):
-        return np.array([prop['convex_area'] for prop in self._regionprops])
-
-    @cached_property
     def eccentricity(self):
         eigval_1 = self.inertia_tensor_eigvals_1
         eigval_2 = self.inertia_tensor_eigvals_2
@@ -361,16 +349,8 @@ class FormFeatureExtraction(object):
         return np.sqrt(4 * self._M_00 / PI)
 
     @cached_property
-    def euler_number(self):
-        return np.array([prop['euler_number'] for prop in self._regionprops])
-
-    @cached_property
     def extent(self):
         return self._M_00 / self.bbox_area
-
-    @cached_property
-    def filled_area(self):
-        return np.array([prop['filled_area'] for prop in self._regionprops])
 
     @cached_property
     def major_axis_length(self):
@@ -382,15 +362,14 @@ class FormFeatureExtraction(object):
 
     @cached_property
     def orientation(self):
-        return np.array([prop['orientation'] for prop in self._regionprops])
+        a = self.inertia_tensor_20
+        b = self.inertia_tensor_11
+        c = self.inertia_tensor_02
 
-    @cached_property
-    def perimeter(self):
-        return np.array([prop['perimeter'] for prop in self._regionprops])
-
-    @cached_property
-    def solidity(self):
-        return np.array([prop['solidity'] for prop in self._regionprops])
+        right = a - c
+        result = -0.5 * np.arctan2(2 * b, right)
+        b_new = np.where(b > 0, -np.pi / 4, np.pi / 4)
+        return np.where(right == 0, b_new, result)
 
 
 methods = dir(FormFeatureExtraction)

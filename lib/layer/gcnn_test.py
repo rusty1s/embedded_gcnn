@@ -40,7 +40,7 @@ class GCNNTest(tf.test.TestCase):
 
     def test_call(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(adj)
+        adj = sp.coo_matrix(adj, dtype=np.float32)
         adj = sparse_to_tensor(adj)
 
         layer = GCNN(2, 3, [adj, adj], name='call')
@@ -70,7 +70,7 @@ class GCNNTest(tf.test.TestCase):
 
     def test_call_without_bias(self):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
-        adj = sp.coo_matrix(adj)
+        adj = sp.coo_matrix(adj, dtype=np.float32)
         adj = sparse_to_tensor(adj)
 
         layer = GCNN(2, 3, [adj, adj], bias=False, name='call_without_bias')

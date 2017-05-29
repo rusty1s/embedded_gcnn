@@ -11,9 +11,7 @@ def laplacian(adj):
     adj = sparse_tensor_diag_matmul(adj, degree, transpose=False)
 
     n = adj.dense_shape[0]
-    identity = sparse_identity(n, tf.float32)
-
-    return sparse_subtract(identity, adj)
+    return sparse_subtract(sparse_identity(n), adj)
 
 
 def rescale_lap(lap):

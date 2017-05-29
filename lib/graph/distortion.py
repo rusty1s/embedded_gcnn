@@ -61,3 +61,8 @@ def degree_threshold(adj, features, k):
     # Adjacency must contain one in every entry.
     degree = npg.aggregate(adj.row, adj.data, func='sum')
     return np.where(degree <= k)[0]
+
+
+def area_threshold(adj, features, k, idx=1):
+    area = features[:, idx]
+    return np.where(area <= k)[0]
