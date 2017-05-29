@@ -8,13 +8,15 @@ import numpy_groupies as npg
 def zero_one_scale_adj(adj, scale_invariance=False):
     """Normalize adjacency matrix to interval [0, 1]."""
 
+    data = adj.data
+
+    if data.size == 0:
+        return adj
+
     if not scale_invariance:
-        data = adj.data
-        if data.size > 0:
-            adj.data = (1 / data.max()) * data
+        adj.data = (1 / data.max()) * data
     else:
         rows = adj.row
-        data = adj.data
         multiplicator = 1 / npg.aggregate(rows, data, func='max')
         multiplicator = multiplicator[rows]
         adj.data = data * multiplicator

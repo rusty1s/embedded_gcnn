@@ -69,6 +69,10 @@ def _coarsen_adj(adj,
 
 
 def _coarsen_clustered_adj(adj, points, mass, cluster_map):
+    # Abort if adjacency contains only one or less points.
+    if points.shape[0] < 2:
+        return adj, points, mass
+
     rows = cluster_map[adj.row]
     cols = cluster_map[adj.col]
 
