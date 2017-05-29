@@ -3,7 +3,6 @@ from __future__ import division
 from unittest import TestCase
 
 import numpy as np
-from numpy import pi as PI
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
@@ -192,7 +191,7 @@ class CoarseningTest(TestCase):
         assert_equal(adjs_dist[0].data, [np.exp(-0.5), np.exp(-0.5)])
         assert_equal(adjs_dist[0].row, [0, 1])
         assert_equal(adjs_dist[0].col, [1, 0])
-        assert_equal(adjs_rad[0].data, [PI, 2 * PI])
+        assert_equal(adjs_rad[0].data, [np.pi, 2 * np.pi])
         assert_equal(adjs_rad[0].row, [0, 1])
         assert_equal(adjs_rad[0].col, [1, 0])
 

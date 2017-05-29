@@ -98,34 +98,36 @@ class FormFeatureExtractionTest(TestCase):
                             _convert(props, 'local_centroid')[0])
         assert_almost_equal(features.centroid_x,
                             _convert(props, 'local_centroid')[1])
-        # TODO convex area
+        assert_equal(features.convex_area, _convert(props, 'convex_area'))
         assert_almost_equal(features.eccentricity,
                             _convert(props, 'eccentricity'))
         assert_equal(features.equivalent_diameter,
                      _convert(props, 'equivalent_diameter'))
-        # TODO euler number
+        assert_equal(features.euler_number, _convert(props, 'euler_number'))
         assert_equal(features.extent, _convert(props, 'extent'))
-        # TODO filled area
+        assert_equal(features.filled_area, _convert(props, 'filled_area'))
         assert_almost_equal(features.major_axis_length,
                             _convert(props, 'major_axis_length'))
         assert_almost_equal(features.minor_axis_length,
                             _convert(props, 'minor_axis_length'))
-        # TODO orientation
-        # TODO perimeter
-        # TODO solidity
+        assert_equal(features.orientation, _convert(props, 'orientation'))
+        assert_equal(features.perimeter, _convert(props, 'perimeter'))
+        assert_equal(features.solidity, _convert(props, 'solidity'))
 
     def test_methods(self):
-        self.assertEqual(len(FormFeatureExtraction.methods), 37)
+        self.assertEqual(len(FormFeatureExtraction.methods), 43)
 
         expected = [
             'area', 'bbox_area', 'bbox_height', 'bbox_width', 'centroid_x',
-            'centroid_y', 'eccentricity', 'equivalent_diameter', 'extent',
-            'hu_1', 'hu_2', 'hu_3', 'hu_4', 'hu_5', 'hu_6', 'hu_7',
-            'inertia_tensor_02', 'inertia_tensor_11', 'inertia_tensor_20',
+            'centroid_y', 'convex_area', 'eccentricity', 'equivalent_diameter',
+            'euler_number', 'extent', 'filled_area', 'hu_1', 'hu_2', 'hu_3',
+            'hu_4', 'hu_5', 'hu_6', 'hu_7', 'inertia_tensor_02',
+            'inertia_tensor_11', 'inertia_tensor_20',
             'inertia_tensor_eigvals_1', 'inertia_tensor_eigvals_2',
             'major_axis_length', 'minor_axis_length', 'mu_02', 'mu_03',
             'mu_11', 'mu_12', 'mu_20', 'mu_21', 'mu_30', 'nu_02', 'nu_03',
-            'nu_11', 'nu_12', 'nu_20', 'nu_21', 'nu_30'
+            'nu_11', 'nu_12', 'nu_20', 'nu_21', 'nu_30', 'orientation',
+            'perimeter', 'solidity'
         ]
 
         self.assertEqual(FormFeatureExtraction.methods, expected)
@@ -138,4 +140,4 @@ class FormFeatureExtractionTest(TestCase):
         assert_equal(f, [[4, 4, 2], [4, 4, 2]])
 
         f = features.get_features()
-        self.assertEqual(f.shape, (2, 37))
+        self.assertEqual(f.shape, (2, 43))
