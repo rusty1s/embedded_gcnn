@@ -24,7 +24,7 @@ def total_loss(loss):
     return tf.add_n(losses, name='total_loss')
 
 
-def top_accuracy(outputs, labels):
+def accuracy(outputs, labels):
     """Calculate accuracy."""
 
     num_labels = labels.get_shape()[1]
@@ -45,8 +45,8 @@ def top_accuracy(outputs, labels):
     return accuracy
 
 
-def threshold_accuracy(outputs, labels, k=0.5):
-    with tf.name_scope('threshold_accuracy'):
+def precision_recall(outputs, labels, k=0.5):
+    with tf.name_scope('precision_recall'):
         predicted_labels = tf.nn.sigmoid(outputs)
         k = tf.fill(outputs.get_shape(), k)
         predicted_labels = tf.greater(predicted_labels, k)

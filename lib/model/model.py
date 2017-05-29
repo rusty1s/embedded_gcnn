@@ -3,7 +3,7 @@ import time
 import tensorflow as tf
 
 from .metrics import (softmax_cross_entropy, sigmoid_cross_entropy, total_loss,
-                      top_accuracy, threshold_accuracy)
+                      accuracy, precision_recall)
 
 
 class Model(object):
@@ -42,8 +42,8 @@ class Model(object):
         self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=epsilon)
 
         self._loss = None
-        self._top_accuracy = None
-        self._threshold_accuracy = None
+        self._accuracy = None
+        self._precision_recall = None
         self._train = None
         self._summary = None
         self._writer = None
@@ -73,10 +73,10 @@ class Model(object):
         # Build metrics.
         self._loss = self._loss_algorithm(self.outputs, self.labels)
         self._loss = total_loss(self._loss)
-        self._top_accuracy = top_accuracy(self.outputs, self.labels)
+        self._accuracy = accuracy(self.outputs, self.labels)
         if self.isMultilabel:
-            self._threshold_accuracy = threshold_accuracy(self.outputs,
-                                                          self.labels)
+            self._precision_recall = precision_recall(self.outputs,
+                                                      self.labels)
 
         # Build train op.
         self._train = self.optimizer.minimize(
@@ -133,20 +133,19 @@ class Model(object):
 
     def evaluate(self, feed_dict, step=None, name=None):
         if not self.isMultilabel:
-            loss, acc = self.sess.run([self._loss, self._top_accuracy],
-                                      feed_dict)
+            loss, acc = self.sess.run([self._loss, self._accuracy], feed_dict)
             if self.logging and step is not None and name is not None:
                 self._add_summary('{}_loss'.format(name), loss, step)
                 self._add_summary('{}_accuracy'.format(name), acc, step)
             return loss, acc
         else:
             loss, acc_1, acc_2 = self.sess.run(
-                [self._loss, self._top_accuracy, self._threshold_accuracy],
+                [self._loss, self._accuracy, self._precision_recall],
                 feed_dict)
             if self.logging and step is not None and name is not None:
                 self._add_summary('{}_loss'.format(name), loss, step)
-                self._add_summary('{}_top_accuracy'.format(name), acc_1, step)
-                self._add_summary('{}_threshold_accuracy'.format(name), acc_2,
+                self._add_summary('{}_accuracy'.format(name), acc_1, step)
+                self._add_summary('{}_precision_recall'.format(name), acc_2,
                                   step)
             return loss, acc_1, acc_2
 

@@ -77,14 +77,14 @@ def train(model,
                 if not model.isMultilabel:
                     log += 'train_acc={:.5f}, '.format(train_info[1])
                 else:
-                    log += 'train_top_acc={:.5f}, '.format(train_info[1])
-                    log += 'train_threshold_acc={:.5f}, '.format(train_info[2])
+                    log += 'train_acc={:.5f}, '.format(train_info[1])
+                    log += 'train_p/r={:.5f}, '.format(train_info[2])
                 log += 'val_loss={:.5f}, '.format(val_info[0])
                 if not model.isMultilabel:
                     log += 'val_acc={:.5f}'.format(val_info[1])
                 else:
-                    log += 'val_top_acc={:.5f}, '.format(val_info[1])
-                    log += 'val_threshold_acc={:.5f}'.format(val_info[2])
+                    log += 'val_acc={:.5f}, '.format(val_info[1])
+                    log += 'val_p/r={:.5f}'.format(val_info[2])
 
                 print(log)
 
@@ -128,8 +128,8 @@ def train(model,
         if not model.isMultilabel:
             log += 'acc={:.5f}'.format(test_info[1] / num_steps)
         else:
-            log += 'top_acc={:.5f}, '.format(test_info[1] / num_steps)
-            log += 'threshold_acc={:.5f}'.format(test_info[2] / num_steps)
+            log += 'acc={:.5f}, '.format(test_info[1] / num_steps)
+            log += 'p/r={:.5f}'.format(test_info[2] / num_steps)
 
         print(log)
 
