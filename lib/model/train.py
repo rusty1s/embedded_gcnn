@@ -83,8 +83,8 @@ def train(model,
                     log += 'val_acc={:.5f}'.format(val_info[1])
                 else:
                     log += 'val_acc={:.5f}, '.format(val_info[1])
-                    log += 'train_precision={:.5f}, '.format(val_info[2])
-                    log += 'train_recall={:.5f}, '.format(val_info[3])
+                    log += 'val_precision={:.5f}, '.format(val_info[2])
+                    log += 'val_recall={:.5f}, '.format(val_info[3])
 
                 print(log)
 
