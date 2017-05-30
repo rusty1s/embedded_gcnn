@@ -84,7 +84,7 @@ def train(model,
                 else:
                     log += 'val_acc={:.5f}, '.format(val_info[1])
                     log += 'val_precision={:.5f}, '.format(val_info[2])
-                    log += 'val_recall={:.5f}, '.format(val_info[3])
+                    log += 'val_recall={:.5f}'.format(val_info[3])
 
                 print(log)
 
@@ -129,7 +129,7 @@ def train(model,
             log += 'acc={:.5f}'.format(test_info[1] / num_steps)
         else:
             log += 'acc={:.5f}, '.format(test_info[1] / num_steps)
-            log += 'precision={:.5f}'.format(test_info[2] / num_steps)
+            log += 'precision={:.5f}, '.format(test_info[2] / num_steps)
             log += 'recall={:.5f}'.format(test_info[3] / num_steps)
 
         print(log)
