@@ -6,14 +6,14 @@ from numpy import pi as PI
 def augment_batch(batch):
     batch_augmented = []
     for example in batch:
-        features, adjs_dist, adjs_rad = example
+        features, adjs_dist, adjs_rad, label = example
 
         features = random_brightness(features, 0, 3, max_delta=0.1)
         features = random_contrast(features, 0, 3, max_delta=0.2)
 
         adjs_rad = random_flip_left_right_adjs(adjs_rad)
 
-        batch_augmented.append((features, adjs_dist, adjs_rad))
+        batch_augmented.append((features, adjs_dist, adjs_rad, label))
 
     return batch_augmented
 
