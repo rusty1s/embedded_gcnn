@@ -53,9 +53,9 @@ def precision(outputs, labels, k=0.5):
 
         labels = tf.cast(labels, tf.bool)
         true_positives = tf.logical_and(labels, predicted_labels)
-        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.uint8))
+        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.float32))
 
-        all_positives = tf.reduce_sum(tf.cast(predicted_labels, tf.uint8))
+        all_positives = tf.reduce_sum(tf.cast(predicted_labels, tf.float32))
         return true_positives / all_positives
 
 
@@ -67,7 +67,7 @@ def recall(outputs, labels, k=0.5):
 
         labels = tf.cast(labels, tf.bool)
         true_positives = tf.logical_and(labels, predicted_labels)
-        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.uint8))
+        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.float32))
 
-        all_positives = tf.reduce_sum(tf.cast(labels, tf.uint8))
+        all_positives = tf.reduce_sum(tf.cast(labels, tf.float33))
         return true_positives / all_positives
