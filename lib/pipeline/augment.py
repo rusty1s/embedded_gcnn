@@ -18,16 +18,16 @@ def augment_batch(batch):
     return batch_augmented
 
 
+def flip_left_right_adj(adj_rad):
+    adj_rad.data = 2 * PI - adj_rad.data
+    return adj_rad
+
+
 def random_flip_left_right_adjs(adjs_rad):
     if bool(random.getrandbits(1)):
         adjs_rad = [flip_left_right_adj(adj_rad) for adj_rad in adjs_rad]
 
     return adjs_rad
-
-
-def flip_left_right_adj(adj_rad):
-    adj_rad.data = 2 * PI - adj_rad.data
-    return adj_rad
 
 
 def adjust_brightness(features, start_idx, end_idx, delta):

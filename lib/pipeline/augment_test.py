@@ -5,7 +5,9 @@ from numpy import pi as PI
 from numpy.testing import assert_equal, assert_almost_equal
 import scipy.sparse as sp
 
-from .augment import flip_left_right_adj, adjust_brightness, adjust_contrast
+from .augment import (flip_left_right_adj, adjust_brightness, adjust_contrast,
+                      random_flip_left_right_adjs, random_brightness,
+                      random_contrast)
 
 
 class AugmentTest(TestCase):
@@ -31,3 +33,31 @@ class AugmentTest(TestCase):
 
         assert_almost_equal(output,
                             [[0.225, 0.35, 0.575, 1], [0.275, 0.25, 0.525, 2]])
+
+    def test_random_flip_left_right_adjs(self):
+        adj = [[0, 0.25 * PI, 0.75 * PI], [1.25 * PI, 0, 0], [1.75 * PI, 0, 0]]
+        adjs = [sp.coo_matrix(adj)]
+
+        random_flip_left_right_adjs(adjs)
+        random_flip_left_right_adjs(adjs)
+        random_flip_left_right_adjs(adjs)
+        random_flip_left_right_adjs(adjs)
+        random_flip_left_right_adjs(adjs)
+
+    def test_random_brightness(self):
+        features = np.array([[0.2, 0.4, 0.6, 1], [0.3, 0.2, 0.5, 2]])
+
+        random_brightness(features, 0, 3, max_delta=0.5)
+        random_brightness(features, 0, 3, max_delta=0.5)
+        random_brightness(features, 0, 3, max_delta=0.5)
+        random_brightness(features, 0, 3, max_delta=0.5)
+        random_brightness(features, 0, 3, max_delta=0.5)
+
+    def test_random_contrast(self):
+        features = np.array([[0.2, 0.4, 0.6, 1], [0.3, 0.2, 0.5, 2]])
+
+        random_contrast(features, 0, 3, max_delta=0.5)
+        random_contrast(features, 0, 3, max_delta=0.5)
+        random_contrast(features, 0, 3, max_delta=0.5)
+        random_contrast(features, 0, 3, max_delta=0.5)
+        random_contrast(features, 0, 3, max_delta=0.5)
