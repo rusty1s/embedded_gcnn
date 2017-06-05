@@ -48,7 +48,7 @@ def accuracy(outputs, labels):
 def precision(outputs, labels, k=0.5):
     with tf.name_scope('precision'):
         predicted_labels = tf.nn.sigmoid(outputs)
-        k = tf.fill(outputs.get_shape(), k)
+        k = tf.zeros_like(outputs) + k
         predicted_labels = tf.greater(predicted_labels, k)
 
         labels = tf.cast(labels, tf.bool)
@@ -65,7 +65,7 @@ def precision(outputs, labels, k=0.5):
 def recall(outputs, labels, k=0.5):
     with tf.name_scope('recall'):
         predicted_labels = tf.nn.sigmoid(outputs)
-        k = tf.fill(outputs.get_shape(), k)
+        k = tf.zeros_like(outputs) + k
         predicted_labels = tf.greater(predicted_labels, k)
 
         labels = tf.cast(labels, tf.bool)

@@ -3,9 +3,13 @@ from tensorflow.examples.tutorials.mnist import input_data
 
 from .dataset import Datasets, Dataset
 
+WIDTH = 28
+HEIGHT = 28
+NUM_CHANNELS = 1
+
 
 def _preprocess_images(images):
-    return np.reshape(images, (-1, 28, 28, 1))
+    return np.reshape(images, (-1, WIDTH, HEIGHT, NUM_CHANNELS))
 
 
 def _preprocess_labels(labels):
@@ -34,3 +38,15 @@ class MNIST(Datasets):
     @property
     def classes(self):
         return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+    @property
+    def width(self):
+        return WIDTH
+
+    @property
+    def height(self):
+        return HEIGHT
+
+    @property
+    def num_channels(self):
+        return NUM_CHANNELS

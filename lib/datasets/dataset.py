@@ -12,6 +12,18 @@ class Datasets(object):
         raise NotImplementedError
 
     @property
+    def width(self):
+        raise NotImplementedError
+
+    @property
+    def height(self):
+        raise NotImplementedError
+
+    @property
+    def num_channels(self):
+        raise NotImplementedError
+
+    @property
     def num_classes(self):
         return len(self.classes)
 
@@ -26,6 +38,9 @@ class Dataset(object):
         self._images = images
         self._labels = labels
         self._index_in_epoch = 0
+
+    def close(self):
+        pass
 
     @property
     def num_examples(self):

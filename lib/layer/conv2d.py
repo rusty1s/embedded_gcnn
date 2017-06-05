@@ -5,7 +5,7 @@ from .var_layer import VarLayer
 
 def conv(inputs, weights, stride):
     return tf.nn.conv2d(
-        inputs, weights, [1, stride, stride, 1], padding='SAME')
+        inputs, weights, strides=[1, stride, stride, 1], padding='SAME')
 
 
 class Conv2d(VarLayer):

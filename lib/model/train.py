@@ -1,10 +1,9 @@
 from __future__ import print_function
 from __future__ import division
 
-from six.moves import xrange
-
 import os
 import time
+from six.moves import xrange
 
 from ..datasets import PreprocessQueue
 from .placeholder import feed_dict_with_batch

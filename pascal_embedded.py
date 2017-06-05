@@ -114,10 +114,12 @@ class Model(BaseModel):
         max_pool_5 = MaxPool(size=2)
         average_pool = AveragePool()
         fc_1 = FC(512, 256, logging=self.logging)
-        fc_2 = FC(256, 128, logging=self.logging)
+        fc_2 = FC(256,
+                  128,
+                  dropout=self.placeholders['dropout'],
+                  logging=self.logging)
         fc_3 = FC(128,
                   data.num_classes,
-                  dropout=self.placeholders['dropout'],
                   act=lambda x: x,
                   bias=False,
                   logging=self.logging)
