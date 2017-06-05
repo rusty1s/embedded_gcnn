@@ -14,7 +14,7 @@ def generate_placeholders(batch_size, levels, num_features, num_labels):
             for i in xrange(batch_size)
         ],
         'labels':
-        tf.placeholder(tf.int32, [batch_size, num_labels], 'labels'),
+        tf.placeholder(tf.uint8, [batch_size, num_labels], 'labels'),
         'dropout':
         tf.placeholder(tf.float32, [], 'dropout'),
     }

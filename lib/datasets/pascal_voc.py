@@ -18,6 +18,9 @@ CLASSES = [
     'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
     'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
 ]
+WIDTH = 224
+HEIGHT = 224
+NUM_CHANNELS = 3
 
 
 def _read_image(name, data_dir):
