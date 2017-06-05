@@ -6,6 +6,7 @@ from xml.dom.minidom import parse
 
 import numpy as np
 from skimage.io import imread
+from skimage.transform import resize
 
 from .dataset import Datasets
 from .download import maybe_download_and_extract
@@ -23,38 +24,6 @@ HEIGHT = 224
 NUM_CHANNELS = 3
 
 
-def _read_image(name, data_dir):
-    path = os.path.join(data_dir, 'JPEGImages', '{}.jpg'.format(name))
-    image = imread(path)
-    image = (1 / 255) * image.astype(np.float32)
-    return image
-
-
-def _read_label(name, data_dir):
-    path = os.path.join(data_dir, 'Annotations', '{}.xml'.format(name))
-    annotation = parse(path)
-
-    label = np.zeros((len(CLASSES)), np.uint8)
-
-    for obj in annotation.getElementsByTagName('object'):
-        # Pass difficult objects.
-        difficult = obj.getElementsByTagName('difficult')
-        if len(difficult) > 0:
-            difficult = difficult[0].firstChild.nodeValue
-            if difficult == '1':
-                continue
-
-        name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
-
-        try:
-            index = CLASSES.index(name)
-            label[index] = 1
-        except ValueError:
-            pass
-
-    return label
-
-
 class PascalVOC(Datasets):
     def __init__(self, data_dir, val_size=1500):
         maybe_download_and_extract(URL, data_dir)
@@ -64,11 +33,11 @@ class PascalVOC(Datasets):
         names = [name.split('.')[0] for name in names]
         names = sorted(names)
 
-        # # PascalVOC doesn't have released the full test annotation, use
-        # # the validation set instead :(
-        train = Dataset(names[val_size:], self.classes, data_dir)
-        val = Dataset(names[:val_size], self.classes, data_dir)
-        test = Dataset(names[:val_size], self.classes, data_dir)
+        # PascalVOC didn't release the full test annotations yet, use the
+        # validation set instead :(
+        train = Dataset(names[val_size:], data_dir)
+        val = Dataset(names[:val_size], data_dir)
+        test = Dataset(names[:val_size], data_dir)
 
         super(PascalVOC, self).__init__(train, val, test)
 
@@ -76,13 +45,24 @@ class PascalVOC(Datasets):
     def classes(self):
         return CLASSES
 
+    @property
+    def width(self):
+        return WIDTH
+
+    @property
+    def height(self):
+        return HEIGHT
+
+    @property
+    def num_channels(self):
+        return NUM_CHANNELS
+
 
 class Dataset(object):
-    def __init__(self, names, classes, data_dir):
+    def __init__(self, names, data_dir):
         self.epochs_completed = 0
         self._data_dir = data_dir
         self._names = names
-        self._classes = classes
         self._index_in_epoch = 0
 
     @property
@@ -124,8 +104,28 @@ class Dataset(object):
             end = self._index_in_epoch
             names = self._names[start:end]
 
-        images = [_read_image(name, self._data_dir) for name in names]
-        labels = np.array(
-            [_read_label(name, self._data_dir) for name in names], np.uint8)
+        images = np.stack([self._read_image(name) for name in names])
+        labels = np.stack([self._read_label(name) for name in names])
 
         return images, labels
+
+    def _read_image(self, name):
+        path = os.path.join(self._data_dir, 'JPEGImages',
+                            '{}.jpg'.format(name))
+        image = imread(path)
+        image = resize(image, (HEIGHT, WIDTH), mode='constant')
+        image = (1 / 255) * image.astype(np.float32)
+        return image
+
+    def _read_label(self, name):
+        path = os.path.join(self._data_dir, 'Annotations',
+                            '{}.xml'.format(name))
+        annotation = parse(path)
+
+        label = np.zeros((len(CLASSES)), np.uint8)
+
+        for obj in annotation.getElementsByTagName('object'):
+            name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
+            label[CLASSES.index(name)] = 1
+
+        return label

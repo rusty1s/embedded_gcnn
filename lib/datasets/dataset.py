@@ -39,9 +39,6 @@ class Dataset(object):
         self._labels = labels
         self._index_in_epoch = 0
 
-    def close(self):
-        pass
-
     @property
     def num_examples(self):
         return self._labels.shape[0]

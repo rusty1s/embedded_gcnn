@@ -6,11 +6,11 @@ import time
 
 import tensorflow as tf
 
-from lib.datasets import MNIST as Data
+from lib.datasets import PascalVOC as Data
 from lib.model import Model as BaseModel
 from lib.layer import Conv2d as Conv, MaxPool, FC
 
-DATA_DIR = 'data/mnist'
+DATA_DIR = 'data/pascal_voc'
 
 LEARNING_RATE = 0.0001
 TRAIN_DIR = None
@@ -18,7 +18,7 @@ LOG_DIR = 'data/summaries/pascal_conv2d'
 
 DROPOUT = 0.5
 BATCH_SIZE = 32
-MAX_STEPS = 40000
+MAX_STEPS = 50000
 DISPLAY_STEP = 10
 SAVE_STEP = 250
 
@@ -30,7 +30,7 @@ placeholders = {
                    [None, data.width, data.height, data.num_channels],
                    'features'),
     'labels':
-    tf.placeholder(tf.int32, [None, data.num_classes], 'labels'),
+    tf.placeholder(tf.uint8, [None, data.num_classes], 'labels'),
     'dropout':
     tf.placeholder(tf.float32, [], 'dropout'),
 }
@@ -38,50 +38,37 @@ placeholders = {
 
 class Model(BaseModel):
     def _build(self):
-        # conv_1_1 = Conv(data.num_channels, 32, logging=self.logging)
-        # conv_1_2 = Conv(32, 32, logging=self.logging)
-        # max_pool_1 = MaxPool(size=2)
-        # conv_2_1 = Conv(32, 64, logging=self.logging)
-        # conv_2_2 = Conv(64, 64, logging=self.logging)
-        # max_pool_2 = MaxPool(size=2)
-        # conv_3_1 = Conv(64, 128, logging=self.logging)
-        # conv_3_2 = Conv(128, 128, logging=self.logging)
-        # max_pool_3 = MaxPool(size=2)
-        # conv_4_1 = Conv(128, 256, logging=self.logging)
-        # conv_4_2 = Conv(256, 256, logging=self.logging)
-        # max_pool_4 = MaxPool(size=2)
-        # conv_5_1 = Conv(256, 512, logging=self.logging)
-        # conv_5_2 = Conv(512, 512, logging=self.logging)
-        # max_pool_5 = MaxPool(size=2)
-        # fc_1 = FC(512, 256, logging=self.logging)
-        # fc_2 = FC(256, 128, logging=self.logging)
-        # fc_3 = FC(128,
-        #           data.num_classes,
-        #           dropout=self.placeholders['dropout'],
-        #           act=lambda x: x,
-        #           bias=False,
-        #           logging=self.logging)
-
-        # self.layers = [
-        #     conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
-        #     conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
-        #     conv_5_1, conv_5_2, max_pool_5, fc_1, fc_2, fc_3
-        # ]
-        conv_1 = Conv(data.num_channels, 32, size=5, logging=self.logging)
+        conv_1_1 = Conv(data.num_channels, 32, logging=self.logging)
+        conv_1_2 = Conv(32, 32, logging=self.logging)
         max_pool_1 = MaxPool(size=2)
-        conv_2 = Conv(32, 64, size=5, logging=self.logging)
+        conv_2_1 = Conv(32, 64, logging=self.logging)
+        conv_2_2 = Conv(64, 64, logging=self.logging)
         max_pool_2 = MaxPool(size=2)
-        fc_1 = FC((data.width * data.height * 64) // (4 * 4),
-                  1024,
+        conv_3_1 = Conv(64, 128, logging=self.logging)
+        conv_3_2 = Conv(128, 128, logging=self.logging)
+        max_pool_3 = MaxPool(size=2)
+        conv_4_1 = Conv(128, 256, logging=self.logging)
+        conv_4_2 = Conv(256, 256, logging=self.logging)
+        max_pool_4 = MaxPool(size=2)
+        conv_5_1 = Conv(256, 512, logging=self.logging)
+        conv_5_2 = Conv(512, 512, logging=self.logging)
+        max_pool_5 = MaxPool(size=2)
+        fc_1 = FC(7 * 7 * 512, 2048, logging=self.logging)
+        fc_2 = FC(2048,
+                  256,
                   dropout=self.placeholders['dropout'],
                   logging=self.logging)
-        fc_2 = FC(1024,
+        fc_3 = FC(256,
                   data.num_classes,
                   act=lambda x: x,
                   bias=False,
                   logging=self.logging)
 
-        self.layers = [conv_1, max_pool_1, conv_2, max_pool_2, fc_1, fc_2]
+        self.layers = [
+            conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
+            conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
+            conv_5_1, conv_5_2, max_pool_5, fc_1, fc_2, fc_3
+        ]
 
 
 model = Model(
@@ -139,9 +126,6 @@ try:
 
 except KeyboardInterrupt:
     print()
-finally:
-    data.train.close()
-    data.val.close()
 
 print('Optimization finished!')
 print('Evaluate on test set. This can take a few minutes.')
@@ -168,5 +152,3 @@ try:
 except KeyboardInterrupt:
     print()
     print('Test evaluation aborted.')
-finally:
-    data.test.close()
