@@ -23,4 +23,4 @@ class Conv2d(VarLayer):
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
 
-        return outputs
+        return self.act(outputs)

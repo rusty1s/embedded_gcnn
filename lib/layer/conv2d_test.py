@@ -51,7 +51,38 @@ class Conv2dTest(tf.test.TestCase):
         self.assertEqual(layer.vars['bias'].get_shape(), [3])
 
     def test_call(self):
-        pass
+        layer = Conv2d(1, 2, name='call')
+
+        image = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        inputs = tf.constant(image, tf.float32)
+        inputs = tf.reshape(inputs, [1, 3, 3, 1])
+
+        outputs = layer(inputs)
+
+        expected = conv(inputs, layer.vars['weights'], stride=1)
+        expected = tf.nn.bias_add(expected, layer.vars['bias'])
+        expected = tf.nn.relu(expected)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertEqual(outputs.eval().shape, (1, 3, 3, 2))
+            self.assertAllEqual(outputs.eval(), expected.eval())
 
     def test_call_without_bias(self):
-        pass
+        layer = Conv2d(1, 2, bias=False, name='call')
+
+        image = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        inputs = tf.constant(image, tf.float32)
+        inputs = tf.reshape(inputs, [1, 3, 3, 1])
+
+        outputs = layer(inputs)
+
+        expected = conv(inputs, layer.vars['weights'], stride=1)
+        expected = tf.nn.relu(expected)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            self.assertEqual(outputs.eval().shape, (1, 3, 3, 2))
+            self.assertAllEqual(outputs.eval(), expected.eval())
