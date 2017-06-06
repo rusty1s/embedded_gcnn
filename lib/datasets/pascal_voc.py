@@ -5,7 +5,7 @@ import os
 from xml.dom.minidom import parse
 
 import numpy as np
-from skimage.io import imread
+from skimage.io import imread, imshow, imsave
 from skimage.transform import resize
 
 from .dataset import Datasets
@@ -114,8 +114,9 @@ class Dataset(object):
                             '{}.jpg'.format(name))
         image = imread(path)
         image = resize(image, (HEIGHT, WIDTH), mode='constant')
-        image = (1 / 255) * image.astype(np.float32)
-        return image
+        # No need to cast to float when image is resized
+        # image = (1 / 255) * image.astype(np.float32)
+        return image.astype(np.float32)
 
     def _read_label(self, name):
         path = os.path.join(self._data_dir, 'Annotations',

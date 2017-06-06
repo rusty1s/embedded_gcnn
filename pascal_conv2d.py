@@ -39,35 +39,40 @@ placeholders = {
 class Model(BaseModel):
     def _build(self):
         conv_1_1 = Conv(data.num_channels, 32, logging=self.logging)
-        conv_1_2 = Conv(32, 32, logging=self.logging)
+        # conv_1_2 = Conv(32, 32, logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2_1 = Conv(32, 64, logging=self.logging)
-        conv_2_2 = Conv(64, 64, logging=self.logging)
+        # conv_2_2 = Conv(64, 64, logging=self.logging)
         max_pool_2 = MaxPool(size=2)
         conv_3_1 = Conv(64, 128, logging=self.logging)
-        conv_3_2 = Conv(128, 128, logging=self.logging)
+        # conv_3_2 = Conv(128, 128, logging=self.logging)
         max_pool_3 = MaxPool(size=2)
         conv_4_1 = Conv(128, 256, logging=self.logging)
-        conv_4_2 = Conv(256, 256, logging=self.logging)
+        # conv_4_2 = Conv(256, 256, logging=self.logging)
         max_pool_4 = MaxPool(size=2)
-        conv_5_1 = Conv(256, 512, logging=self.logging)
-        conv_5_2 = Conv(512, 512, logging=self.logging)
-        max_pool_5 = MaxPool(size=2)
-        fc_1 = FC(7 * 7 * 512, 2048, logging=self.logging)
-        fc_2 = FC(2048,
-                  256,
-                  dropout=self.placeholders['dropout'],
-                  logging=self.logging)
+        # conv_5_1 = Conv(256, 512, logging=self.logging)
+        # conv_5_2 = Conv(512, 512, logging=self.logging)
+        # max_pool_5 = MaxPool(size=2)
+        fc_1 = FC(14 * 14 * 256, 1024, logging=self.logging)
+        fc_2 = FC(
+            1024,
+            256,
+            # dropout=self.placeholders['dropout'],
+            logging=self.logging)
         fc_3 = FC(256,
                   data.num_classes,
                   act=lambda x: x,
                   bias=False,
                   logging=self.logging)
 
+        # self.layers = [
+        #     conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
+        #     conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
+        #     conv_5_1, conv_5_2, max_pool_5, fc_1, fc_2, fc_3
+        # ]
         self.layers = [
-            conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
-            conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
-            conv_5_1, conv_5_2, max_pool_5, fc_1, fc_2, fc_3
+            conv_1_1, max_pool_1, conv_2_1, max_pool_2, conv_3_1, max_pool_3,
+            conv_4_1, max_pool_4, fc_1, fc_2, fc_3
         ]
 
 
