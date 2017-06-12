@@ -80,7 +80,7 @@ class PascalVOCTest(TestCase):
         _, labels = data.test.next_batch(4, shuffle=False)
 
         self.assertEqual(data.classnames(labels[0]), ['person'])
-        self.assertEqual(data.classnames(labels[1]), ['person', 'aeroplane'])
+        self.assertEqual(data.classnames(labels[1]), ['aeroplane'])
         self.assertEqual(data.classnames(labels[2]), ['aeroplane'])
         self.assertEqual(data.classnames(labels[3]), ['tvmonitor'])
 

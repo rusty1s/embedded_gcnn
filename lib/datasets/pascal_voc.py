@@ -5,7 +5,7 @@ import os
 from xml.dom.minidom import parse
 
 import numpy as np
-from skimage.io import imread, imshow, imsave
+from skimage.io import imread
 from skimage.transform import resize
 
 from .dataset import Datasets
@@ -125,8 +125,21 @@ class Dataset(object):
 
         label = np.zeros((len(CLASSES)), np.uint8)
 
+        max_area = 0
+        max_name = ''
+
         for obj in annotation.getElementsByTagName('object'):
             name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
-            label[CLASSES.index(name)] = 1
+            bbox = obj.getElementsByTagName('bndbox')[0]
+            xmin = bbox.getElementsByTagName('xmin')[0].firstChild.nodeValue
+            xmax = bbox.getElementsByTagName('xmax')[0].firstChild.nodeValue
+            ymin = bbox.getElementsByTagName('ymin')[0].firstChild.nodeValue
+            ymax = bbox.getElementsByTagName('ymax')[0].firstChild.nodeValue
+            area = (int(xmax) - int(xmin)) * (int(ymax) - int(ymin))
+            if area > max_area:
+                max_area = area
+                max_name = name
+
+        label[CLASSES.index(max_name)] = 1
 
         return label

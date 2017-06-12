@@ -78,7 +78,7 @@ class Model(BaseModel):
 
 model = Model(
     placeholders=placeholders,
-    isMultilabel=True,
+    isMultilabel=False,
     learning_rate=LEARNING_RATE,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
@@ -117,12 +117,12 @@ try:
             log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
             log += 'train_loss={:.5f}, '.format(train_info[0])
             log += 'train_acc={:.5f}, '.format(train_info[1])
-            log += 'train_precision={:.5f}, '.format(train_info[2])
-            log += 'train_recall={:.5f}, '.format(train_info[3])
+            # log += 'train_precision={:.5f}, '.format(train_info[2])
+            # log += 'train_recall={:.5f}, '.format(train_info[3])
             log += 'val_loss={:.5f}, '.format(val_info[0])
             log += 'val_acc={:.5f}, '.format(val_info[1])
-            log += 'val_precision={:.5f}, '.format(val_info[2])
-            log += 'val_recall={:.5f}'.format(val_info[3])
+            # log += 'val_precision={:.5f}, '.format(val_info[2])
+            # log += 'val_recall={:.5f}'.format(val_info[3])
 
             print(log)
 
@@ -149,8 +149,8 @@ try:
     log = 'Test results: '
     log += 'loss={:.5f}, '.format(test_info[0] / num_steps)
     log += 'acc={:.5f}, '.format(test_info[1] / num_steps)
-    log += 'precision={:.5f}, '.format(test_info[2] / num_steps)
-    log += 'recall={:.5f}'.format(test_info[3] / num_steps)
+    # log += 'precision={:.5f}, '.format(test_info[2] / num_steps)
+    # log += 'recall={:.5f}'.format(test_info[3] / num_steps)
 
     print(log)
 
