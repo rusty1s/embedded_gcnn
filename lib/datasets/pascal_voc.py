@@ -135,7 +135,7 @@ class Dataset(object):
             xmax = bbox.getElementsByTagName('xmax')[0].firstChild.nodeValue
             ymin = bbox.getElementsByTagName('ymin')[0].firstChild.nodeValue
             ymax = bbox.getElementsByTagName('ymax')[0].firstChild.nodeValue
-            area = (int(xmax) - int(xmin)) * (int(ymax) - int(ymin))
+            area = (float(xmax) - float(xmin)) * (float(ymax) - float(ymin))
             if area > max_area:
                 max_area = area
                 max_name = name
