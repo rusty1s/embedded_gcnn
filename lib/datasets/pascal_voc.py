@@ -6,7 +6,6 @@ from xml.dom.minidom import parse
 
 import numpy as np
 from skimage.io import imread
-from skimage.transform import resize
 
 from .dataset import Datasets
 from .download import maybe_download_and_extract
@@ -113,8 +112,6 @@ class Dataset(object):
         path = os.path.join(self._data_dir, 'JPEGImages',
                             '{}.jpg'.format(name))
         image = imread(path)
-        # image = resize(image, (HEIGHT, WIDTH), mode='constant')
-        # No need to cast to float when image is resized
         image = (1 / 255) * image.astype(np.float32)
         return image.astype(np.float32)
 
