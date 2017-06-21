@@ -17,7 +17,7 @@ def segmentation_adjacency(segmentation):
     n = nums.shape[0]
 
     # Get adjacency (https://goo.gl/y1xFMq).
-    tmp = np.zeros((n+1, n+1), np.bool)
+    tmp = np.zeros((n, n), np.bool)
     a, b = segmentation[:-1, :], segmentation[1:, :]
     tmp[a[a != b], b[a != b]] = True
 
@@ -26,9 +26,6 @@ def segmentation_adjacency(segmentation):
 
     result = tmp | tmp.T
     result = result.astype(np.uint8)
-
-    cols, rows = np.where(result > 0)
-    data = np.ones_like(rows, dtype=np.uint8)
-    adj = sp.coo_matrix((data, (rows, cols)), (n, n))
+    adj = sp.coo_matrix(result)
 
     return adj, points, mass

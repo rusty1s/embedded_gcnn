@@ -104,7 +104,7 @@ class Dataset(object):
             end = self._index_in_epoch
             names = self._names[start:end]
 
-        images = np.stack([self._read_image(name) for name in names])
+        images = [self._read_image(name) for name in names]
         labels = np.stack([self._read_label(name) for name in names])
 
         return images, labels
@@ -113,9 +113,9 @@ class Dataset(object):
         path = os.path.join(self._data_dir, 'JPEGImages',
                             '{}.jpg'.format(name))
         image = imread(path)
-        image = resize(image, (HEIGHT, WIDTH), mode='constant')
+        # image = resize(image, (HEIGHT, WIDTH), mode='constant')
         # No need to cast to float when image is resized
-        # image = (1 / 255) * image.astype(np.float32)
+        image = (1 / 255) * image.astype(np.float32)
         return image.astype(np.float32)
 
     def _read_label(self, name):
