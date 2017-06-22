@@ -20,6 +20,7 @@ DROPOUT = 0.5
 BATCH_SIZE = 32
 MAX_STEPS = 50000
 DISPLAY_STEP = 10
+VALIDATION_STEP = 500
 SAVE_STEP = 250
 
 data = Data(DATA_DIR)
@@ -54,11 +55,10 @@ class Model(BaseModel):
         # conv_5_2 = Conv(512, 512, logging=self.logging)
         # max_pool_5 = MaxPool(size=2)
         fc_1 = FC(14 * 14 * 256, 1024, logging=self.logging)
-        fc_2 = FC(
-            1024,
-            256,
-            # dropout=self.placeholders['dropout'],
-            logging=self.logging)
+        fc_2 = FC(1024,
+                  256,
+                  dropout=self.placeholders['dropout'],
+                  logging=self.logging)
         fc_3 = FC(256,
                   data.num_classes,
                   act=lambda x: x,
@@ -107,23 +107,17 @@ try:
         if step % DISPLAY_STEP == 0:
             # Evaluate on training and validation set with zero dropout.
             feed_dict.update({model.placeholders['dropout']: 0})
+            train_info = model.evaluate(feed_dict, step, 'train')
             images, labels = data.val.next_batch(BATCH_SIZE, shuffle=True)
             val_feed_dict = feed_dict_with_batch(images, labels)
-
-            train_info = model.evaluate(feed_dict, step, 'train')
             val_info = model.evaluate(val_feed_dict, step, 'val')
 
             log = 'step={}, '.format(step)
             log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
             log += 'train_loss={:.5f}, '.format(train_info[0])
             log += 'train_acc={:.5f}, '.format(train_info[1])
-            # log += 'train_precision={:.5f}, '.format(train_info[2])
-            # log += 'train_recall={:.5f}, '.format(train_info[3])
             log += 'val_loss={:.5f}, '.format(val_info[0])
-            log += 'val_acc={:.5f}, '.format(val_info[1])
-            # log += 'val_precision={:.5f}, '.format(val_info[2])
-            # log += 'val_recall={:.5f}'.format(val_info[3])
-
+            log += 'val_acc={:.5f}'.format(val_info[1])
             print(log)
 
         if step % SAVE_STEP == 0:
@@ -137,7 +131,7 @@ print('Evaluate on test set. This can take a few minutes.')
 
 try:
     num_steps = data.test.num_examples // BATCH_SIZE
-    test_info = [0, 0, 0, 0]
+    test_info = [0, 0]
 
     for i in xrange(num_steps):
         images, labels = data.test.next_batch(BATCH_SIZE, shuffle=False)
@@ -149,8 +143,6 @@ try:
     log = 'Test results: '
     log += 'loss={:.5f}, '.format(test_info[0] / num_steps)
     log += 'acc={:.5f}, '.format(test_info[1] / num_steps)
-    # log += 'precision={:.5f}, '.format(test_info[2] / num_steps)
-    # log += 'recall={:.5f}'.format(test_info[3] / num_steps)
 
     print(log)
 
