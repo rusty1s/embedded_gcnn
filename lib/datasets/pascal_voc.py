@@ -1,5 +1,4 @@
 from __future__ import division
-from __future__ import print_function
 
 import os
 from math import ceil, floor
@@ -20,7 +19,6 @@ CLASSES = [
     'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
     'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
 ]
-NUM_CHANNELS = 3
 
 
 class PascalVOC(Datasets):
@@ -56,7 +54,7 @@ class PascalVOC(Datasets):
 
     @property
     def num_channels(self):
-        return NUM_CHANNELS
+        return 3
 
 
 class Dataset(object):

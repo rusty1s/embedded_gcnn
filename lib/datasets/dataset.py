@@ -35,6 +35,7 @@ class Datasets(object):
 class Dataset(object):
     def __init__(self, images, labels):
         self.epochs_completed = 0
+
         self._images = images
         self._labels = labels
         self._index_in_epoch = 0
