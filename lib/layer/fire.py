@@ -6,12 +6,9 @@ from .conv2d import Conv2d
 
 class Fire(Layer):
     def __init__(self, in_channels, reduce_channels, out_channels, **kwargs):
-        self.conv1 = Conv2d(
-            in_channels, reduce_channels, size=1, stride=1, **kwargs)
-        self.conv2 = Conv2d(
-            reduce_channels, out_channels, size=1, stride=1, **kwargs)
-        self.conv2 = Conv2d(
-            reduce_channels, out_channels, size=3, stride=1, **kwargs)
+        self.conv1 = Conv2d(in_channels, reduce_channels, size=1, **kwargs)
+        self.conv2 = Conv2d(reduce_channels, out_channels, size=1, **kwargs)
+        self.conv2 = Conv2d(reduce_channels, out_channels, size=3, **kwargs)
 
         super(Fire, self).__init__(**kwargs)
 
