@@ -2,10 +2,12 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+from math import ceil, floor
 from xml.dom.minidom import parse
 
 import numpy as np
 from skimage.io import imread
+from skimage.transform import rescale
 
 from .dataset import Datasets
 from .download import maybe_download_and_extract
@@ -18,13 +20,13 @@ CLASSES = [
     'bicycle', 'boat', 'bus', 'car', 'motorbike', 'train', 'bottle', 'chair',
     'diningtable', 'pottedplant', 'sofa', 'tvmonitor'
 ]
-WIDTH = 224
-HEIGHT = 224
 NUM_CHANNELS = 3
 
 
 class PascalVOC(Datasets):
-    def __init__(self, data_dir, val_size=1500):
+    def __init__(self, data_dir, val_size=1500, fixed_size=None):
+        self._fixed_size = fixed_size
+
         maybe_download_and_extract(URL, data_dir)
 
         data_dir = os.path.join(data_dir, 'VOCdevkit', 'VOC2012')
@@ -34,9 +36,9 @@ class PascalVOC(Datasets):
 
         # PascalVOC didn't release the full test annotations yet, use the
         # validation set instead :(
-        train = Dataset(names[val_size:], data_dir)
-        val = Dataset(names[:val_size], data_dir)
-        test = Dataset(names[:val_size], data_dir)
+        train = Dataset(names[val_size:], data_dir, fixed_size)
+        val = Dataset(names[:val_size], data_dir, fixed_size)
+        test = Dataset(names[:val_size], data_dir, fixed_size)
 
         super(PascalVOC, self).__init__(train, val, test)
 
@@ -46,11 +48,11 @@ class PascalVOC(Datasets):
 
     @property
     def width(self):
-        return WIDTH
+        return self._fixed_size
 
     @property
     def height(self):
-        return HEIGHT
+        return self._fixed_size
 
     @property
     def num_channels(self):
@@ -58,9 +60,11 @@ class PascalVOC(Datasets):
 
 
 class Dataset(object):
-    def __init__(self, names, data_dir):
+    def __init__(self, names, data_dir, fixed_size=None):
         self.epochs_completed = 0
+
         self._data_dir = data_dir
+        self._fixed_size = fixed_size
         self._names = names
         self._index_in_epoch = 0
 
@@ -103,7 +107,10 @@ class Dataset(object):
             end = self._index_in_epoch
             names = self._names[start:end]
 
-        images = [self._read_image(name) for name in names]
+        if self._fixed_size is None:
+            images = [self._read_image(name) for name in names]
+        else:
+            images = np.stack([self._read_image(name) for name in names])
         labels = np.stack([self._read_label(name) for name in names])
 
         return images, labels
@@ -112,8 +119,25 @@ class Dataset(object):
         path = os.path.join(self._data_dir, 'JPEGImages',
                             '{}.jpg'.format(name))
         image = imread(path)
-        image = (1 / 255) * image.astype(np.float32)
-        return image.astype(np.float32)
+
+        if self._fixed_size is None:
+            image = (1 / 255) * image.astype(np.float32)
+            return image.astype(np.float32)
+        else:
+            height, width, _ = image.shape
+
+            scale_y = self._fixed_size / height
+            scale_x = self._fixed_size / width
+            scale = min(scale_y, scale_x)
+
+            image = rescale(image, (scale, scale))
+
+            pad_y = self._fixed_size - image.shape[0]
+            pad_x = self._fixed_size - image.shape[1]
+
+            image = np.pad(image, ((ceil(pad_y / 2), floor(pad_y / 2)), (
+                ceil(pad_x / 2), floor(pad_x / 2)), (0, 0)), 'constant')
+            return image
 
     def _read_label(self, name):
         path = os.path.join(self._data_dir, 'Annotations',
@@ -122,9 +146,9 @@ class Dataset(object):
 
         label = np.zeros((len(CLASSES)), np.uint8)
 
+        # Get the label to the greatest bounding box
         max_area = 0
         max_name = ''
-
         for obj in annotation.getElementsByTagName('object'):
             name = obj.getElementsByTagName('name')[0].firstChild.nodeValue
             bbox = obj.getElementsByTagName('bndbox')[0]
