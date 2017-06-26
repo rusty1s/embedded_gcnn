@@ -78,7 +78,6 @@ class Model(BaseModel):
 
 model = Model(
     placeholders=placeholders,
-    isMultilabel=False,
     learning_rate=LEARNING_RATE,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)

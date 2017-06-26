@@ -136,7 +136,6 @@ placeholders = generate_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
 
 model = Model(
     placeholders=placeholders,
-    isMultilabel=True,
     learning_rate=LEARNING_RATE,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)

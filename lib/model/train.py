@@ -71,19 +71,9 @@ def train(model,
                 log = 'step={}, '.format(step)
                 log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
                 log += 'train_loss={:.5f}, '.format(train_info[0])
-                if not model.isMultilabel:
-                    log += 'train_acc={:.5f}, '.format(train_info[1])
-                else:
-                    log += 'train_acc={:.5f}, '.format(train_info[1])
-                    log += 'train_precision={:.5f}, '.format(train_info[2])
-                    log += 'train_recall={:.5f}, '.format(train_info[3])
+                log += 'train_acc={:.5f}, '.format(train_info[1])
                 log += 'val_loss={:.5f}, '.format(val_info[0])
-                if not model.isMultilabel:
-                    log += 'val_acc={:.5f}'.format(val_info[1])
-                else:
-                    log += 'val_acc={:.5f}, '.format(val_info[1])
-                    log += 'val_precision={:.5f}, '.format(val_info[2])
-                    log += 'val_recall={:.5f}'.format(val_info[3])
+                log += 'val_acc={:.5f}'.format(val_info[1])
 
                 print(log)
 
@@ -113,7 +103,7 @@ def train(model,
                 shuffle=False)
 
         num_steps = data.test.num_examples // batch_size
-        test_info = [0, 0, 0, 0] if model.isMultilabel else [0, 0]
+        test_info = [0, 0]
 
         for i in xrange(num_steps):
             batch = test_queue.dequeue()
@@ -124,12 +114,7 @@ def train(model,
 
         log = 'Test results: '
         log += 'loss={:.5f}, '.format(test_info[0] / num_steps)
-        if not model.isMultilabel:
-            log += 'acc={:.5f}'.format(test_info[1] / num_steps)
-        else:
-            log += 'acc={:.5f}, '.format(test_info[1] / num_steps)
-            log += 'precision={:.5f}, '.format(test_info[2] / num_steps)
-            log += 'recall={:.5f}'.format(test_info[3] / num_steps)
+        log += 'acc={:.5f}'.format(test_info[1] / num_steps)
 
         print(log)
 

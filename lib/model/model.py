@@ -2,15 +2,13 @@ import time
 
 import tensorflow as tf
 
-from .metrics import (softmax_cross_entropy, sigmoid_cross_entropy, total_loss,
-                      accuracy, precision, recall)
+from .metrics import (softmax_cross_entropy, total_loss, accuracy)
 
 
 class Model(object):
     def __init__(self,
                  placeholders,
                  name=None,
-                 isMultilabel=False,
                  learning_rate=0.001,
                  epsilon=1e-08,
                  train_dir=None,
@@ -21,11 +19,7 @@ class Model(object):
 
         self.placeholders = placeholders
         self.name = name
-        self.isMultilabel = isMultilabel
-        if not isMultilabel:
-            self._loss_algorithm = softmax_cross_entropy
-        else:
-            self._loss_algorithm = sigmoid_cross_entropy
+        self._loss_algorithm = softmax_cross_entropy
 
         self.train_dir = train_dir
         self.log_dir = log_dir
@@ -75,9 +69,6 @@ class Model(object):
         self._loss = self._loss_algorithm(self.outputs, self.labels)
         self._loss = total_loss(self._loss)
         self._accuracy = accuracy(self.outputs, self.labels)
-        if self.isMultilabel:
-            self._precision = precision(self.outputs, self.labels)
-            self._recall = recall(self.outputs, self.labels)
 
         # Build train op.
         self._train = self.optimizer.minimize(
@@ -133,22 +124,11 @@ class Model(object):
         return time.time() - t
 
     def evaluate(self, feed_dict, step=None, name=None):
-        if not self.isMultilabel:
-            loss, acc = self.sess.run([self._loss, self._accuracy], feed_dict)
-            if self.logging and step is not None and name is not None:
-                self._add_summary('{}_loss'.format(name), loss, step)
-                self._add_summary('{}_accuracy'.format(name), acc, step)
-            return loss, acc
-        else:
-            loss, acc, pre, rec = self.sess.run(
-                [self._loss, self._accuracy, self._precision, self._recall],
-                feed_dict)
-            if self.logging and step is not None and name is not None:
-                self._add_summary('{}_loss'.format(name), loss, step)
-                self._add_summary('{}_accuracy'.format(name), acc, step)
-                self._add_summary('{}_precision'.format(name), pre, step)
-                self._add_summary('{}_recall'.format(name), rec, step)
-            return loss, acc, pre, rec
+        loss, acc = self.sess.run([self._loss, self._accuracy], feed_dict)
+        if self.logging and step is not None and name is not None:
+            self._add_summary('{}_loss'.format(name), loss, step)
+            self._add_summary('{}_accuracy'.format(name), acc, step)
+        return loss, acc
 
     def _add_summary(self, name, value, step):
         summary = tf.Summary(
