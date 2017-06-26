@@ -16,14 +16,13 @@ class FC(VarLayer):
         in_channels = self.vars['weights'].get_shape()[0].value
 
         outputs = tf.reshape(inputs, [-1, in_channels])
+
+        if self.dropout is not None:
+            outputs = tf.nn.dropout(outputs, 1 - self.dropout)
+
         outputs = tf.matmul(outputs, self.vars['weights'])
 
         if self.bias:
             outputs = tf.nn.bias_add(outputs, self.vars['bias'])
 
-        outputs = self.act(outputs)
-
-        if self.dropout is not None:
-            outputs = tf.nn.dropout(outputs, 1 - self.dropout)
-
-        return outputs
+        return self.act(outputs)

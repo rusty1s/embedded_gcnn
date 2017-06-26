@@ -18,6 +18,9 @@ class Conv2d(VarLayer):
             **kwargs)
 
     def _call(self, inputs):
+        if self.dropout is not None:
+            outputs = tf.nn.dropout(inputs, 1 - self.dropout)
+
         outputs = conv(inputs, self.vars['weights'], self.stride)
 
         if self.bias:
