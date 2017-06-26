@@ -55,14 +55,12 @@ class Model(BaseModel):
         # conv_5_2 = Conv(512, 512, logging=self.logging)
         # max_pool_5 = MaxPool(size=2)
         fc_1 = FC(14 * 14 * 256, 1024, logging=self.logging)
-        fc_2 = FC(1024,
-                  256,
-                  dropout=self.placeholders['dropout'],
-                  logging=self.logging)
+        fc_2 = FC(1024, 256, logging=self.logging)
         fc_3 = FC(256,
                   data.num_classes,
                   act=lambda x: x,
                   bias=False,
+                  dropout=self.placeholders['dropout'],
                   logging=self.logging)
 
         # self.layers = [

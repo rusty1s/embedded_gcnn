@@ -81,14 +81,12 @@ class Model(BaseModel):
             logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(256,
-                  128,
-                  dropout=self.placeholders['dropout'],
-                  logging=self.logging)
+        fc_1 = FC(256, 128, logging=self.logging)
         fc_2 = FC(128,
                   data.num_classes,
                   act=lambda x: x,
                   bias=False,
+                  dropout=self.placeholders['dropout'],
                   logging=self.logging)
 
         self.layers = [
