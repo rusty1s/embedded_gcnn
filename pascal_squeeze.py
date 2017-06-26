@@ -8,7 +8,7 @@ import tensorflow as tf
 
 from lib.datasets import PascalVOC as Data
 from lib.model import Model as BaseModel
-from lib.layer import Conv2d as Conv, MaxPool, FC
+from lib.layer import ImageAugment, Conv2d, Fire, MaxPool, AveragePool
 
 DATA_DIR = 'data/pascal_voc'
 
@@ -23,7 +23,7 @@ DISPLAY_STEP = 10
 VALIDATION_STEP = 500
 SAVE_STEP = 250
 
-data = Data(DATA_DIR)
+data = Data(DATA_DIR, fixed_size=224)
 
 placeholders = {
     'features':
@@ -39,39 +39,38 @@ placeholders = {
 
 class Model(BaseModel):
     def _build(self):
-        conv_1_1 = Conv(data.num_channels, 32, logging=self.logging)
-        # conv_1_2 = Conv(32, 32, logging=self.logging)
-        max_pool_1 = MaxPool(size=2)
-        conv_2_1 = Conv(32, 64, logging=self.logging)
-        # conv_2_2 = Conv(64, 64, logging=self.logging)
-        max_pool_2 = MaxPool(size=2)
-        conv_3_1 = Conv(64, 128, logging=self.logging)
-        # conv_3_2 = Conv(128, 128, logging=self.logging)
-        max_pool_3 = MaxPool(size=2)
-        conv_4_1 = Conv(128, 256, logging=self.logging)
-        # conv_4_2 = Conv(256, 256, logging=self.logging)
-        max_pool_4 = MaxPool(size=2)
-        # conv_5_1 = Conv(256, 512, logging=self.logging)
-        # conv_5_2 = Conv(512, 512, logging=self.logging)
-        # max_pool_5 = MaxPool(size=2)
-        fc_1 = FC(14 * 14 * 256, 1024, logging=self.logging)
-        fc_2 = FC(1024, 256, logging=self.logging)
-        fc_3 = FC(256,
-                  data.num_classes,
-                  act=lambda x: x,
-                  bias=False,
-                  dropout=self.placeholders['dropout'],
-                  logging=self.logging)
+        a = ImageAugment()
+        b = Conv2d(
+            data.num_channels, 64, size=3, stride=2, logging=self.logging)
+        c = MaxPool(3, 2)
 
-        # self.layers = [
-        #     conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
-        #     conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
-        #     conv_5_1, conv_5_2, max_pool_5, fc_1, fc_2, fc_3
-        # ]
-        self.layers = [
-            conv_1_1, max_pool_1, conv_2_1, max_pool_2, conv_3_1, max_pool_3,
-            conv_4_1, max_pool_4, fc_1, fc_2, fc_3
-        ]
+        d = Fire(64, 16, 64, logging=self.logging)
+        e = Fire(128, 16, 64, logging=self.logging)
+
+        f = MaxPool(3, 2)
+
+        g = Fire(128, 32, 128, logging=self.logging)
+        h = Fire(256, 32, 128, logging=self.logging)
+
+        i = f = MaxPool(3, 2)
+
+        j = Fire(256, 48, 192, logging=self.logging)
+        k = Fire(384, 48, 192, logging=self.logging)
+        l = Fire(384, 64, 256, logging=self.logging)
+        m = Fire(512, 64, 256, logging=self.logging)
+
+        n = Conv2d(
+            512,
+            20,
+            size=1,
+            stride=1,
+            bias=False,
+            dropout=DROPOUT,
+            logging=self.logging)
+
+        o = AveragePool()
+
+        self.layers = [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o]
 
 
 model = Model(

@@ -5,6 +5,8 @@ from .gcnn import GCNN
 from .embedded_gcnn import EmbeddedGCNN
 from .max_pool import MaxPool
 from .average_pool import AveragePool
+from .fire import Fire
+from .image_augment import ImageAugment
 
 __all__ = [
     'Conv2d',
@@ -14,4 +16,6 @@ __all__ = [
     'EmbeddedGCNN',
     'MaxPool',
     'AveragePool',
+    'Fire',
+    'ImageAugment',
 ]

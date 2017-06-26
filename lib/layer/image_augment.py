@@ -18,3 +18,5 @@ class ImageAugment(Layer):
             lambda image: tf.image.random_contrast(image, 0.8, 1.2), outputs)
         outputs = tf.map_fn(
             lambda image: tf.image.per_image_standardization(image), outputs)
+
+        return outputs
