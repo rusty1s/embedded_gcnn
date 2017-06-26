@@ -9,8 +9,15 @@ def conv(inputs, weights, stride):
 
 
 class Conv2d(VarLayer):
-    def __init__(self, in_channels, out_channels, size=3, stride=1, **kwargs):
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 size=3,
+                 stride=1,
+                 dropout=None,
+                 **kwargs):
         self.stride = stride
+        self.dropout = dropout
 
         super(Conv2d, self).__init__(
             weight_shape=[size, size, in_channels, out_channels],
