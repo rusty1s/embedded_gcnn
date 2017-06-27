@@ -19,7 +19,7 @@
 
 This is a TensorFlow implementation of my [Graph-based Image
 Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)
-master thesis (german).
+master thesis *(german)*.
 
 ## Requirements
 
