@@ -6,7 +6,7 @@ engines:
     config:
       languages:
         python:
-          mass_threshold: 110
+          mass_threshold: 120
   radon:
     enabled: true
     config:
