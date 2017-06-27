@@ -51,15 +51,13 @@ def precision(outputs, labels, k=0.5):
         k = tf.zeros_like(outputs) + k
         predicted_labels = tf.greater(predicted_labels, k)
 
-        labels = tf.cast(labels, tf.bool)
-        true_positives = tf.logical_and(labels, predicted_labels)
-        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.float32))
+        true_positives = _true_positives(labels, predicted_labels)
+        true_and_false_positives = tf.reduce_sum(
+            tf.cast(predicted_labels, tf.float32))
 
-        all_positives = tf.reduce_sum(tf.cast(predicted_labels, tf.float32))
-
-        res = true_positives / all_positives
-        return tf.cond(
-            tf.is_nan(res), lambda: tf.constant(0, tf.float32), lambda: res)
+        res = true_positives / true_and_false_positives
+        zero = tf.constant(0, tf.float32)
+        return tf.cond(tf.is_nan(res), lambda: zero, lambda: res)
 
 
 def recall(outputs, labels, k=0.5):
@@ -68,12 +66,19 @@ def recall(outputs, labels, k=0.5):
         k = tf.zeros_like(outputs) + k
         predicted_labels = tf.greater(predicted_labels, k)
 
-        labels = tf.cast(labels, tf.bool)
-        true_positives = tf.logical_and(labels, predicted_labels)
-        true_positives = tf.reduce_sum(tf.cast(true_positives, tf.float32))
+        true_positives = _true_positives(labels, predicted_labels)
+        relevant_elements = tf.reduce_sum(tf.cast(labels, tf.float32))
 
-        all_positives = tf.reduce_sum(tf.cast(labels, tf.float32))
+        res = true_positives / relevant_elements
+        zero = tf.constant(0, tf.float32)
+        return tf.cond(tf.is_nan(res), lambda: zero, lambda: res)
 
-        res = true_positives / all_positives
-        return tf.cond(
-            tf.is_nan(res), lambda: tf.constant(0, tf.float32), lambda: res)
+
+def _true_positives(labels, predicted_labels):
+    labels = tf.cast(labels, tf.bool)
+    predicted_labels = tf.cast(predicted_labels, tf.bool)
+
+    true_positives = tf.logical_and(labels, predicted_labels)
+    true_positives = tf.reduce_sum(tf.cast(true_positives, tf.float32))
+
+    return true_positives
