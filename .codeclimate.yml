@@ -13,6 +13,8 @@ engines:
       threshold: "C"
   fixme:
     enabled: true
+    exclude_paths:
+      - "notebooks/"
   pep8:
     enabled: true
   markdownlint:
