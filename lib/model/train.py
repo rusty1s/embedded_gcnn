@@ -21,29 +21,8 @@ def train(model,
           display_step=10,
           save_step=250):
 
-    capacity = 10 * batch_size
-
-    if preprocess_first is not None:
-        data_dir = preprocess_first
-        data.train = PreprocessedDataset(
-            os.path.join(data_dir, 'train'), data.train, preprocess_algorithm)
-        data.val = PreprocessedDataset(
-            os.path.join(data_dir, 'val'), data.val, preprocess_algorithm)
-        data.test = PreprocessedDataset(
-            os.path.join(data_dir, 'test'), data.test, preprocess_algorithm)
-
-        train_queue = FileQueue(data.train, batch_size, capacity, shuffle=True)
-        val_queue = FileQueue(data.val, batch_size, capacity, shuffle=True)
-    else:
-        train_queue = PreprocessQueue(
-            data.train,
-            preprocess_algorithm,
-            batch_size,
-            capacity,
-            shuffle=True)
-
-        val_queue = PreprocessQueue(
-            data.val, preprocess_algorithm, batch_size, capacity, shuffle=True)
+    train_queue, val_queue, test_queue = _generate_queues(
+        data, preprocess_first, preprocess_algorithm, batch_size)
 
     model.build()
     global_step = model.initialize()
@@ -83,25 +62,10 @@ def train(model,
     except KeyboardInterrupt:
         print()
 
-    finally:
-        train_queue.close()
-        val_queue.close()
-
     print('Optimization finished!')
     print('Evaluate on test set. This can take a few minutes.')
 
     try:
-        if preprocess_first is not None:
-            test_queue = FileQueue(
-                data.test, batch_size, capacity, shuffle=False)
-        else:
-            test_queue = PreprocessQueue(
-                data.test,
-                preprocess_algorithm,
-                batch_size,
-                capacity,
-                shuffle=False)
-
         num_steps = data.test.num_examples // batch_size
         test_info = [0, 0]
 
@@ -123,4 +87,46 @@ def train(model,
         print('Test evaluation aborted.')
 
     finally:
+        train_queue.close()
+        val_queue.close()
         test_queue.close()
+
+
+def _preprocess_data(data, data_dir, preprocess_algorithm):
+    data.train = PreprocessedDataset(
+        os.path.join(data_dir, 'train'), data.train, preprocess_algorithm)
+    data.val = PreprocessedDataset(
+        os.path.join(data_dir, 'val'), data.val, preprocess_algorithm)
+    data.test = PreprocessedDataset(
+        os.path.join(data_dir, 'test'), data.test, preprocess_algorithm)
+    return data
+
+
+def _generate_queues(data, preprocess_first, preprocess_algorithm, batch_size):
+    capacity = 10 * batch_size
+
+    if preprocess_first is not None:
+        data = _preprocess_data(data, preprocess_first, preprocess_algorithm)
+
+        train_queue = FileQueue(data.train, batch_size, capacity, shuffle=True)
+        val_queue = FileQueue(data.val, batch_size, capacity, shuffle=True)
+        test_queue = FileQueue(data.test, batch_size, capacity, shuffle=False)
+    else:
+        train_queue = PreprocessQueue(
+            data.train,
+            preprocess_algorithm,
+            batch_size,
+            capacity,
+            shuffle=True)
+
+        val_queue = PreprocessQueue(
+            data.val, preprocess_algorithm, batch_size, capacity, shuffle=True)
+
+        test_queue = PreprocessQueue(
+            data.test,
+            preprocess_algorithm,
+            batch_size,
+            capacity,
+            shuffle=False)
+
+    return train_queue, val_queue, test_queue
