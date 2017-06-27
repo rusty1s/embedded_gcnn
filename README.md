@@ -17,9 +17,9 @@
 [code-climate-issues-image]: https://codeclimate.com/github/rusty1s/embedded_gcnn/badges/issue_count.svg
 [code-climate-issues-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn/issues
 
-This is a TensorFlow implementation based on my "[Graph-based Image
-Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)"
-master thesis.
+This is a TensorFlow implementation of my [Graph-based Image
+Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)
+master thesis (german).
 
 ## Requirements
 
