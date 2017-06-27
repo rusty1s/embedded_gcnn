@@ -16,3 +16,29 @@
 [code-climate-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn
 [code-climate-issues-image]: https://codeclimate.com/github/rusty1s/embedded_gcnn/badges/issue_count.svg
 [code-climate-issues-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn/issues
+
+This is a TensorFlow implementation based on my "[Graph-based Image
+Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)"
+master thesis.
+
+## Requirements
+
+To install the required python packages, run:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Running tests
+
+Install the test requirements
+
+```bash
+pip install -r requirements_test.txt
+```
+
+and run the test suite:
+
+```bash
+nosetests --nologcapture
+```
