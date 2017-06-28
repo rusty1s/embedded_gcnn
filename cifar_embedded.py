@@ -1,4 +1,4 @@
-from lib.datasets import MNIST as Data
+from lib.datasets import Cifar10 as Data
 from lib.model import Model as BaseModel, generate_placeholders, train
 from lib.segmentation import extract_features_fixed
 # from lib.segmentation import slic_fixed
@@ -25,8 +25,8 @@ LOG_DIR = 'data/summaries/cifar_quickshift_embedded'
 
 AUGMENT_TRAIN_EXAMPLES = False
 DROPOUT = 0.5
-BATCH_SIZE = 64
-MAX_STEPS = 200000
+BATCH_SIZE = 2
+MAX_STEPS = 100000
 DISPLAY_STEP = 10
 # FORM_FEATURES = SLIC_FEATURES
 FORM_FEATURES = QUICKSHIFT_FEATURES

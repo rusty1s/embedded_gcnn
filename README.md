@@ -24,7 +24,7 @@ Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main
 master thesis *(german)***
 
 Embedded graph convolutional neural networks aim to make significant improvements to learning on graphs where nodes are positioned on a twodimensional euclidean plane and thus possess an orientation (like up, down, right and left).
-As proof, we implemented an image classification on embedded graphs by first segmenting the image into superpixels with the use of [SLIC](https://infoscience.epfl.ch/record/177415/files/Superpixel_PAMI2011-2.pdf) and [Quickshift](http://vision.cs.ucla.edu/papers/vedaldiS08quick.pdf), converting this representation into a graph and inputting these to the neural network.
+As proof, we implemented an image classification on embedded graphs by first segmenting the image into superpixels with the use of [SLIC](https://infoscience.epfl.ch/record/177415/files/Superpixel_PAMI2011-2.pdf) or [Quickshift](http://vision.cs.ucla.edu/papers/vedaldiS08quick.pdf), converting this representation into a graph and inputting these to the neural network.
 Graphs are trained on four different datasets and are automatically downloaded by running the corresponding train scripts:
 * [MNIST](http://yann.lecun.com/exdb/mnist/) (run `python mnist_embedded.py`)
 * [Cifar-10](https://www.cs.toronto.edu/~kriz/cifar.html) (run `python cifar_embedded.py`)
