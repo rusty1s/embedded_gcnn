@@ -23,7 +23,7 @@ TRAIN_DIR = None
 # LOG_DIR = 'data/summaries/cifar_slic_embedded'
 LOG_DIR = 'data/summaries/cifar_quickshift_embedded'
 
-AUGMENT_TRAIN_EXAMPLES = False
+AUGMENT_TRAIN_EXAMPLES = True
 DROPOUT = 0.5
 BATCH_SIZE = 2
 MAX_STEPS = 100000
