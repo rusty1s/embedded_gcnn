@@ -20,13 +20,15 @@ DROPOUT = 0.5
 BATCH_SIZE = 32
 MAX_STEPS = 40000
 DISPLAY_STEP = 10
-FORM_FEATURES = [2, 4, 5, 7, 8, 9, 16, 21, 23]
+SLIC_FORM_FEATURES = [1, 2, 3, 4, 5, 6, 8, 9, 21]
+# QUICKSIFT_FORM_FEATURES = [0, 2, 3, 4, 7, 19, 20, 21, 22]
+FORM_FEATURES = SLIC_FORM_FEATURES
 NUM_FEATURES = len(FORM_FEATURES) + 3
 
 data = Data(DATA_DIR)
 
 segmentation_algorithm = slic_fixed(
-    num_segments=800, compactness=30, max_iterations=10, sigma=0)
+    num_segments=1600, compactness=30, max_iterations=10, sigma=0)
 
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
