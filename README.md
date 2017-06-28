@@ -19,9 +19,18 @@
 
 ![SlIC and Quickshift Segmentation](image.jpg)
 
-This is a TensorFlow implementation of my [Graph-based Image
+**TensorFlow implementation of my [Graph-based Image
 Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)
-master thesis *(german)*.
+master thesis *(german)***
+
+Embedded graph convolutional neural networks aim to make significant improvements to learning on graphs where nodes are positioned on a twodimensional euclidean plane.
+As proof, we implemented an image classification on embedded graphs by first segmenting the image into superpixels with the use of [SLIC](https://infoscience.epfl.ch/record/177415/files/Superpixel_PAMI2011-2.pdf) and [Quickshift](http://vision.cs.ucla.edu/papers/vedaldiS08quick.pdf), converting this representation into a graph and inputting these to the neural network.
+This repository also includes layer implementations of alternative approaches such as the [SGCNN]() and the [GCN]() to validate the results.
+Graphs are trained on four different datasets and are automatically downloaded by running the corresponding train scripts:
+* [MNIST](http://yann.lecun.com/exdb/mnist/)
+* [Cifar-10](https://www.cs.toronto.edu/~kriz/cifar.html)
+* [TinyImageNet](https://tiny-imagenet.herokuapp.com/)
+* [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 
 ## Requirements
 
