@@ -358,7 +358,7 @@ class FormFeatureExtraction(object):
 
     @cached_property
     def minor_axis_length(self):
-        return 4 * np.sqrt(self.inertia_tensor_eigvals_2)
+        return 4 * np.sqrt(np.abs(self.inertia_tensor_eigvals_2))
 
     @cached_property
     def orientation(self):
