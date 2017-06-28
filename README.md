@@ -31,7 +31,7 @@ Graphs are trained on four different datasets and are automatically downloaded b
 * [TinyImageNet](https://tiny-imagenet.herokuapp.com/)
 * [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/)
 
-This repository also includes layer implementations of alternative approaches such as [SGCNN](https://arxiv.org/abs/1312.6203) and [GCN](https://arxiv.org/abs/1609.02907) to validate the results.
+This repository also includes layer implementations of alternative approaches such as [SGCNN](https://arxiv.org/abs/1312.6203) and [GCN](https://arxiv.org/abs/1609.02907) on graphs and [SqueezeNet](https://arxiv.org/abs/1602.07360) on images to validate the results.
 
 ## Requirements
 
