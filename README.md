@@ -30,7 +30,7 @@ Graphs are trained on four different datasets and are automatically downloaded b
 * [MNIST](http://yann.lecun.com/exdb/mnist/) (run `python mnist_embedded.py`)
 * [Cifar-10](https://www.cs.toronto.edu/~kriz/cifar.html) (run `python cifar_embedded.py`)
 * [TinyImageNet](https://tiny-imagenet.herokuapp.com/) (run `python imagenet_embedded.py`)
-* [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/) (run `python pascal_embedded.py` and `python pascal_squeeze.py` as validation)
+* [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/) (run `python pascal_embedded.py` and `python pascal_squeeze.py` for validation on 2d images)
 
 This repository also includes layer implementations of alternative approaches such as [SGCNN](https://arxiv.org/abs/1312.6203) and [GCN](https://arxiv.org/abs/1609.02907) for graphs and the Fire module of [SqueezeNet](https://arxiv.org/abs/1602.07360) for images to validate the results.
 
