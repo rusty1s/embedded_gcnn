@@ -17,7 +17,7 @@
 [code-climate-issues-image]: https://codeclimate.com/github/rusty1s/embedded_gcnn/badges/issue_count.svg
 [code-climate-issues-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn/issues
 
-![SlIC and Quickshift Segmentation](image.jpg)
+![SlIC and Quickshift Segmentation](https://user-images.githubusercontent.com/6945922/27761633-61569a56-5e60-11e7-96d6-5a0507d26cf8.jpg)
 
 **TensorFlow implementation of my [Graph-based Image
 Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)
