@@ -10,6 +10,7 @@ class Model(object):
                  placeholders,
                  name=None,
                  learning_rate=0.001,
+                 num_steps_per_decay=None,
                  epsilon=1e-08,
                  train_dir=None,
                  log_dir=None):
@@ -33,8 +34,6 @@ class Model(object):
         self.layers = []
         self.vars = {}
 
-        self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=epsilon)
-
         self._loss = None
         self._accuracy = None
         self._precision = None
@@ -50,6 +49,19 @@ class Model(object):
             dtype=tf.int32,
             initializer=tf.constant_initializer(0, dtype=tf.int32),
             trainable=False)
+
+        # Create learning rate and optimizer.
+        if num_steps_per_decay is not None:
+            learning_rate = tf.train.exponential_decay(
+                learning_rate,
+                self._global_step,
+                num_steps_per_decay,
+                decay_rate=0.96,
+                staircase=True)
+
+            tf.summary.scalar('learning_rate', learning_rate)
+
+        self.optimizer = tf.train.AdamOptimizer(learning_rate, epsilon=epsilon)
 
     def build(self):
         with tf.variable_scope(self.name):
