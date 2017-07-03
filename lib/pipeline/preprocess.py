@@ -25,11 +25,12 @@ def preprocess_pipeline(image,
 def preprocess_pipeline_fixed(segmentation_algorithm,
                               feature_extraction_algorithm,
                               levels,
+                              connectivity=4,
                               scale_invariance=False,
                               stddev=1):
     def _preprocess(image):
         return preprocess_pipeline(image, segmentation_algorithm,
                                    feature_extraction_algorithm, levels,
-                                   scale_invariance, stddev)
+                                   connectivity, scale_invariance, stddev)
 
     return _preprocess
