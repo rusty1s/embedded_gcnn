@@ -15,16 +15,18 @@ DATA_DIR = 'data/cifar_10'
 PREPROCESS_FIRST = 'data/cifar_10/quickshift'
 
 LEVELS = 4
+CONNECTIVITY = 8
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.01
+LEARNING_RATE = 0.001
+NUM_STEPS_PER_DECAY = 1000
 TRAIN_DIR = None
 # LOG_DIR = 'data/summaries/cifar_slic_embedded'
 LOG_DIR = 'data/summaries/cifar_quickshift_embedded'
 
 AUGMENT_TRAIN_EXAMPLES = True
-DROPOUT = 0.6
+DROPOUT = 0.5
 BATCH_SIZE = 64
 MAX_STEPS = 200000
 DISPLAY_STEP = 10
@@ -42,7 +44,7 @@ segmentation_algorithm = quickshift_fixed(
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
 preprocess_algorithm = preprocess_pipeline_fixed(
-    segmentation_algorithm, feature_extraction_algorithm, LEVELS,
+    segmentation_algorithm, feature_extraction_algorithm, LEVELS, CONNECTIVITY,
     SCALE_INVARIANCE, STDDEV)
 
 
@@ -54,9 +56,21 @@ class Model(BaseModel):
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
             logging=self.logging)
+        conv_1_2 = Conv(
+            32,
+            32,
+            adjs_dist=self.placeholders['adj_dist_1'],
+            adjs_rad=self.placeholders['adj_rad_1'],
+            logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2_1 = Conv(
             32,
+            64,
+            adjs_dist=self.placeholders['adj_dist_2'],
+            adjs_rad=self.placeholders['adj_rad_2'],
+            logging=self.logging)
+        conv_2_2 = Conv(
+            64,
             64,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
@@ -68,6 +82,12 @@ class Model(BaseModel):
             adjs_dist=self.placeholders['adj_dist_3'],
             adjs_rad=self.placeholders['adj_rad_3'],
             logging=self.logging)
+        conv_3_2 = Conv(
+            128,
+            128,
+            adjs_dist=self.placeholders['adj_dist_3'],
+            adjs_rad=self.placeholders['adj_rad_3'],
+            logging=self.logging)
         max_pool_3 = MaxPool(size=2)
         conv_4_1 = Conv(
             128,
@@ -75,9 +95,24 @@ class Model(BaseModel):
             adjs_dist=self.placeholders['adj_dist_4'],
             adjs_rad=self.placeholders['adj_rad_4'],
             logging=self.logging)
+        conv_4_2 = Conv(
+            256,
+            512,
+            adjs_dist=self.placeholders['adj_dist_4'],
+            adjs_rad=self.placeholders['adj_rad_4'],
+            logging=self.logging)
         max_pool_4 = MaxPool(size=2)
         average_pool = AveragePool()
-        fc_1 = FC(256, 128, logging=self.logging)
+        fc_1 = FC(
+            512,
+            256,
+            dropout=self.placeholders['dropout'],
+            logging=self.logging)
+        fc_2 = FC(
+            256,
+            128,
+            dropout=self.placeholders['dropout'],
+            logging=self.logging)
         fc_3 = FC(
             128,
             data.num_classes,
@@ -87,8 +122,9 @@ class Model(BaseModel):
             logging=self.logging)
 
         self.layers = [
-            conv_1_1, max_pool_1, conv_2_1, max_pool_2, conv_3_1, max_pool_3,
-            conv_4_1, max_pool_4, average_pool, fc_1, fc_3
+            conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
+            conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
+            average_pool, fc_1, fc_2, fc_3
         ]
 
 
@@ -98,7 +134,7 @@ placeholders = generate_placeholders(BATCH_SIZE, LEVELS, NUM_FEATURES,
 model = Model(
     placeholders=placeholders,
     learning_rate=LEARNING_RATE,
-    num_steps_per_decay=200,
+    num_steps_per_decay=NUM_STEPS_PER_DECAY,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 

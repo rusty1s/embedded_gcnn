@@ -6,11 +6,12 @@ def preprocess_pipeline(image,
                         segmentation_algorithm,
                         feature_extraction_algorithm,
                         levels,
+                        connectivity=8,
                         scale_invariance=False,
                         stddev=1):
 
     segmentation = segmentation_algorithm(image)
-    adj, points, mass = segmentation_adjacency(segmentation)
+    adj, points, mass = segmentation_adjacency(segmentation, connectivity)
     features = feature_extraction_algorithm(segmentation, image)
 
     adjs_dist, adjs_rad, perm = coarsen_adj(adj, points, mass, levels,

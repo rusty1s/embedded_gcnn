@@ -11,6 +11,7 @@ DATA_DIR = 'data/pascal_voc'
 PREPROCESS_FIRST = 'data/pascal_voc/slic'
 
 LEVELS = 5
+CONNECTIVITY = 8
 SCALE_INVARIANCE = False
 STDDEV = 1
 
@@ -34,7 +35,7 @@ segmentation_algorithm = slic_fixed(
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
 preprocess_algorithm = preprocess_pipeline_fixed(
-    segmentation_algorithm, feature_extraction_algorithm, LEVELS,
+    segmentation_algorithm, feature_extraction_algorithm, LEVELS, CONNECTIVITY,
     SCALE_INVARIANCE, STDDEV)
 
 
@@ -118,12 +119,13 @@ class Model(BaseModel):
         average_pool = AveragePool()
         fc_1 = FC(512, 256, logging=self.logging)
         fc_2 = FC(256, 128, logging=self.logging)
-        fc_3 = FC(128,
-                  data.num_classes,
-                  act=lambda x: x,
-                  bias=False,
-                  dropout=self.placeholders['dropout'],
-                  logging=self.logging)
+        fc_3 = FC(
+            128,
+            data.num_classes,
+            act=lambda x: x,
+            bias=False,
+            dropout=self.placeholders['dropout'],
+            logging=self.logging)
 
         self.layers = [
             conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,

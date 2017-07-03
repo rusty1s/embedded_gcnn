@@ -3,7 +3,7 @@ import numpy_groupies as npg
 import scipy.sparse as sp
 
 
-def segmentation_adjacency(segmentation):
+def segmentation_adjacency(segmentation, connectivity=8):
     # Get centroids.
     idx = np.indices(segmentation.shape)
     ys = npg.aggregate(segmentation.flatten(), idx[0].flatten(), func='mean')
