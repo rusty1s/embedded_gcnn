@@ -20,11 +20,22 @@ def segmentation_adjacency(segmentation, connectivity=4):
 
     # Get adjacency (https://goo.gl/y1xFMq).
     tmp = np.zeros((n, n), np.bool)
+
+    # Get vertically adjacency.
     a, b = segmentation[:-1, :], segmentation[1:, :]
     tmp[a[a != b], b[a != b]] = True
 
+    # Get horizontally adjacency.
     a, b = segmentation[:, :-1], segmentation[:, 1:]
     tmp[a[a != b], b[a != b]] = True
+
+    # Get diagonal adjacency.
+    if connectivity == 8:
+        a, b = segmentation[:-1, :-1], segmentation[1:, 1:]
+        tmp[a[a != b], b[a != b]] = True
+
+        a, b = segmentation[:-1, 1:], segmentation[1:, :-1]
+        tmp[a[a != b], b[a != b]] = True
 
     result = tmp | tmp.T
     result = result.astype(np.uint8)
