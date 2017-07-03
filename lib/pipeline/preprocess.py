@@ -6,7 +6,7 @@ def preprocess_pipeline(image,
                         segmentation_algorithm,
                         feature_extraction_algorithm,
                         levels,
-                        connectivity=8,
+                        connectivity=4,
                         scale_invariance=False,
                         stddev=1):
 
