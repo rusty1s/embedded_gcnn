@@ -35,12 +35,12 @@ class Cifar10(Datasets):
         images = self._preprocess_images(images)
         labels = self._preprocess_labels(labels)
 
-        train = Dataset(images[val_size:], labels[val_size:])
-        val = Dataset(images[:val_size], labels[:val_size])
+        train = Dataset(images, labels)
 
         images, labels = self._load_batch('test_batch')
         images = self._preprocess_images(images)
         labels = self._preprocess_labels(labels)
+        val = Dataset(images, labels)
         test = Dataset(images, labels)
 
         super(Cifar10, self).__init__(train, val, test)
