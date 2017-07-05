@@ -9,7 +9,7 @@ def augment_batch(batch):
         features, adjs_dist, adjs_rad, label = example
 
         features = random_brightness(features, 0, 3, max_delta=0.3)
-        features = random_contrast(features, 0, 3, max_delta=0.5)
+        features = random_contrast(features, 0, 3, max_delta=0.3)
 
         adjs_rad = random_flip_left_right_adjs(adjs_rad)
 

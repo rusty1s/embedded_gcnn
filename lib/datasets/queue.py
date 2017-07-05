@@ -1,6 +1,9 @@
 from threading import Thread, Event
 from six.moves import xrange
 
+from .augment import (random_flip_left_right_image, random_brightness,
+                      random_contrast)
+
 try:
     from queue import Queue
 except ImportError:
@@ -11,6 +14,7 @@ class PreprocessQueue(object):
     def __init__(self,
                  dataset,
                  preprocess_algorithm,
+                 augment,
                  batch_size,
                  capacity,
                  shuffle=False,
@@ -32,6 +36,11 @@ class PreprocessQueue(object):
                 while not stopper.isSet():
                     image, label = inputs.get()
                     inputs.task_done()
+
+                    if augment:
+                        image = random_flip_left_right_image(image)
+                        image = random_brightness(image, max_delta=0.3)
+                        image = random_contrast(image, max_delta=0.3)
 
                     data = preprocess_algorithm(image)
                     data += (label, )

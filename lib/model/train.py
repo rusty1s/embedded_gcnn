@@ -4,6 +4,7 @@ from __future__ import division
 import os
 import time
 from six.moves import xrange
+from sklearn.preprocessing import StandardScaler
 
 from ..datasets import PreprocessQueue
 from .placeholder import feed_dict_with_batch
@@ -22,7 +23,7 @@ def train(model,
           save_step=250):
 
     train_queue, val_queue, test_queue = _generate_queues(
-        data, preprocess_first, preprocess_algorithm, batch_size)
+        data, preprocess_first, preprocess_algorithm, augment, batch_size)
 
     model.build()
     global_step = model.initialize()
@@ -31,7 +32,12 @@ def train(model,
         for step in xrange(global_step, max_steps):
             t_pre = time.process_time()
             batch = train_queue.dequeue()
-            batch = augment_batch(batch) if augment else batch
+
+            # Augment the preprocessed data.
+            if augment and preprocess_first is not None:
+                batch = augment_batch(batch) if augment else batch
+
+            batch = _standard_scale_batch(batch)
             feed_dict = feed_dict_with_batch(model.placeholders, batch,
                                              dropout)
             t_pre = time.process_time() - t_pre
@@ -42,6 +48,7 @@ def train(model,
                 # Evaluate on training and validation set with zero dropout.
                 feed_dict.update({model.placeholders['dropout']: 0})
                 batch = val_queue.dequeue()
+                batch = _standard_scale_batch(batch)
                 val_feed_dict = feed_dict_with_batch(model.placeholders, batch)
 
                 train_info = model.evaluate(feed_dict, step, 'train')
@@ -71,6 +78,7 @@ def train(model,
 
         for i in xrange(num_steps):
             batch = test_queue.dequeue()
+            batch = _standard_scale_batch(batch)
             feed_dict = feed_dict_with_batch(model.placeholders, batch)
 
             batch_info = model.evaluate(feed_dict)
@@ -102,7 +110,8 @@ def _preprocess_data(data, data_dir, preprocess_algorithm):
     return data
 
 
-def _generate_queues(data, preprocess_first, preprocess_algorithm, batch_size):
+def _generate_queues(data, preprocess_first, preprocess_algorithm, augment,
+                     batch_size):
     capacity = 10 * batch_size
 
     if preprocess_first is not None:
@@ -115,18 +124,31 @@ def _generate_queues(data, preprocess_first, preprocess_algorithm, batch_size):
         train_queue = PreprocessQueue(
             data.train,
             preprocess_algorithm,
+            augment,
             batch_size,
             capacity,
             shuffle=True)
 
         val_queue = PreprocessQueue(
-            data.val, preprocess_algorithm, batch_size, capacity, shuffle=True)
+            data.val,
+            preprocess_algorithm,
+            augment,
+            batch_size,
+            capacity,
+            shuffle=True)
 
         test_queue = PreprocessQueue(
             data.test,
             preprocess_algorithm,
+            augment,
             batch_size,
             capacity,
             shuffle=False)
 
     return train_queue, val_queue, test_queue
+
+
+def _standard_scale_batch(batch):
+    for example in batch:
+        StandardScaler(copy=False).fit_transform(example[0])
+    return batch
