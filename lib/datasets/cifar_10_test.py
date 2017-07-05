@@ -9,7 +9,7 @@ data = Cifar10('data/cifar_10', val_size=10000)
 
 class Cifar10Test(TestCase):
     def test_init(self):
-        self.assertEqual(data.train.num_examples, 40000)
+        self.assertEqual(data.train.num_examples, 50000)
         self.assertEqual(data.val.num_examples, 10000)
         self.assertEqual(data.test.num_examples, 10000)
 
@@ -55,13 +55,11 @@ class Cifar10Test(TestCase):
 
         self.assertEqual(labels.dtype, np.uint8)
 
-        _, labels = data.val.next_batch(
-            data.val.num_examples, shuffle=False)
+        _, labels = data.val.next_batch(data.val.num_examples, shuffle=False)
 
         self.assertEqual(labels.dtype, np.uint8)
 
-        _, labels = data.test.next_batch(
-            data.test.num_examples, shuffle=False)
+        _, labels = data.test.next_batch(data.test.num_examples, shuffle=False)
 
         self.assertEqual(labels.dtype, np.uint8)
 

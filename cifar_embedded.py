@@ -20,8 +20,8 @@ CONNECTIVITY = 8
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.01
-NUM_STEPS_PER_DECAY = 500
+LEARNING_RATE = 0.001
+NUM_STEPS_PER_DECAY = 1000
 TRAIN_DIR = None
 # LOG_DIR = 'data/summaries/cifar_slic_embedded'
 LOG_DIR = 'data/summaries/cifar_quickshift_embedded'
