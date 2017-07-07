@@ -11,7 +11,7 @@ def node_selection(points, size, stride=1, delta=1):
     # Translate points to min zero.
     points = points - np.array([y_min, x_min])
 
-    # Scale y-coordinate to natural number
+    # Scale y-coordinates to natural numbers.
     points[:, :1] = w_max * np.floor(points[:, :1] / delta)
 
     # Sort points.
@@ -20,4 +20,29 @@ def node_selection(points, size, stride=1, delta=1):
 
     # Stride and slice points.
     idx = np.arange(np.min([size * stride, order.shape[0]]), step=stride)
-    return order[idx]
+
+    # Fill the rest of the nodes with -1 until we reach the given size.
+    filler = -np.ones(np.max([size - idx.shape[0], 0]))
+    return np.concatenate([order[idx], filler], axis=0)
+
+
+def neighborhood_selection(idx, adj_dist, adj_rad, size):
+    N, _ = adj_dist.shape
+    count = 1
+
+    neighborhood = [idx]
+
+    while neighborhood.count < size or neighborhood.count == N:
+
+        pass
+
+    return neighborhood
+
+    # Was soll passieren?
+    # Co
+    # Hole die Rows von idx
+    pass
+
+
+def fill_features(receptive_field, features):
+    pass
