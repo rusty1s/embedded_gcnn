@@ -19,4 +19,10 @@ class SpatialTest(TestCase):
             node_selection(points, size=6, delta=3), [1, 2, 3, 0, 4, -1])
 
     def test_neighborhood_selection(self):
-        pass
+        points = np.array([[0, 0], [1, 0], [0, 1], [-1, 0], [0, -1]])
+
+        adj = [[0, 1, 1, 1, 1], [1, 0, 0, 0, 0], [1, 0, 0, 0, 0],
+               [1, 0, 0, 0, 0], [1, 0, 0, 0, 0]]
+        adj = sp.coo_matrix(adj)
+
+        neighborhood_selection(0, points, adj)

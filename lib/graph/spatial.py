@@ -21,28 +21,57 @@ def node_selection(points, size, stride=1, delta=1):
     # Stride and slice points.
     idx = np.arange(np.min([size * stride, order.shape[0]]), step=stride)
 
-    # Fill the rest of the nodes with -1 until we reach the given size.
+    # Fill the rest of the nodes with id -1 until we reach the given size.
     filler = -np.ones(np.max([size - idx.shape[0], 0]))
     return np.concatenate([order[idx], filler], axis=0)
 
 
-def neighborhood_selection(idx, adj_dist, adj_rad, size):
-    N, _ = adj_dist.shape
-    count = 1
+def neighborhood_selection(idx, points, adj, size):
+    # neighborhood = np.array([idx], np.int32)
 
-    neighborhood = [idx]
+    # current_neighbors = []
+    # new_nodes = []
+    nodes = np.array([idx])
+    current_nodes = np.array([idx])
 
-    while neighborhood.count < size or neighborhood.count == N:
+    while nodes.shape[0] < size or nodes.shape[0] < adj.shape[0]:
+        # Calculate all neighbors.
+        neighbor_idx = np.where(np.in1d(adj.row, current_nodes))[0]
+        neighbor_col = adj.col[neighbor_idx]
+        neighbor_col = np.unique(neighbor_col)
+        # TODO: Filter nodes that are already calculated
 
-        pass
+        # Calculate vectors.
+        vectors = points[neighbor_col] - points[idx]
+        rads = np.arctan2(vectors[:, 1], vectors[:, 0])
+        rads = np.where(rads > 0, rads, rads + 2 * np.pi)
 
-    return neighborhood
+        # Sort by radians.
+        order = np.argsort(rads)
+        neighbor_col = neighbor_col[order]
 
-    # Was soll passieren?
-    # Co
-    # Hole die Rows von idx
-    pass
+        # Append to nodes and iterate over current neighbors in next step.
+        nodes = np.concatenate([nodes, neighbor_col], axis=0)
+        current_nodes = neighbor_col
+
+    return nodes[:size]
 
 
-def fill_features(receptive_field, features):
-    pass
+# def build_receptive_fields(points,
+#                            adj_dist,
+#                            adj_rad,
+#                            node_size,
+#                            neighborhood_size,
+#                            delta=1):
+
+#     nodes = node_selection(points)
+#     neighborhoods = []
+#     for node in nodes:
+#         neighborhoods.append(
+#             neighborhood_selection(node, adj_dist, adj_rad, neighborhood_size))
+#     return np.array(neighborhoods)
+
+# def fill_features(receptive_field, features):
+#     features = np.concatenate((features, np.zeros_like(features[0])))
+#     features[receptive_field]
+#     pass
