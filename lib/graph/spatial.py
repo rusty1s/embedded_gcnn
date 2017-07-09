@@ -55,9 +55,10 @@ def neighborhood_selection(idx, points, adj, size):
         nodes = np.concatenate([nodes, neighbor_col], axis=0)
         current_nodes = neighbor_col
 
-    # Append fake nodes.
+    # Slice or append fake nodes with value N.
+    N = adj.shape[0]
     nodes = nodes[:size]
-    fake = np.ones(np.max([size - nodes.shape[0], 0])) * adj.shape[0]
+    fake = N * np.ones(np.max([size - nodes.shape[0], 0]))
     return np.concatenate([nodes, fake], axis=0)
 
 
@@ -67,15 +68,22 @@ def receptive_fields(points,
                      neighborhood_size,
                      node_stride=1,
                      delta=1):
+    """Create receptive fields for embedded graph."""
+
     nodes = node_selection(points, node_size, node_stride, delta)
 
-    fields = np.zeros((node_size, neighborhood_size), dtype=np.int64)
-    for idx, node in enumerate(nodes):
-        fields[idx] = neighborhood_selection(node, points, adj,
-                                             neighborhood_size)
-    return fields
+    return np.vstack([
+        neighborhood_selection(node, points, adj, neighborhood_size)
+        for node in nodes
+    ])
 
 
-# def fill_features(receptive_fields, features):
-#     features = np.concatenate([features, np.zeros_like(features[0])], axis=0)
-#     return features[receptive_fields]
+def fill_features(receptive_fields, features):
+    """Fill receptive field with features."""
+
+    zero = np.reshape(np.zeros_like(features[0]), (1, -1))
+    features = np.concatenate([features, zero], axis=0)
+
+    node_size, neighborhood_size = receptive_fields.shape
+    flat = receptive_fields.flatten()
+    return np.reshape(features[flat], (node_size, neighborhood_size, -1))

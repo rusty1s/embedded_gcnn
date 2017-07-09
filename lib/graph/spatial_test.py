@@ -4,7 +4,8 @@ import numpy as np
 from numpy.testing import assert_equal
 import scipy.sparse as sp
 
-from .spatial import (node_selection, neighborhood_selection, receptive_fields)
+from .spatial import (node_selection, neighborhood_selection, receptive_fields,
+                      fill_features)
 
 
 class SpatialTest(TestCase):
@@ -60,3 +61,28 @@ class SpatialTest(TestCase):
         excepted = [[3, 0, 2, 1], [0, 2, 1, 4], [1, 0, 2, 4]]
 
         assert_equal(fields, excepted)
+
+    def test_fill_features(self):
+        receptive_fields = np.array([
+            [3, 0, 2, 1],
+            [0, 2, 1, 4],
+            [1, 0, 2, 5],
+        ])
+
+        features = np.array([
+            [0, 1, 2],
+            [1, 2, 3],
+            [2, 3, 4],
+            [3, 4, 5],
+            [4, 5, 6],
+        ])
+
+        block = fill_features(receptive_fields, features)
+
+        expected = [
+            [[3, 4, 5], [0, 1, 2], [2, 3, 4], [1, 2, 3]],
+            [[0, 1, 2], [2, 3, 4], [1, 2, 3], [4, 5, 6]],
+            [[1, 2, 3], [0, 1, 2], [2, 3, 4], [0, 0, 0]],
+        ]
+
+        assert_equal(block, expected)
