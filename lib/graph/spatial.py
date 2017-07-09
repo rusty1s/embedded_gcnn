@@ -70,8 +70,10 @@ def receptive_fields(points,
                      delta=1):
     """Create receptive fields for embedded graph."""
 
+    # Compute node selection.
     nodes = node_selection(points, node_size, node_stride, delta)
 
+    # Stack receptive fields of node selection vertically.
     return np.vstack([
         neighborhood_selection(node, points, adj, neighborhood_size)
         for node in nodes
@@ -81,9 +83,11 @@ def receptive_fields(points,
 def fill_features(receptive_fields, features):
     """Fill receptive field with features."""
 
+    # Append zero features for fake nodes.
     zero = np.reshape(np.zeros_like(features[0]), (1, -1))
     features = np.concatenate([features, zero], axis=0)
 
+    # Fill features.
     node_size, neighborhood_size = receptive_fields.shape
     flat = receptive_fields.flatten()
     return np.reshape(features[flat], (node_size, neighborhood_size, -1))
