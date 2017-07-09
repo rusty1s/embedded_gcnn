@@ -58,7 +58,7 @@ def neighborhood_selection(idx, points, adj, size):
     # Slice or append fake nodes with value N.
     N = adj.shape[0]
     nodes = nodes[:size]
-    fake = N * np.ones(np.max([size - nodes.shape[0], 0]))
+    fake = N * np.ones(np.max([size - nodes.shape[0], 0]), dtype=np.int64)
     return np.concatenate([nodes, fake], axis=0)
 
 
