@@ -9,8 +9,7 @@ from ..tf import sparse_identity, sparse_tensor_diag_matmul
 def conv(features, adj, weights):
     n = adj.dense_shape[0]
 
-    adj = tf.sparse_add(adj, sparse_identity(n))
-    degree = tf.sparse_reduce_sum(adj, axis=1)
+    degree = tf.sparse_reduce_sum(adj, axis=1) + 1
     degree = tf.cast(degree, tf.float32)
     degree = tf.pow(degree, -0.5)
 
@@ -18,6 +17,12 @@ def conv(features, adj, weights):
     adj = sparse_tensor_diag_matmul(adj, degree, transpose=False)
 
     output = tf.sparse_tensor_dense_matmul(adj, features)
+
+    features = tf.transpose(features)
+    features = tf.multiply(tf.multiply(degree, features), degree)
+    features = tf.transpose(features)
+    output = output + features
+
     return tf.matmul(output, weights)
 
 
