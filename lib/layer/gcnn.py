@@ -3,12 +3,10 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf import sparse_identity, sparse_tensor_diag_matmul
+from ..tf import sparse_tensor_diag_matmul
 
 
 def conv(features, adj, weights):
-    n = adj.dense_shape[0]
-
     degree = tf.sparse_reduce_sum(adj, axis=1) + 1
     degree = tf.cast(degree, tf.float32)
     degree = tf.pow(degree, -0.5)
