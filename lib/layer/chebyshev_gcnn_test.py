@@ -4,7 +4,7 @@ import tensorflow as tf
 
 from .chebyshev_gcnn import conv, ChebyshevGCNN
 from ..tf.convert import sparse_to_tensor
-from ..tf.laplacian import laplacian, rescale_lap
+from ..tf.laplacian import rescaled_laplacian
 
 
 class ChebyshevGCNNTest(tf.test.TestCase):
@@ -12,8 +12,7 @@ class ChebyshevGCNNTest(tf.test.TestCase):
         adj = [[0, 1, 0], [1, 0, 2], [0, 2, 0]]
         adj = sp.coo_matrix(adj, dtype=np.float32)
         adj = sparse_to_tensor(adj)
-        lap = laplacian(adj)
-        lap = rescale_lap(lap)
+        lap = rescaled_laplacian(adj)
 
         features = [[1, 2], [3, 4], [5, 6]]
         features = tf.constant(features, dtype=tf.float32)

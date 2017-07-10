@@ -3,15 +3,14 @@ from six.moves import xrange
 import tensorflow as tf
 
 from .var_layer import VarLayer
-from ..tf import laplacian, rescale_lap
+from ..tf import rescaled_laplacian
 
 
 def conv(features, adj, weights):
     K = weights.get_shape()[0].value - 1
 
     # Create and rescale normalized laplacian.
-    lap = laplacian(adj)
-    lap = rescale_lap(lap)
+    lap = rescaled_laplacian(adj)
 
     Tx_0 = features
     output = tf.matmul(Tx_0, weights[0])
