@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest, RFE, f_classif
-from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 
 from .form_feature_extraction import FormFeatureExtraction
 
@@ -79,7 +79,7 @@ class FormFeatureSelection(object):
         self._features = sel.fit_transform(self._features, self._labels)
         self._idx = self._idx[np.where(sel.get_support())[0]]
 
-    def eliminiate_recursive(self, k):
-        sel = RFE(LogisticRegression(), k)
+    def eliminate_recursive(self, k):
+        sel = RFE(LinearSVC(), k)
         self._features = sel.fit_transform(self._features, self._labels)
         self._idx = self._idx[np.where(sel.get_support())[0]]
