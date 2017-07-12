@@ -60,7 +60,7 @@ nosetests --nologcapture
 Please cite my master thesis if you use this code in your own work:
 
 ```
-@mastersthesis{fey2017egcn,
+@mastersthesis{fey2017egcnn,
   title={Convolutional Neural Networks auf Graphrepr{\"a}sentationen von Bildern},
   author={Matthias Fey},
   school={Technische Universit{\"a}t Dortmund},
