@@ -17,7 +17,7 @@
 [code-climate-issues-image]: https://codeclimate.com/github/rusty1s/embedded_gcnn/badges/issue_count.svg
 [code-climate-issues-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn/issues
 
-![Neural Network Approach](https://user-images.githubusercontent.com/6945922/28238129-45422ebe-694d-11e7-9fc5-aee9e651a334.png)
+![Neural Network Approach](https://user-images.githubusercontent.com/6945922/28239620-a72734d0-6970-11e7-9253-8a1e027efd78.png)
 
 This is a TensorFlow implementation of my master thesis on [Graph-based Image
 Classification](https://github.com/rusty1s/deep-learning/blob/master/master/main.pdf)
