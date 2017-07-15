@@ -17,6 +17,7 @@
 [code-climate-issues-image]: https://codeclimate.com/github/rusty1s/embedded_gcnn/badges/issue_count.svg
 [code-climate-issues-url]: https://codeclimate.com/github/rusty1s/embedded_gcnn/issues
 
+![Neural Network Approach](https://user-images.githubusercontent.com/6945922/28238129-45422ebe-694d-11e7-9fc5-aee9e651a334.png)
 ![SlIC and Quickshift Segmentation](https://user-images.githubusercontent.com/6945922/27761633-61569a56-5e60-11e7-96d6-5a0507d26cf8.jpg)
 
 This is a TensorFlow implementation of my master thesis on [Graph-based Image
