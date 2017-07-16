@@ -22,3 +22,26 @@ class AveragePoolTest(tf.test.TestCase):
         with self.test_session():
             # Average pooling converts lists to tensors.
             self.assertAllEqual(outputs.eval(), expected)
+
+    def test_call_with_tensor(self):
+        layer = AveragePool(name='call_with_tensor')
+        inputs = tf.constant([[[
+            [1, 2],
+            [3, 4],
+        ], [
+            [5, 6],
+            [7, 8],
+        ]], [[
+            [1, 2],
+            [3, 4],
+        ], [
+            [5, 6],
+            [7, 8],
+        ]]])
+
+        outputs = layer(inputs)
+
+        expected = [[4, 5], [4, 5]]
+
+        with self.test_session():
+            self.assertAllEqual(outputs.eval(), expected)
