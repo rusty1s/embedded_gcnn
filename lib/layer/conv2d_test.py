@@ -40,12 +40,14 @@ class Conv2dTest(tf.test.TestCase):
     def test_init(self):
         layer = Conv2d(1, 2)
         self.assertEqual(layer.name, 'conv2d_1')
+        self.assertIsNone(layer.dropout)
         self.assertEqual(layer.stride, 1)
         self.assertEqual(layer.vars['weights'].get_shape(), [3, 3, 1, 2])
         self.assertEqual(layer.vars['bias'].get_shape(), [2])
 
-        layer = Conv2d(2, 3, size=5, stride=4)
+        layer = Conv2d(2, 3, size=5, stride=4, dropout=0.5)
         self.assertEqual(layer.name, 'conv2d_2')
+        self.assertEqual(layer.dropout, 0.5)
         self.assertEqual(layer.stride, 4)
         self.assertEqual(layer.vars['weights'].get_shape(), [5, 5, 2, 3])
         self.assertEqual(layer.vars['bias'].get_shape(), [3])
@@ -70,7 +72,7 @@ class Conv2dTest(tf.test.TestCase):
             self.assertAllEqual(outputs.eval(), expected.eval())
 
     def test_call_without_bias(self):
-        layer = Conv2d(1, 2, bias=False, name='call')
+        layer = Conv2d(1, 2, bias=False, name='call_wihtout_bias')
 
         image = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
         inputs = tf.constant(image, tf.float32)
@@ -86,3 +88,19 @@ class Conv2dTest(tf.test.TestCase):
 
             self.assertEqual(outputs.eval().shape, (1, 3, 3, 2))
             self.assertAllEqual(outputs.eval(), expected.eval())
+
+    def test_call_with_dropout(self):
+        layer = Conv2d(1, 2, dropout=0.5, name='call_with_dropout')
+
+        image = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        inputs = tf.constant(image, tf.float32)
+        inputs = tf.reshape(inputs, [1, 3, 3, 1])
+
+        outputs = layer(inputs)
+
+        with self.test_session() as sess:
+            sess.run(tf.global_variables_initializer())
+
+            # Dropout is random and therefore not testable, so we just ran it
+            # and ensure that the computation succeeds.
+            self.assertEqual(outputs.eval().shape, (1, 3, 3, 2))
