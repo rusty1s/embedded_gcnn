@@ -66,6 +66,12 @@ class DatasetTest(TestCase):
         dataset = Dataset(images, labels)
         datasets = Datasets(dataset, dataset, dataset)
 
+        self.assertRaises(NotImplementedError, getattr, datasets, 'classes')
+        self.assertRaises(NotImplementedError, getattr, datasets, 'width')
+        self.assertRaises(NotImplementedError, getattr, datasets, 'height')
+        self.assertRaises(NotImplementedError, getattr, datasets,
+                          'num_channels')
+
         batch = datasets.train.next_batch(5, shuffle=False)
         assert_equal(images, batch[0])
         assert_equal(labels, batch[1])
