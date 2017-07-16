@@ -64,27 +64,15 @@ class Model(BaseModel):
             adjs_rad=self.placeholders['adj_rad_1'],
             logging=self.logging)
         max_pool_1 = MaxPool(size=2)
-        conv_2_1 = Conv(
+        conv_2 = Conv(
             64,
             128,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
             logging=self.logging)
-        conv_2_2 = Conv(
-            128,
-            128,
-            adjs_dist=self.placeholders['adj_dist_2'],
-            adjs_rad=self.placeholders['adj_rad_2'],
-            logging=self.logging)
         max_pool_2 = MaxPool(size=2)
-        conv_3_1 = Conv(
+        conv_3 = Conv(
             128,
-            256,
-            adjs_dist=self.placeholders['adj_dist_3'],
-            adjs_rad=self.placeholders['adj_rad_3'],
-            logging=self.logging)
-        conv_3_2 = Conv(
-            256,
             256,
             adjs_dist=self.placeholders['adj_dist_3'],
             adjs_rad=self.placeholders['adj_rad_3'],
@@ -108,9 +96,8 @@ class Model(BaseModel):
             logging=self.logging)
 
         self.layers = [
-            conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
-            conv_3_1, conv_3_2, max_pool_3, conv_4, average_pool, fc_1, fc_2,
-            fc_3
+            conv_1_1, conv_1_2, max_pool_1, conv_2, max_pool_2, conv_3,
+            max_pool_3, conv_4, average_pool, fc_1, fc_2, fc_3
         ]
 
 
