@@ -6,8 +6,10 @@ def flip_left_right_image(image):
     return np.fliplr(image)
 
 
-def random_flip_left_right_image(image):
-    if bool(random.getrandbits(1)):
+def random_flip_left_right_image(image, rand=None):
+    rand = bool(random.getrandbits(1)) if rand is None else rand
+
+    if rand:
         image = flip_left_right_image(image)
 
     return image

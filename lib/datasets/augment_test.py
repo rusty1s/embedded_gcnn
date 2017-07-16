@@ -22,6 +22,9 @@ class AugmentTest(TestCase):
 
         assert_equal(flip_left_right_image(image), expected)
 
+        assert_equal(random_flip_left_right_image(image, True), expected)
+        assert_equal(random_flip_left_right_image(image, False), image)
+
         random = random_flip_left_right_image(image)
         self.assertTrue(
             np.array_equal(random, image) or np.array_equal(random, expected))
