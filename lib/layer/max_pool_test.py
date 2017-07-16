@@ -29,3 +29,18 @@ class MaxPool2DTest(tf.test.TestCase):
             self.assertEqual(len(outputs), 2)
             self.assertAllEqual(outputs[0].eval(), expected[0])
             self.assertAllEqual(outputs[1].eval(), expected[1])
+
+    def test_call_with_tensor(self):
+        layer = MaxPool(size=2, name='call_with_tensor')
+
+        image = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        inputs = tf.constant(image, tf.float32)
+        inputs = tf.reshape(inputs, [1, 3, 3, 1])
+
+        outputs = layer(inputs)
+
+        expected = [[[[5], [6]], [[8], [9]]]]
+
+        with self.test_session():
+            self.assertEqual(outputs.eval().shape, (1, 2, 2, 1))
+            self.assertAllEqual(outputs.eval(), expected)
