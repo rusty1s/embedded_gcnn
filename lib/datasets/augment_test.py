@@ -3,8 +3,9 @@ from unittest import TestCase
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 
-from .augment import (flip_left_right_image, adjust_brightness,
-                      adjust_contrast)
+from .augment import (flip_left_right_image, random_flip_left_right_image,
+                      adjust_brightness, random_brightness, adjust_contrast,
+                      random_contrast)
 
 
 class AugmentTest(TestCase):
@@ -21,6 +22,10 @@ class AugmentTest(TestCase):
 
         assert_equal(flip_left_right_image(image), expected)
 
+        random = random_flip_left_right_image(image)
+        self.assertTrue(
+            np.array_equal(random, image) or np.array_equal(random, expected))
+
     def test_adjust_brightness(self):
         image = np.array([
             [[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]],
@@ -34,6 +39,9 @@ class AugmentTest(TestCase):
 
         assert_equal(adjust_brightness(image, 0.5), expected)
 
+        self.assertGreaterEqual(random_brightness(image, 0.5).min(), 0)
+        self.assertLessEqual(random_brightness(image, 0.5).max(), 1)
+
     def test_adjust_contrast(self):
         image = np.array([
             [[0.1, 0.4, 0.3], [0.4, 0.5, 0.6]],
@@ -46,3 +54,6 @@ class AugmentTest(TestCase):
         ]
 
         assert_almost_equal(adjust_contrast(image, 0.5), expected)
+
+        self.assertGreaterEqual(random_contrast(image, 0.5).min(), 0)
+        self.assertLessEqual(random_contrast(image, 0.5).max(), 1)
