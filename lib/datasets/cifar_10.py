@@ -83,6 +83,6 @@ class Cifar10(Datasets):
         with open(os.path.join(self.data_dir, name), 'rb') as f:
             if sys.version_info >= (3, 0):
                 batch = pickle.load(f, encoding='latin1')
-            else:
+            else:  # pragma: no cover
                 batch = pickle.load(f)
         return batch['data'], batch['labels']
