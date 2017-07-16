@@ -134,6 +134,3 @@ class BsplineTest(tf.test.TestCase):
         ]]
         adj_rad = sp.coo_matrix(adj_rad, dtype=np.float32)
         adj_rad = sparse_to_tensor(adj_rad)
-
-        with self.assertRaises(NotImplementedError):
-            base(adj_rad, K=3, P=2, p=0)
