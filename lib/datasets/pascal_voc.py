@@ -128,7 +128,7 @@ class Dataset(object):
             scale_x = self._fixed_size / width
             scale = min(scale_y, scale_x)
 
-            image = rescale(image, (scale, scale))
+            image = rescale(image, (scale, scale), mode='constant')
 
             pad_y = self._fixed_size - image.shape[0]
             pad_x = self._fixed_size - image.shape[1]

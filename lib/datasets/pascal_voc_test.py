@@ -13,6 +13,10 @@ class PascalVOCTest(TestCase):
         self.assertEqual(data.val.num_examples, 4)
         self.assertEqual(data.test.num_examples, 4)
 
+        self.assertEqual(data.width, None)
+        self.assertEqual(data.height, None)
+        self.assertEqual(data.num_channels, 3)
+
     def test_shapes(self):
         images, labels = data.train.next_batch(4, shuffle=False)
         for image in images:
@@ -85,7 +89,21 @@ class PascalVOCTest(TestCase):
         self.assertEqual(data.classnames(labels[3]), ['tvmonitor'])
 
     def test_next_batch_shuffle(self):
-        _, _ = data.train.next_batch(2, shuffle=True)
-        _, _ = data.train.next_batch(2, shuffle=True)
-        _, _ = data.train.next_batch(2, shuffle=True)
-        _, _ = data.train.next_batch(2, shuffle=True)
+        data_new = PascalVOC('test_data', val_size=4)
+
+        _, _ = data_new.train.next_batch(2, shuffle=True)
+        _, _ = data_new.train.next_batch(2, shuffle=True)
+        _, _ = data_new.train.next_batch(2, shuffle=True)
+        _, _ = data_new.train.next_batch(2, shuffle=True)
+
+    def test_fix_size(self):
+        data_fixed = PascalVOC('test_data', val_size=4, fixed_size=224)
+
+        self.assertEqual(data_fixed.width, 224)
+        self.assertEqual(data_fixed.height, 224)
+        self.assertEqual(data_fixed.num_channels, 3)
+
+        images, labels = data_fixed.train.next_batch(2, shuffle=True)
+
+        self.assertEqual(images.shape, (2, 224, 224, 3))
+        self.assertEqual(labels.shape, (2, 20))
