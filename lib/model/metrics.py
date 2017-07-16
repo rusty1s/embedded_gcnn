@@ -9,15 +9,6 @@ def softmax_cross_entropy(outputs, labels):
     return tf.reduce_mean(loss_per_example, name='loss')
 
 
-def sigmoid_cross_entropy(outputs, labels):
-    """Calculate sigmoid cross-entropy loss."""
-
-    labels = tf.cast(labels, tf.float32)
-    loss_per_example = tf.nn.sigmoid_cross_entropy_with_logits(
-        logits=outputs, labels=labels, name='loss_per_example')
-    return tf.reduce_mean(loss_per_example, name='loss')
-
-
 def total_loss(loss):
     tf.add_to_collection('losses', loss)
     losses = tf.get_collection('losses')
