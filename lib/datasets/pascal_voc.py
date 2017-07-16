@@ -133,8 +133,10 @@ class Dataset(object):
             pad_y = self._fixed_size - image.shape[0]
             pad_x = self._fixed_size - image.shape[1]
 
-            image = np.pad(image, ((ceil(pad_y / 2), floor(pad_y / 2)), (ceil(
-                pad_x / 2), floor(pad_x / 2)), (0, 0)), 'constant')
+            image = np.pad(image,
+                           ((int(ceil(pad_y / 2)), int(floor(pad_y / 2))),
+                            (int(ceil(pad_x / 2)),
+                             int(floor(pad_x / 2))), (0, 0)), 'constant')
             return image
 
     def _read_label(self, name):
