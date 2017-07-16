@@ -4,7 +4,6 @@ from __future__ import print_function
 import os
 import sys
 import tarfile
-from zipfile import ZipFile
 from six.moves import urllib
 
 
@@ -35,9 +34,7 @@ def maybe_download_and_extract(url, data_dir):
 
     if ".tar" in filename:
         return extract_tar(data_dir, filename)
-    elif ".zip" in filename:
-        return extract_zip(data_dir, filename)
-    else:
+    else:  # pragma: no cover
         return filepath
 
 
@@ -57,25 +54,6 @@ def extract_tar(data_dir, filename):
         sys.stdout.flush()
 
         tarfile.open(filepath, mode).extractall(data_dir)
-
-        print(' Done!')
-
-    return extracted_dir
-
-
-def extract_zip(data_dir, filename):
-    extracted_dir = os.path.join(data_dir, filename.split('.')[0])
-
-    # Only extract if file doesn't exist.
-    if not os.path.exists(extracted_dir):
-        sys.stdout.write(
-            '>> Extracting {} to {}...'.format(filename, extracted_dir))
-        sys.stdout.flush()
-
-        filepath = os.path.join(data_dir, filename)
-        zip_ref = ZipFile(filepath, 'r')
-        zip_ref.extractall(data_dir)
-        zip_ref.close()
 
         print(' Done!')
 
