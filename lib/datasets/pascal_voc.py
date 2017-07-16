@@ -146,7 +146,7 @@ class Dataset(object):
 
         label = np.zeros((len(CLASSES)), np.uint8)
 
-        # Get the label to the greatest bounding box
+        # Get the label to the greatest bounding box.
         max_area = 0
         max_name = ''
         for obj in annotation.getElementsByTagName('object'):
