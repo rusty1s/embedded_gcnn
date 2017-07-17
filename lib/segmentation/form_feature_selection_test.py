@@ -15,7 +15,7 @@ class FormFeatureSelectionTest(TestCase):
     def test_form_feature_selection(self):
         selector = FormFeatureSelection(data.train, slic, num_examples=10)
 
-        self.assertEqual(selector.features.shape, (655, 38))
+        self.assertEqual(selector.features.shape[1], 38)
         self.assertEqual(selector.num_features, 38)
         self.assertEqual(len(selector.selected_features), 38)
         assert_equal(selector.selected_feature_indices, np.arange(38))
