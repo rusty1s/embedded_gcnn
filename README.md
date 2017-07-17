@@ -30,9 +30,9 @@ As proof, we implemented an image classification on embedded graphs by first seg
 
 Graphs are trained on three different datasets and are automatically downloaded by running the corresponding train scripts:
 
-* [MNIST](http://yann.lecun.com/exdb/mnist/) (run `python mnist_embedded.py`)
-* [Cifar-10](https://www.cs.toronto.edu/~kriz/cifar.html) (run `python cifar_embedded.py`)
-* [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/) (run `python pascal_embedded.py` and `python pascal_squeeze.py` for validation on 2d images)
+* [MNIST](http://yann.lecun.com/exdb/mnist/) (run `python mnist_graph.py`)
+* [Cifar-10](https://www.cs.toronto.edu/~kriz/cifar.html) (run `python cifar_graph.py`)
+* [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/) (run `python pascal_graph.py` and `python pascal_conv2d.py` for validation on 2d images)
 
 This repository also includes layer implementations of alternative approaches such as [SGCNN](https://arxiv.org/abs/1312.6203) and [GCN](https://arxiv.org/abs/1609.02907) for graphs and the Fire module of [SqueezeNet](https://arxiv.org/abs/1602.07360) for images to validate the results.
 

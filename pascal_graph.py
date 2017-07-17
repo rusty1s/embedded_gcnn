@@ -1,6 +1,8 @@
 from lib.datasets import PascalVOC as Data
 from lib.model import (Model as BaseModel, generate_placeholders, train)
-from lib.segmentation import slic_fixed, extract_features_fixed
+from lib.segmentation import extract_features_fixed
+from lib.segmentation import slic_fixed
+# from lib.segmentation import quickshift_fixed
 from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
@@ -17,7 +19,8 @@ STDDEV = 1
 
 LEARNING_RATE = 0.0001
 TRAIN_DIR = None
-LOG_DIR = 'data/summaries/pascal_slic_embedded'
+LOG_DIR = 'data/summaries/pascal_slic_graph'
+# LOG_DIR = 'data/summaries/pascal_quickshift_graph'
 
 AUGMENT_TRAIN_EXAMPLES = True
 DROPOUT = 0.5
@@ -31,6 +34,8 @@ data = Data(DATA_DIR)
 
 segmentation_algorithm = slic_fixed(
     num_segments=1600, compactness=30, max_iterations=10, sigma=0)
+# segmentation_algorithm = quickshift_fixed(
+#     ratio=0.75, kernel_size=2, max_dist=8, sigma=0)
 
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 

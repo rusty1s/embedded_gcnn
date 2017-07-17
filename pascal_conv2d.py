@@ -21,15 +21,14 @@ BATCH_SIZE = 32
 MAX_STEPS = 50000
 DISPLAY_STEP = 10
 VALIDATION_STEP = 500
-SAVE_STEP = 250
 
 data = Data(DATA_DIR, fixed_size=224)
 
 placeholders = {
     'features':
     tf.placeholder(tf.float32,
-                   [None, data.width, data.height, data.num_channels],
-                   'features'),
+                   [None, data.width, data.height,
+                    data.num_channels], 'features'),
     'labels':
     tf.placeholder(tf.uint8, [None, data.num_classes], 'labels'),
     'dropout':
@@ -115,9 +114,6 @@ try:
             log += 'val_loss={:.5f}, '.format(val_info[0])
             log += 'val_acc={:.5f}'.format(val_info[1])
             print(log)
-
-        if step % SAVE_STEP == 0:
-            model.save()
 
 except KeyboardInterrupt:
     print()
