@@ -25,7 +25,7 @@ class FormFeatureSelection(object):
                  num_examples=None,
                  scaler=StandardScaler()):
 
-        if num_examples is None:
+        if num_examples is None:  # pragma: no cover
             num_examples = dataset.num_examples
 
         images, labels = dataset.next_batch(num_examples, shuffle=False)
