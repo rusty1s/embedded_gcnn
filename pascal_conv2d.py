@@ -15,6 +15,7 @@ DATA_DIR = 'data/pascal_voc'
 LEARNING_RATE = 0.0001
 TRAIN_DIR = None
 LOG_DIR = 'data/summaries/pascal_conv2d'
+SAVE_STEP = 250
 
 DROPOUT = 0.5
 BATCH_SIZE = 32
@@ -114,6 +115,9 @@ try:
             log += 'val_loss={:.5f}, '.format(val_info[0])
             log += 'val_acc={:.5f}'.format(val_info[1])
             print(log)
+
+        if step % SAVE_STEP == 0:
+            model.save()
 
 except KeyboardInterrupt:
     print()
