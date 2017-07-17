@@ -23,11 +23,9 @@ def flip_left_right_adj(adj_rad):
     return adj_rad
 
 
-def random_flip_left_right_adjs(adjs_rad):
-    if bool(random.getrandbits(1)):
-        adjs_rad = [flip_left_right_adj(adj_rad) for adj_rad in adjs_rad]
-
-    return adjs_rad
+def random_flip_left_right_adjs(adjs_rad, rand=None):
+    rand = bool(random.getrandbits(1)) if rand is None else rand
+    return [flip_left_right_adj(adj) for adj in adjs_rad] if rand else adjs_rad
 
 
 def adjust_brightness(features, start_idx, end_idx, delta):
