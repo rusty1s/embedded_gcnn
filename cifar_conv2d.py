@@ -6,23 +6,24 @@ import time
 
 import tensorflow as tf
 
-from lib.datasets import PascalVOC as Data
+from lib.datasets import Cifar10 as Data
 from lib.model import Model as BaseModel
-from lib.layer import ImageAugment, Conv2d, Fire, MaxPool, AveragePool
+from lib.layer import ImageAugment, Conv2d, MaxPool, FC
 
-DATA_DIR = 'data/pascal_voc'
+DATA_DIR = 'data/cifar_10'
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.001
+NUM_STEPS_PER_DECAY = 5000
 TRAIN_DIR = None
-LOG_DIR = 'data/summaries/pascal_conv2d'
+LOG_DIR = 'data/summaries/cifar_conv2d'
 SAVE_STEP = 250
 
 DROPOUT = 0.5
-BATCH_SIZE = 32
-MAX_STEPS = 50000
+BATCH_SIZE = 64
+MAX_STEPS = 200000
 DISPLAY_STEP = 10
 
-data = Data(DATA_DIR, fixed_size=224)
+data = Data(DATA_DIR)
 
 placeholders = {
     'features':
@@ -39,46 +40,33 @@ placeholders = {
 class Model(BaseModel):
     def _build(self):
         augment = ImageAugment()
-        conv_1 = Conv2d(
-            data.num_channels, 64, size=3, stride=2, logging=self.logging)
-        max_pool_1 = MaxPool(3, 2)
-
-        fire_1_1 = Fire(64, 16, 64, logging=self.logging)
-        fire_1_2 = Fire(128, 16, 64, logging=self.logging)
-
-        max_pool_2 = MaxPool(3, 2)
-
-        fire_2_1 = Fire(128, 32, 128, logging=self.logging)
-        fire_2_2 = Fire(256, 32, 128, logging=self.logging)
-
-        max_pool_3 = MaxPool(3, 2)
-
-        fire_3_1 = Fire(256, 48, 192, logging=self.logging)
-        fire_3_2 = Fire(384, 48, 192, logging=self.logging)
-        fire_3_3 = Fire(384, 64, 256, logging=self.logging)
-        fire_3_4 = Fire(512, 64, 256, logging=self.logging)
-
-        conv_2 = Conv2d(
-            512,
-            20,
-            size=1,
-            stride=1,
+        conv_1_1 = Conv2d(data.num_channels, 64, size=2, logging=self.logging)
+        conv_1_2 = Conv2d(64, 64, size=2, logging=self.logging)
+        max_pool_1 = MaxPool(2)
+        conv_2 = Conv2d(64, 128, size=2, logging=self.logging)
+        max_pool_2 = MaxPool(2)
+        conv_3 = Conv2d(128, 256, size=2, logging=self.logging)
+        max_pool_3 = MaxPool(2)
+        fc_1 = FC(4 * 4 * 256, 256, weight_decay=0.004, logging=self.logging)
+        fc_2 = FC(256, 128, weight_decay=0.004, logging=self.logging)
+        fc_3 = FC(
+            128,
+            data.num_classes,
+            act=lambda x: x,
             bias=False,
-            dropout=DROPOUT,
+            dropout=self.placeholders['dropout'],
             logging=self.logging)
 
-        avg = AveragePool()
-
         self.layers = [
-            augment, conv_1, max_pool_1, fire_1_1, fire_1_2, max_pool_2,
-            fire_2_1, fire_2_2, max_pool_3, fire_3_1, fire_3_2, fire_3_3,
-            fire_3_4, conv_2, avg
+            augment, conv_1_1, conv_1_2, max_pool_1, conv_2, max_pool_2,
+            conv_3, max_pool_3, fc_1, fc_2, fc_3
         ]
 
 
 model = Model(
     placeholders=placeholders,
     learning_rate=LEARNING_RATE,
+    num_steps_per_decay=NUM_STEPS_PER_DECAY,
     train_dir=TRAIN_DIR,
     log_dir=LOG_DIR)
 
