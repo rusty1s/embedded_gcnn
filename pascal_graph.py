@@ -7,7 +7,7 @@ from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
 SLIC_FORM_FEATURES = [1, 2, 3, 4, 5, 6, 8, 9, 21]
-# QUICKSIFT_FORM_FEATURES = [0, 2, 3, 4, 7, 19, 20, 21, 22]
+# QUICKSHIFT_FORM_FEATURES = [0, 2, 3, 4, 7, 19, 20, 21, 22]
 
 DATA_DIR = 'data/pascal_voc'
 PREPROCESS_FIRST = 'data/pascal_voc/slic'
