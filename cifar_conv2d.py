@@ -40,12 +40,12 @@ placeholders = {
 class Model(BaseModel):
     def _build(self):
         augment = ImageAugment()
-        conv_1_1 = Conv2d(data.num_channels, 64, size=2, logging=self.logging)
-        conv_1_2 = Conv2d(64, 64, size=2, logging=self.logging)
+        conv_1_1 = Conv2d(data.num_channels, 64, size=3, logging=self.logging)
+        conv_1_2 = Conv2d(64, 64, size=3, logging=self.logging)
         max_pool_1 = MaxPool(2)
-        conv_2 = Conv2d(64, 128, size=2, logging=self.logging)
+        conv_2 = Conv2d(64, 128, size=3, logging=self.logging)
         max_pool_2 = MaxPool(2)
-        conv_3 = Conv2d(128, 256, size=2, logging=self.logging)
+        conv_3 = Conv2d(128, 256, size=3, logging=self.logging)
         max_pool_3 = MaxPool(2)
         fc_1 = FC(4 * 4 * 256, 256, weight_decay=0.004, logging=self.logging)
         fc_2 = FC(256, 128, weight_decay=0.004, logging=self.logging)
