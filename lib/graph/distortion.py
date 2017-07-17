@@ -28,6 +28,8 @@ def perm_features(features, perm):
 
 
 def filter_adj(adj, nodes):
+    """Filters a given adjacency matrix by its given nodes indices."""
+
     # Filter by rows.
     in1d = np.in1d(adj.row, nodes)
     rows = adj.row[in1d]
@@ -49,20 +51,26 @@ def filter_adj(adj, nodes):
 
 
 def filter_features(features, nodes):
+    """Filters a feature matrix by its given nodes indices."""
     return features[nodes]
 
 
 def gray_color_threshold(adj, features, k):
+    """Node elimination by a color threshold `k`."""
     gray = features[:, :1]
     return np.where(gray >= k)[0]
 
 
 def degree_threshold(adj, features, k):
+    """Node elimination by a degree threshold `k`."""
     # Adjacency must contain one in every entry.
     degree = npg.aggregate(adj.row, adj.data, func='sum')
     return np.where(degree <= k)[0]
 
 
 def area_threshold(adj, features, k, idx=1):
+    """Node elimination by an area threshold `k`. `idx` points to the index of
+    the area feature in the feature matrix."""
+
     area = features[:, idx]
     return np.where(area <= k)[0]

@@ -17,6 +17,10 @@ def coarsen_adj(adj,
                 scale_invariance=False,
                 stddev=1,
                 rid=None):
+    """Coarsen and permute a given adjacency matrix a number of levels deep,
+    so that pairwise nodes in the same cluster are neighbored in the adjacency
+    matrix. Returns `levels + 1` adjacency matrices (dist and rad) and the
+    permutation of the first level to permute a given feature matrix."""
 
     # Coarse adjacency  a defined number of levels deep.
     adjs_dist, adjs_rad, cluster_maps = _coarsen_adj(

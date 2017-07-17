@@ -38,6 +38,8 @@ def grid_adj(shape, connectivity=4, dtype=np.float32):
 
 
 def grid_points(shape, dtype=np.float32):
+    """Return the grid points of a given shape with distance `1`."""
+
     x, y = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]))
     y = y.flatten()
     x = x.flatten()
@@ -49,4 +51,5 @@ def grid_points(shape, dtype=np.float32):
 
 
 def grid_mass(shape, dtype=np.float32):
+    """Return the mass of grid points of a given shape with distance `1`."""
     return np.ones(shape[0] * shape[1], dtype)

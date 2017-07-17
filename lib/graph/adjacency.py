@@ -6,7 +6,8 @@ import numpy_groupies as npg
 
 
 def zero_one_scale_adj(adj, scale_invariance=False):
-    """Normalize adjacency matrix to interval [0, 1]."""
+    """Normalize adjacency matrix to interval [0, 1]. Can choose between global
+    or locale normalization."""
 
     data = adj.data
 
@@ -34,7 +35,7 @@ def invert_adj(adj, stddev=1):
 
 
 def points_to_l2_adj(adj, points):
-    """Builds an embedded adjacency matrix based on points (y, x) of nodes."""
+    """Build an embedded adjacency matrix based on points (y, x) of nodes."""
 
     ys = points[:, :1].flatten()
     xs = points[:, 1:].flatten()
@@ -63,6 +64,9 @@ def points_to_l2_adj(adj, points):
 
 
 def points_to_adj(adj, points, scale_invariance=False, stddev=1):
+    """Build an embedded adjacency matrix based on points (y, x) of nodes, so
+    that nearer nodes have a smaller weight."""
+
     adj_dist, adj_rad = points_to_l2_adj(adj, points)
     adj_dist = zero_one_scale_adj(adj_dist, scale_invariance)
     adj_dist = invert_adj(adj_dist, stddev)

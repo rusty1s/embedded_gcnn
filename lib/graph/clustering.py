@@ -8,6 +8,9 @@ import scipy.sparse as sp
 
 
 def normalized_cut(adj, rid=None):
+    """Perform NormalizedCut on a given adjacency matrix. Return a cluster
+    map indicating the resulting pairwise cluster."""
+
     if rid is None:
         rid = np.random.permutation(np.arange(adj.shape[0]))
 
@@ -55,34 +58,3 @@ def normalized_cut(adj, rid=None):
             clustercount += 1
 
     return cluster_map
-
-
-# import numpy_groupies as npg
-
-# def cut_new(adj, rid=None):
-#     if rid is None:
-#         rid = np.random.permutation(np.arange(adj.shape[0]))
-
-#     cluster_map = None
-
-#     adj = perm_adj(adj, rid)
-
-#     rows = adj.row
-#     cols = adj.col
-#     data = adj.data
-#     degree = 1 / npg.aggregate(rows, data, func='sum')
-#     data = data * (degree[rows] + degree[cols])
-
-#     # SO, jetz ist row in rid order und data can be sorted
-#     print(rows)
-#     print(cols)
-#     print(data)
-#     # Data has now normalized cut comparison
-
-#     # Problem
-#     # wir wollen jetz rows durchlaufen (in rid order)
-#     # und sortieren col dabei???
-
-#     # dann durchlaufen wir row+col und setzen unsere cluster map
-
-#     return cluster_map
