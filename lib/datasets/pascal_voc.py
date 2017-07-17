@@ -76,6 +76,13 @@ class Dataset(object):
         self._names = [self._names[i] for i in perm]
 
     def next_batch(self, batch_size, shuffle=True):
+        # This code is nearly complete identical to the default next_batch
+        # method of the default dataset class, but instead of shuffling the
+        # examples in memory, we shuffle just the filenames.
+        #
+        # Therefore the duplication check of this file is diabled in
+        # .codeclimate.yml.
+
         start = self._index_in_epoch
 
         # Shuffle for the first epoch.

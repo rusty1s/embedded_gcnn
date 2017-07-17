@@ -3,6 +3,7 @@ engines:
     enabled: true
     exclude_paths:
       - "**_test.py"
+      - "pascal_voc.py"
     config:
       languages:
         python:
