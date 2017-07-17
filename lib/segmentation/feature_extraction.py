@@ -9,6 +9,7 @@ def extract_features(segmentation, image, form_features=None):
 
     group_idx = segmentation.flatten()
 
+    # Prepend mean color to form features.
     if image.shape[2] == 1:
         mean = npg.aggregate(group_idx, image.flatten(), func='mean')
         mean = np.reshape(mean, (-1, 1))

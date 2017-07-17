@@ -4,6 +4,8 @@ import scipy.sparse as sp
 
 
 def segmentation_adjacency(segmentation, connectivity=4):
+    """Generate an adjacency matrix out of a given segmentation."""
+
     assert connectivity == 4 or connectivity == 8
 
     # Get centroids.
