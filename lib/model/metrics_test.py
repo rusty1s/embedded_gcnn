@@ -1,9 +1,25 @@
 import tensorflow as tf
 
-from .metrics import accuracy, precision, recall
+from .metrics import (softmax_cross_entropy, total_loss, accuracy, precision,
+                      recall)
 
 
 class MetricsTest(tf.test.TestCase):
+    def test_softmax(self):
+        outputs = [[0, 0, 0, 1], [0, 0, 1, 0]]
+        outputs = tf.constant(outputs, tf.float32)
+
+        labels = [[0, 0, 0, 1], [0, 0, 1, 0]]
+        labels = tf.constant(labels, tf.uint8)
+
+        with self.test_session():
+            self.assertAlmostEqual(
+                softmax_cross_entropy(outputs, labels).eval(), 0.74366832)
+
+    def test_total_loss(self):
+        with self.test_session():
+            self.assertEqual(total_loss(2).eval(), 2)
+
     def test_accuracy(self):
         outputs = [[8, 5, 3, 9], [3, 4, 6, 4]]
         # [[0, 0, 0, 1], [0, 0, 1, 0]]
