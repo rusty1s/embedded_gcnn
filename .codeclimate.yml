@@ -11,6 +11,8 @@ engines:
     enabled: true
     config:
       threshold: "C"
+    exclude_paths:
+      - "train.py"
   fixme:
     enabled: true
     exclude_paths:
