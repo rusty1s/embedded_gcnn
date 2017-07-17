@@ -4,6 +4,7 @@ exclude_lines =
   raise NotImplementedError
   raise AssertionError
   raise ValueError
+  except ImportError
 
 [run]
 omit =
