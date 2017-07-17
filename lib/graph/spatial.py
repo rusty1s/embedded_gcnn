@@ -2,6 +2,8 @@ import numpy as np
 
 
 def node_selection(points, size, stride=1, delta=1):
+    """Select nodes of an adjacency matrix given their coordinates."""
+
     # Find coordinate max values.
     y_min = points[:, :1].min()
     x_min = points[:, -1:].min()
@@ -27,6 +29,9 @@ def node_selection(points, size, stride=1, delta=1):
 
 
 def neighborhood_selection(idx, points, adj, size):
+    """Select a neighborhood given an adjacency matrix and their node points.
+    """
+
     if idx == -1:
         return np.ones((size), np.int64) * adj.shape[0]
 
@@ -68,7 +73,7 @@ def receptive_fields(points,
                      neighborhood_size,
                      node_stride=1,
                      delta=1):
-    """Create receptive fields for embedded graph."""
+    """Create receptive fields for a graph."""
 
     # Compute node selection.
     nodes = node_selection(points, node_size, node_stride, delta)
