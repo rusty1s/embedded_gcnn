@@ -108,8 +108,8 @@ try:
             feed_dict.update({model.placeholders['dropout']: 0})
             train_info = model.evaluate(feed_dict, step, 'train')
             images, labels = data.val.next_batch(BATCH_SIZE, shuffle=True)
-            val_feed_dict = feed_dict_with_batch(images, labels)
-            val_info = model.evaluate(val_feed_dict, step, 'val')
+            feed_dict = feed_dict_with_batch(images, labels)
+            val_info = model.evaluate(feed_dict, step, 'val')
 
             log = 'step={}, '.format(step)
             log += 'time={:.2f}s + {:.2f}s, '.format(t_pre, t_train)
