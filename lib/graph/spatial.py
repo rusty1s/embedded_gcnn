@@ -70,9 +70,9 @@ def neighborhood_selection(idx, points, adj, size):
 def receptive_fields(points,
                      adj,
                      node_size,
-                     node_stride=1,
-                     delta=1,
-                     neighborhood_size):
+                     node_stride,
+                     neighborhood_size,
+                     delta=1):
     """Create receptive fields for a graph."""
 
     # Compute node selection.
