@@ -56,7 +56,7 @@ class SpatialTest(TestCase):
         ])
 
         fields = receptive_fields(
-            points, adj, node_size=3, neighborhood_size=4, node_stride=2)
+            points, adj, node_size=3, node_stride=2, neighborhood_size=4)
 
         excepted = [[3, 0, 2, 1], [0, 2, 1, 4], [1, 0, 2, 4]]
 
