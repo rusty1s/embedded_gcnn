@@ -30,7 +30,7 @@ As proof, we implemented an image classification on embedded graphs by first seg
 
 Graphs are trained on three different datasets and are automatically downloaded by running the corresponding train scripts:
 
-* [MNIST](http://yann.lecun.com/exdb/mnist/) (run `python mnist_graph.py`)
+* [MNIST](http://yann.lecun.com/exdb/mnist/) (run `python mnist_graph.py` and `python mnist_spatial.py`)
 * [Cifar-10](https://www.cs.toronto.edu/~kriz/cifar.html) (run `python cifar_graph.py` and `python cifar_conv2d.py`)
 * [PascalVOC](http://host.robots.ox.ac.uk/pascal/VOC/) (run `python pascal_graph.py` and `python pascal_conv2d.py`)
 
