@@ -14,8 +14,7 @@ def _print_status(data_dir, percentage):
     sys.stdout.flush()
 
 
-def _save(data_dir, name, features, adjs_dist, adjs_rad, label):
-    data = (features, adjs_dist, adjs_rad, label)
+def _save(data_dir, name, data):
     np.save(os.path.join(data_dir, name), data)
 
 
@@ -53,9 +52,12 @@ class PreprocessedDataset(object):
                 num_left -= min_batch
 
                 for i in xrange(labels.shape[0]):
-                    f, adjs_dist, adjs_rad = preprocess_algorithm(images[i])
-                    _save(data_dir, self._names[j], f, adjs_dist, adjs_rad,
-                          labels[i])
+                    data = preprocess_algorithm(images[i])
+                    if isinstance(data, np.ndarray):
+                        data = (data, labels[i])
+                    else:
+                        data = data + (labels[i], )
+                    _save(data_dir, self._names[j], data)
                     j += 1
                 _print_status(data_dir,
                               100 * (1 - num_left / dataset.num_examples))

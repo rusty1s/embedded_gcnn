@@ -6,6 +6,7 @@ import os
 import time
 
 import tensorflow as tf
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 from lib.datasets import MNIST as Data
@@ -127,7 +128,9 @@ model.build()
 global_step = model.initialize()
 
 
-def feed_dict_with_batch(features, labels, dropout=0):
+def feed_dict_with_batch(batch, dropout=0):
+    features = np.array([data[0] for data in batch], np.float32)
+    labels = np.array([data[1] for data in batch], np.uint8)
     return {
         placeholders['features']: features,
         placeholders['labels']: labels,
@@ -139,7 +142,7 @@ try:
     for step in xrange(global_step, MAX_STEPS):
         t_pre = time.process_time()
         batch = train_queue.dequeue()
-        feed_dict = feed_dict_with_batch(batch[0], batch[1], DROPOUT)
+        feed_dict = feed_dict_with_batch(batch, DROPOUT)
         t_pre = time.process_time() - t_pre
 
         t_train = model.train(feed_dict, step)
@@ -149,7 +152,7 @@ try:
             feed_dict.update({model.placeholders['dropout']: 0})
             train_info = model.evaluate(feed_dict, step, 'train')
             batch = val_queue.dequeue()
-            feed_dict = feed_dict_with_batch(batch[0], batch[1], DROPOUT)
+            feed_dict = feed_dict_with_batch(batch, DROPOUT)
             val_info = model.evaluate(feed_dict, step, 'val')
 
             log = 'step={}, '.format(step)
@@ -175,7 +178,7 @@ try:
 
     for i in xrange(num_steps):
         batch = test_queue.dequeue()
-        feed_dict = feed_dict_with_batch(batch[0], batch[1], DROPOUT)
+        feed_dict = feed_dict_with_batch(batch, DROPOUT)
 
         batch_info = model.evaluate(feed_dict)
         test_info = [a + b for a, b in zip(test_info, batch_info)]

@@ -3,6 +3,7 @@ from .fc import FC
 from .chebyshev_gcnn import ChebyshevGCNN
 from .gcnn import GCNN
 from .embedded_gcnn import EmbeddedGCNN
+from .spatial import SpatialCNN
 from .max_pool import MaxPool
 from .average_pool import AveragePool
 from .fire import Fire
@@ -14,6 +15,7 @@ __all__ = [
     'ChebyshevGCNN',
     'GCNN',
     'EmbeddedGCNN',
+    'SpatialCNN',
     'MaxPool',
     'AveragePool',
     'Fire',
