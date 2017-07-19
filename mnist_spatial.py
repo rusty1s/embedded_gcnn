@@ -169,6 +169,9 @@ try:
 except KeyboardInterrupt:
     print()
 
+train_queue.close()
+val_queue.close()
+
 print('Optimization finished!')
 print('Evaluate on test set. This can take a few minutes.')
 
@@ -192,3 +195,5 @@ try:
 except KeyboardInterrupt:
     print()
     print('Test evaluation aborted.')
+
+test_queue.close()

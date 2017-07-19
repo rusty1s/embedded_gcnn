@@ -23,6 +23,10 @@ preprocess_algorithm = preprocess_pipeline_fixed(
     segmentation_algorithm, feature_extraction_algorithm, levels=4)
 
 
+def preprocess_algorithm_numpy(image):
+    return image
+
+
 class PreprocessedDatasetTest(TestCase):
     def test_init(self):
         # Test creating and loading.
@@ -69,3 +73,12 @@ class PreprocessedDatasetTest(TestCase):
         self.assertEqual(len(batch[0]), 4)
 
         shutil.rmtree(data_dir)
+
+    def test_with_numpy_preprocess(self):
+        dataset = PreprocessedDataset('/tmp/preprocessed_dataset_test_numpy',
+                                      mnist, preprocess_algorithm_numpy)
+
+        batch = dataset.next_batch(10, shuffle=False)
+        self.assertEqual(len(batch), 10)
+        self.assertEqual(batch[0][0].shape, (28, 28, 1))
+        self.assertEqual(batch[0][1].shape, (10, ))
