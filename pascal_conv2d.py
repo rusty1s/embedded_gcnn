@@ -18,7 +18,7 @@ LOG_DIR = 'data/summaries/pascal_conv2d'
 SAVE_STEP = 250
 
 DROPOUT = 0.5
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 MAX_STEPS = 50000
 DISPLAY_STEP = 10
 
