@@ -4,6 +4,9 @@ engines:
     exclude_paths:
       - "**_test.py"
       - "**pascal_voc.py"
+      - "pascal_conv2d.py"
+      - "cifar_conv2d.py"
+      - "mnist_spatial.py"
     config:
       languages:
         python:
