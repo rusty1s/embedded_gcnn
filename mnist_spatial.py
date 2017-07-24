@@ -106,9 +106,9 @@ class Model(BaseModel):
     def _build(self):
         conv_1 = Conv(
             NUM_FEATURES, 64, NEIGHBORHOOD_SIZE, logging=self.logging)
-        fc_1 = FC(NODE_SIZE * 64, 256, logging=self.logging)
+        fc_1 = FC(NODE_SIZE * 64, 1024, logging=self.logging)
         fc_2 = FC(
-            256,
+            1024,
             data.num_classes,
             act=lambda x: x,
             bias=False,

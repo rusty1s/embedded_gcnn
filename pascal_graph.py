@@ -1,41 +1,42 @@
 from lib.datasets import PascalVOC as Data
 from lib.model import (Model as BaseModel, generate_placeholders, train)
 from lib.segmentation import extract_features_fixed
-from lib.segmentation import slic_fixed
-# from lib.segmentation import quickshift_fixed
+# from lib.segmentation import slic_fixed
+from lib.segmentation import quickshift_fixed
 from lib.pipeline import preprocess_pipeline_fixed
 from lib.layer import EmbeddedGCNN as Conv, MaxPool, AveragePool, FC
 
-SLIC_FORM_FEATURES = [1, 2, 3, 4, 5, 6, 8, 9, 21]
-# QUICKSHIFT_FORM_FEATURES = [0, 2, 3, 4, 7, 19, 20, 21, 22]
+# SLIC_FORM_FEATURES = [1, 2, 3, 4, 5, 6, 8, 9, 21]
+QUICKSHIFT_FORM_FEATURES = [0, 2, 3, 4, 7, 19, 20, 21, 22]
 
 DATA_DIR = 'data/pascal_voc'
-PREPROCESS_FIRST = 'data/pascal_voc/slic'
+# PREPROCESS_FIRST = 'data/pascal_voc/slic'
+PREPROCESS_FIRST = 'data/pascal_voc/quickshift'
 
-LEVELS = 5
+LEVELS = 4
 CONNECTIVITY = 8
 SCALE_INVARIANCE = False
 STDDEV = 1
 
 LEARNING_RATE = 0.0001
 TRAIN_DIR = None
-LOG_DIR = 'data/summaries/pascal_slic_graph'
-# LOG_DIR = 'data/summaries/pascal_quickshift_graph'
+# LOG_DIR = 'data/summaries/pascal_slic_graph'
+LOG_DIR = 'data/summaries/pascal_quickshift_graph'
 
 AUGMENT_TRAIN_EXAMPLES = True
 DROPOUT = 0.5
 BATCH_SIZE = 64
 MAX_STEPS = 50000
 DISPLAY_STEP = 10
-FORM_FEATURES = SLIC_FORM_FEATURES
+FORM_FEATURES = QUICKSHIFT_FORM_FEATURES
 NUM_FEATURES = len(FORM_FEATURES) + 3
 
 data = Data(DATA_DIR)
 
-segmentation_algorithm = slic_fixed(
-    num_segments=1600, compactness=30, max_iterations=10, sigma=0)
-# segmentation_algorithm = quickshift_fixed(
-#     ratio=0.75, kernel_size=2, max_dist=8, sigma=0)
+# segmentation_algorithm = slic_fixed(
+#     num_segments=1600, compactness=30, max_iterations=10, sigma=0)
+segmentation_algorithm = quickshift_fixed(
+    ratio=0.75, kernel_size=2, max_dist=8, sigma=0)
 
 feature_extraction_algorithm = extract_features_fixed(FORM_FEATURES)
 
@@ -48,79 +49,49 @@ class Model(BaseModel):
     def _build(self):
         conv_1_1 = Conv(
             NUM_FEATURES,
-            32,
+            64,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
             bias=False,
             logging=self.logging)
         conv_1_2 = Conv(
-            32,
-            32,
+            64,
+            64,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
             bias=False,
             logging=self.logging)
         max_pool_1 = MaxPool(size=2)
         conv_2_1 = Conv(
-            32,
             64,
+            128,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
             bias=False,
             logging=self.logging)
         conv_2_2 = Conv(
-            64,
-            64,
+            128,
+            128,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
             bias=False,
             logging=self.logging)
         max_pool_2 = MaxPool(size=2)
-        conv_3_1 = Conv(
-            64,
+        conv_3 = Conv(
             128,
-            adjs_dist=self.placeholders['adj_dist_3'],
-            adjs_rad=self.placeholders['adj_rad_3'],
-            bias=False,
-            logging=self.logging)
-        conv_3_2 = Conv(
-            128,
-            128,
+            256,
             adjs_dist=self.placeholders['adj_dist_3'],
             adjs_rad=self.placeholders['adj_rad_3'],
             bias=False,
             logging=self.logging)
         max_pool_3 = MaxPool(size=2)
-        conv_4_1 = Conv(
-            128,
+        conv_4 = Conv(
             256,
+            512,
             adjs_dist=self.placeholders['adj_dist_4'],
             adjs_rad=self.placeholders['adj_rad_4'],
             bias=False,
             logging=self.logging)
-        conv_4_2 = Conv(
-            256,
-            256,
-            adjs_dist=self.placeholders['adj_dist_4'],
-            adjs_rad=self.placeholders['adj_rad_4'],
-            bias=False,
-            logging=self.logging)
-        max_pool_4 = MaxPool(size=2)
-        conv_5_1 = Conv(
-            256,
-            512,
-            adjs_dist=self.placeholders['adj_dist_5'],
-            adjs_rad=self.placeholders['adj_rad_5'],
-            bias=False,
-            logging=self.logging)
-        conv_5_2 = Conv(
-            512,
-            512,
-            adjs_dist=self.placeholders['adj_dist_5'],
-            adjs_rad=self.placeholders['adj_rad_5'],
-            bias=False,
-            logging=self.logging)
-        max_pool_5 = MaxPool(size=2)
         average_pool = AveragePool()
         fc_1 = FC(512, 256, logging=self.logging)
         fc_2 = FC(256, 128, logging=self.logging)
@@ -134,8 +105,7 @@ class Model(BaseModel):
 
         self.layers = [
             conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
-            conv_3_1, conv_3_2, max_pool_3, conv_4_1, conv_4_2, max_pool_4,
-            conv_5_1, conv_5_2, max_pool_5, average_pool, fc_1, fc_2, fc_3
+            conv_3, max_pool_3, conv_4, average_pool, fc_1, fc_2, fc_3
         ]
 
 
