@@ -18,7 +18,7 @@ CONNECTIVITY = 8
 SCALE_INVARIANCE = False
 STDDEV = 1
 
-LEARNING_RATE = 0.0001
+LEARNING_RATE = 0.001
 TRAIN_DIR = None
 # LOG_DIR = 'data/summaries/pascal_slic_graph'
 LOG_DIR = 'data/summaries/pascal_quickshift_graph'
@@ -47,30 +47,16 @@ preprocess_algorithm = preprocess_pipeline_fixed(
 
 class Model(BaseModel):
     def _build(self):
-        conv_1_1 = Conv(
+        conv_1 = Conv(
             NUM_FEATURES,
             64,
             adjs_dist=self.placeholders['adj_dist_1'],
             adjs_rad=self.placeholders['adj_rad_1'],
             bias=False,
             logging=self.logging)
-        conv_1_2 = Conv(
-            64,
-            64,
-            adjs_dist=self.placeholders['adj_dist_1'],
-            adjs_rad=self.placeholders['adj_rad_1'],
-            bias=False,
-            logging=self.logging)
         max_pool_1 = MaxPool(size=2)
-        conv_2_1 = Conv(
+        conv_2 = Conv(
             64,
-            128,
-            adjs_dist=self.placeholders['adj_dist_2'],
-            adjs_rad=self.placeholders['adj_rad_2'],
-            bias=False,
-            logging=self.logging)
-        conv_2_2 = Conv(
-            128,
             128,
             adjs_dist=self.placeholders['adj_dist_2'],
             adjs_rad=self.placeholders['adj_rad_2'],
@@ -104,8 +90,8 @@ class Model(BaseModel):
             logging=self.logging)
 
         self.layers = [
-            conv_1_1, conv_1_2, max_pool_1, conv_2_1, conv_2_2, max_pool_2,
-            conv_3, max_pool_3, conv_4, average_pool, fc_1, fc_2, fc_3
+            conv_1, max_pool_1, conv_2, max_pool_2, conv_3, max_pool_3, conv_4,
+            average_pool, fc_1, fc_2, fc_3
         ]
 
 
