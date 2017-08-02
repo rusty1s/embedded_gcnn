@@ -36,6 +36,14 @@ Graphs are trained on three different datasets and are automatically downloaded 
 
 This repository also includes layer implementations of alternative approaches such as [SGCNN](https://arxiv.org/abs/1312.6203) and [GCN](https://arxiv.org/abs/1609.02907) for graphs and the Fire module of [SqueezeNet](https://arxiv.org/abs/1602.07360) for images to validate the results.
 
+## Results
+
+| Dataset    | SLIC   | Quickshift |
+| ---------- | ------:| ----------:|
+| MNIST      | 97.405 | 98.025     |
+| Cifar-10   | 74.218 | 75.230     |
+| Pascal VOC | 54.473 | 54.516     |
+
 ## Requirements
 
 To install the required python packages, run:
