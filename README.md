@@ -72,7 +72,7 @@ Please cite my master thesis if you use this code in your own work:
 
 ```
 @mastersthesis{Fey2017,
-  title={{C}onvolutional {N}eural {N}etworks auf {G}raphrepr{\"a}sentationen von {B}ildern},
+  title={{Convolutional Neural Networks auf Graphrepr{\"a}sentationen von Bildern}},
   author={Matthias Fey},
   school={Technische Universit{\"a}t Dortmund},
   year={2017},
