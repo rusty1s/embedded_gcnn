@@ -11,7 +11,7 @@ from .download import maybe_download_and_extract
 
 try:
     import cPickle as pickle
-except:
+except ImportError:
     import pickle
 
 URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
@@ -65,8 +65,8 @@ class Cifar10(Datasets):
         return 3
 
     def _preprocess_images(self, images):
-        images = np.reshape(images, (-1, self.num_channels, self.width,
-                                     self.height))
+        images = np.reshape(images,
+                            (-1, self.num_channels, self.width, self.height))
         images = np.transpose(images, (0, 2, 3, 1))
         return (1 / 255) * images.astype(np.float32)
 
