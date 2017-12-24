@@ -1,5 +1,6 @@
 from numpy.testing import assert_almost_equal
 import scipy.sparse as sp
+from scipy.sparse.csgraph import laplacian
 import tensorflow as tf
 
 from .laplacian import rescaled_laplacian
@@ -14,7 +15,7 @@ class LaplacianTest(tf.test.TestCase):
         lap = rescaled_laplacian(adj_tf)
         lap = tf.sparse_tensor_to_dense(lap)
 
-        expected = sp.csgraph.laplacian(adj, normed=True) - sp.eye(3)
+        expected = laplacian(adj, normed=True) - sp.eye(3)
         expected = expected.toarray()
 
         with self.test_session():
