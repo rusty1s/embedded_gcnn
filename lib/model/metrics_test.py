@@ -14,7 +14,7 @@ class MetricsTest(tf.test.TestCase):
 
         with self.test_session():
             self.assertAlmostEqual(
-                softmax_cross_entropy(outputs, labels).eval(), 0.74366832)
+                softmax_cross_entropy(outputs, labels).eval(), 0.74366844)
 
     def test_total_loss(self):
         with self.test_session():
