@@ -1,7 +1,7 @@
-numpy>=1.13.0
-scipy>=0.19.1
-tensorflow>=1.2.0
-scikit-image>=0.13
-scikit-learn>=0.18.2
-numpy_groupies>=0.9.6
-cached-property>=1.3.0
+numpy
+scipy
+tensorflow
+scikit-image
+scikit-learn
+numpy_groupies
+cached-property
